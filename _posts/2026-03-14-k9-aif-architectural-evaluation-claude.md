@@ -1,8 +1,3 @@
----
-layout: post
-title: "K9-AIF Framework — Architectural Evaluation by Claude"
----
-
 # K9-AIF Framework — An Architectural Evaluation
 
 AI-assisted architectural review using Claude (Anthropic)
