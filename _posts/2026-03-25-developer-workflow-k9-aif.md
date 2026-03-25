@@ -171,3 +171,45 @@ That is the model.
 
 Do not start from scratch.  
 Start from the scaffold, extend the framework correctly, and build the solution in the layer where it belongs.
+
+## The K9-AIF Generator in practice
+
+The K9-AIF developer workflow starts with the generator.
+
+Instead of manually creating project structure, developers use the generator to bootstrap a ready-to-run application scaffold that already follows K9-AIF architecture and conventions.
+
+From the root of the K9-AIF repository:
+
+```bash
+./k9_generator.sh preview MyApp
+
+```
+This shows what will be created without writing files.
+
+To generate the application:
+
+```bash
+./k9_generator.sh run MyApp
+```
+
+This produces a complete scaffold including:
+	•	agents
+	•	squads
+	•	orchestrator
+	•	configuration (agents, squads, app config)
+	•	entry point (main.py)
+	•	test scaffolding
+
+Once generated:
+
+```bash
+cd k9_projects/my_app
+python main.py
+```
+At this point, the developer is no longer dealing with framework setup.
+The focus shifts to extending the generated scaffold into Solution Building Blocks (SBBs) and implementing real business logic.
+
+A full walkthrough of the generator and the generated structure is available here:
+
+🔗 https://github.com/k9aif/k9-aif-framework/blob/main/generator/Sample-Run.md
+
