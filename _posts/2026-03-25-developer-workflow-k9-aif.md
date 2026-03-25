@@ -4,7 +4,7 @@ title: "K9-AIF Developer Workflow: From Generated Scaffold to Solution Building 
 date: 2026-03-25
 categories: [k9-aif, development, enterprise-ai]
 tags: [K9-AIF, developer workflow, SBB, scaffolding, YAML, orchestration]
-author: Ravi Nat
+author: Ravi Natarajan
 ---
 
 K9-AIF is designed so that application developers do not start from a blank page.
