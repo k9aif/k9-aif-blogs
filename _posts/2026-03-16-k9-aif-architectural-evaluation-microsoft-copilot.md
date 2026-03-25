@@ -1,8 +1,3 @@
----
-layout: post
-title: "K9-AIF Framework — Evaluation by Microsoft Copilot"
----
-
 ## An Architectural Review of K9-AIF
 
 Recently, an independent review looked at K9-AIF (K9 Agentic Integration Framework) and its approach to building multi-agent AI systems.
