@@ -1,8 +1,3 @@
----
-layout: post
-title: "K9 Model Router in K9-AIF"
----
-
 # K9 Model Router in K9-AIF
 
 **Date:** 2026-03-15
