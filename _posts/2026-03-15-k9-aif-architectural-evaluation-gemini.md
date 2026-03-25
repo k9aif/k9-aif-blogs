@@ -1,8 +1,3 @@
----
-layout: post
-title: "K9-AIF Framework — Evaluation by Gemini"
----
-
 # K9-AIF Framework — Evaluation by Gemini
 
 To better understand how the K9-AIF architecture is perceived externally, I asked several AI systems to analyze the public repositories, architecture diagrams, and documentation of the framework.
