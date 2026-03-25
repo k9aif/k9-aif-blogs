@@ -213,5 +213,5 @@ The focus shifts to extending the generated scaffold into Solution Building Bloc
 
 A full walkthrough of the generator and the generated structure is available here:
 
-🔗 https://github.com/k9aif/k9-aif-framework/blob/main/generator/Sample-Run.md
+[https://github.com/k9aif/k9-aif-framework/blob/main/generator/Sample-Run.md](https://github.com/k9aif/k9-aif-framework/blob/main/generator/Sample-Run.md)
 
