@@ -1,8 +1,3 @@
----
-layout: post
-title: "K9-AIF Framework — Evaluation by Meta.ai"
----
-
 # K9-AIF Architectural Evaluation — Meta.ai
 
 As part of the ongoing architectural review of **K9-AIF (K9 Agentic Integration Framework)**, multiple AI systems were asked to review the project and provide their evaluation.
