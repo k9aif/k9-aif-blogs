@@ -1,8 +1,3 @@
----
-layout: post
-title: "K9-AIF Framework — Architectural Evaluation by Grok"
----
-
 # K9-AIF Framework — Architectural Evaluation (AI Analysis by Grok)
 
 To understand how the K9-AIF architecture is perceived externally, I asked several AI systems to analyze the public repositories, architecture diagrams, and documentation of the framework.
