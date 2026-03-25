@@ -1,6 +1,10 @@
 ---
 layout: post
 title: "How K9-AIF Enforces Governance in Agentic Systems"
+date: 2026-03-23
+categories: [k9-aif, governance, enterprise-ai]
+tags: [K9-AIF, governance, agentic AI, enterprise architecture, policy enforcement, AI framework]
+author: Ravi Natarajan
 ---
 
 In K9-AIF, governance is not implemented as an external control layer or a set of guidelines.
@@ -91,4 +95,5 @@ It ensures governance by making it unavoidable.
 
 ## Governance Flow:
 
-[![K9-AIF Governance](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/k9-aif-governance.png)](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/k9-aif-governance.png)
+[![K9-AIF Governance](https://raw.githubusercontent.com/k9aif/k9-aif-framework/main/docs/diagrams/k9-aif-governance.png)](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/k9-aif-governance.png)
+
