@@ -1,4 +1,10 @@
-# K9-AIF Framework — An Architectural Evaluation  
+---
+layout: post
+title: "K9-AIF Framework — Architectural Evaluation by Claude"
+---
+
+# K9-AIF Framework — An Architectural Evaluation
+
 AI-assisted architectural review using Claude (Anthropic)
 
 In a landscape crowded with agentic AI frameworks built primarily for speed and developer convenience, K9-AIF takes a notably different approach — it begins with architecture.
@@ -81,9 +87,9 @@ are fundamental requirements.
 
 K9-AIF defines a deliberate orchestration hierarchy:
 
-Router Agent  
-→ BaseOrchestrator  
-→ Squads  
+Router Agent
+→ BaseOrchestrator
+→ Squads
 → Agents
 
 Each level has a clearly defined responsibility.
@@ -140,8 +146,8 @@ K9-AIF introduces the concept of Agent Squads.
 
 The squad structure includes:
 
-SquadLoader  
-→ BaseSquad  
+SquadLoader
+→ BaseSquad
 → DefaultSquadMonitor
 
 This design enables groups of agents to operate as coordinated teams rather than independent actors.
@@ -225,6 +231,6 @@ K9-AIF offers one vision of what that architecture could look like.
 
 ---
 
-➡️ GitHub: https://github.com/k9aif/k9-aif-framework  
-➡️ Patterns: https://github.com/k9aif/k9aif-patterns  
+➡️ GitHub: https://github.com/k9aif/k9-aif-framework
+➡️ Patterns: https://github.com/k9aif/k9aif-patterns
 ➡️ Website: https://k9aif.com

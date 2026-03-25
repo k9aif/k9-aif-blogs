@@ -1,3 +1,8 @@
+---
+layout: post
+title: "K9-AIF Framework — Architectural Evaluation by Grok"
+---
+
 # K9-AIF Framework — Architectural Evaluation (AI Analysis by Grok)
 
 To understand how the K9-AIF architecture is perceived externally, I asked several AI systems to analyze the public repositories, architecture diagrams, and documentation of the framework.
@@ -157,13 +162,13 @@ What is clear is that as multi-agent systems move toward enterprise deployment, 
 
 ## Resources
 
-K9-AIF Framework  
+K9-AIF Framework
 https://github.com/k9aif/k9-aif-framework
 
-K9-AIF Patterns  
+K9-AIF Patterns
 https://github.com/k9aif/k9aif-patterns
 
-Project Website  
+Project Website
 https://k9aif.com
 
 ---

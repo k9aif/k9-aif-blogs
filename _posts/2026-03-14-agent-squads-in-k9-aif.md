@@ -1,6 +1,11 @@
+---
+layout: post
+title: "Agent Squads in K9-AIF"
+---
+
 # Agent Squads in K9-AIF
 
-**Date:** 2026-03-14  
+**Date:** 2026-03-14
 **Author:** Ravi Natarajan
 
 ## Motivation

@@ -1,0 +1,5 @@
+title: K9-AIF Blog
+description: Architecture-first essays, evaluations, and technical notes from the K9-AIF project.
+theme: minima
+markdown: kramdown
+permalink: /:title/

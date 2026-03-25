@@ -1,3 +1,8 @@
+---
+layout: post
+title: "K9-AIF Framework — Evaluation by Meta.ai"
+---
+
 # K9-AIF Architectural Evaluation — Meta.ai
 
 As part of the ongoing architectural review of **K9-AIF (K9 Agentic Integration Framework)**, multiple AI systems were asked to review the project and provide their evaluation.
@@ -36,10 +41,10 @@ This separation helps address challenges related to:
 
 K9-AIF separates:
 
-**Architecture Building Blocks (ABB)**  
+**Architecture Building Blocks (ABB)**
 Abstract architectural capabilities and system contracts.
 
-**Solution Building Blocks (SBB)**  
+**Solution Building Blocks (SBB)**
 Concrete implementations that realize those capabilities.
 
 This allows the architecture to evolve independently of specific technologies.
@@ -77,17 +82,14 @@ Benefits include:
 
 K9-AIF introduces a structured execution hierarchy:
 
-
-
-
 Each layer has a defined responsibility:
 
-| Layer | Responsibility |
-|------|---------------|
-| Router | Determines request routing |
-| Orchestrator | Coordinates workflows |
-| Squads | Groups collaborating agents |
-| Agents | Perform specialized tasks |
+| Layer        | Responsibility              |
+| ------------ | --------------------------- |
+| Router       | Determines request routing  |
+| Orchestrator | Coordinates workflows       |
+| Squads       | Groups collaborating agents |
+| Agents       | Perform specialized tasks   |
 
 This structured approach helps manage complex multi-agent workflows in a predictable way.
 
@@ -207,10 +209,10 @@ in mind.
 
 # Links
 
-Project Website  
+Project Website
 https://k9aif.com
 
-Framework Repository  
+Framework Repository
 https://github.com/k9aif/k9-aif-framework
 
 ---

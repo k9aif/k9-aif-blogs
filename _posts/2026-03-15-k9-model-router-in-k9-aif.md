@@ -1,6 +1,11 @@
+---
+layout: post
+title: "K9 Model Router in K9-AIF"
+---
+
 # K9 Model Router in K9-AIF
 
-**Date:** 2026-03-15  
+**Date:** 2026-03-15
 **Author:** Ravi Natarajan
 
 ## Motivation
@@ -57,4 +62,3 @@ Future posts will demonstrate:
 
 - a **default K9 router implementation**
 - an example **NotDiamond-style router SBB**
-

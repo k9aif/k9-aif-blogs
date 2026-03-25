@@ -1,3 +1,7 @@
+---
+layout: post
+title: "How K9-AIF Enforces Governance in Agentic Systems"
+---
 
 # How K9-AIF Enforces Governance in Agentic Systems
 
@@ -5,7 +9,7 @@ In K9-AIF, governance is not implemented as an external control layer or a set o
 
 It is enforced directly through the system’s execution model.
 
-Every request is required to pass through a structured, controlled path where routing, execution, monitoring, 
+Every request is required to pass through a structured, controlled path where routing, execution, monitoring,
 and persistence are all governed by design.
 
 ---
@@ -14,7 +18,7 @@ and persistence are all governed by design.
 
 All incoming requests are handled by the router.
 
-The router normalizes the payload into a standard structure and evaluates it against a registry of allowed routes. 
+The router normalizes the payload into a standard structure and evaluates it against a registry of allowed routes.
 If a request does not match a registered route, it does not proceed further.
 
 This ensures that only known and approved execution paths are allowed into the system.
@@ -38,7 +42,7 @@ This eliminates uncontrolled chaining of agents and ensures that all execution f
 
 Agents in K9-AIF are not autonomous entry points.
 
-They operate under a defined interface and are invoked only by the orchestrator. This ensures that agents perform 
+They operate under a defined interface and are invoked only by the orchestrator. This ensures that agents perform
 specific responsibilities without initiating independent or untracked workflows.
 
 ---
@@ -47,7 +51,7 @@ specific responsibilities without initiating independent or untracked workflows.
 
 External agent frameworks are not allowed to operate independently.
 
-They are encapsulated within orchestrators, ensuring that even complex agent-based workflows execute within 
+They are encapsulated within orchestrators, ensuring that even complex agent-based workflows execute within
 the governance boundaries defined by K9-AIF.
 
 ---
@@ -64,7 +68,7 @@ This prevents uncontrolled model usage and ensures consistency in how models are
 
 Execution is continuously monitored and recorded.
 
-Monitoring provides real-time visibility into system behavior, while persistence ensures that 
+Monitoring provides real-time visibility into system behavior, while persistence ensures that
 every step can be traced, audited, and reproduced if needed.
 
 ---
@@ -90,4 +94,3 @@ It ensures governance by making it unavoidable.
 ## Governance Flow:
 
 [![K9-AIF Governance](../docs/diagrams/k9-aif-governance.png)](../docs/diagrams/k9-aif-governance.png)
-

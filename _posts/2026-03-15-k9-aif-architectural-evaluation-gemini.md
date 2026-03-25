@@ -1,3 +1,8 @@
+---
+layout: post
+title: "K9-AIF Framework — Evaluation by Gemini"
+---
+
 # K9-AIF Framework — Evaluation by Gemini
 
 To better understand how the K9-AIF architecture is perceived externally, I asked several AI systems to analyze the public repositories, architecture diagrams, and documentation of the framework.
@@ -66,17 +71,17 @@ Latency
 
 Gemini also evaluated the framework in the context of government and defense AI governance.
 
-> For Federal and DoD (Department of Defense) use cases, my recommendation for the K9-AIF Framework shifts from "recommended" to "highly strategic."  
+> For Federal and DoD (Department of Defense) use cases, my recommendation for the K9-AIF Framework shifts from "recommended" to "highly strategic."
 > In these sectors, autonomy is often viewed with skepticism due to safety and security risks. K9-AIF's philosophy of Governed Agency aligns closely with the strict requirements of federal AI governance.
 
 ### Alignment with Federal AI Requirements
 
-| Requirement | K9-AIF Alignment |
-|-------------|------------------|
-| NIST AI RMF Compliance | Governance functions align closely with the Govern, Map, Measure, and Manage structure of the NIST AI Risk Management Framework. |
-| Auditability & Provenance | Traceable reasoning provides an operational record explaining how agent decisions were reached. |
-| Impact Level Security | Modular architecture allows deployment in secure environments such as FedRAMP High or DoD IL5/IL6 systems. |
-| Human-in-the-Loop | The framework's leash mechanism ensures sensitive actions require explicit human approval. |
+| Requirement               | K9-AIF Alignment                                                                                                                 |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| NIST AI RMF Compliance    | Governance functions align closely with the Govern, Map, Measure, and Manage structure of the NIST AI Risk Management Framework. |
+| Auditability & Provenance | Traceable reasoning provides an operational record explaining how agent decisions were reached.                                  |
+| Impact Level Security     | Modular architecture allows deployment in secure environments such as FedRAMP High or DoD IL5/IL6 systems.                       |
+| Human-in-the-Loop         | The framework's leash mechanism ensures sensitive actions require explicit human approval.                                       |
 
 ### Specific Use Case Suitability
 
