@@ -91,4 +91,4 @@ It ensures governance by making it unavoidable.
 
 ## Governance Flow:
 
-[![K9-AIF Governance](../docs/diagrams/k9-aif-governance.png)](../docs/diagrams/k9-aif-governance.png)
+[![K9-AIF Governance](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/k9-aif-governance.png)](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/k9-aif-governance.png)
