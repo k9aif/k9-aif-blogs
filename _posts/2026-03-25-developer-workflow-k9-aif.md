@@ -20,7 +20,7 @@ The developer workflow in K9-AIF is therefore straightforward:
 
 ## The K9-AIF Developer Workflow
 
-![K9-AIF Developer Workflow](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/developer_workdlow.png)
+![K9-AIF Developer Workflow](https://raw.githubusercontent.com/k9aif/k9-aif-framework/main/docs/diagrams/developer_workdlow.png)
 
 *Figure: K9-AIF Developer Workflow — K9-AIF provides the reusable core, developers build Solution Building Blocks on top of it, and runtime behavior is controlled through configuration.*
 
