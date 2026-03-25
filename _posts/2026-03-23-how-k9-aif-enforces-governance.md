@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 # How K9-AIF Enforces Governance in Agentic Systems
 
+=======
+---
+layout: post
+title: "How K9-AIF Enforces Governance in Agentic Systems"
+---
+>>>>>>> 6a3d7f9 (Clean up post titles and keep front matter)
 In K9-AIF, governance is not implemented as an external control layer or a set of guidelines.
 
 It is enforced directly through the system’s execution model.

@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 # K9-AIF Framework — An Architectural Evaluation
 
+=======
+---
+layout: post
+title: "K9-AIF Framework — Architectural Evaluation by Claude"
+---
+>>>>>>> 6a3d7f9 (Clean up post titles and keep front matter)
 AI-assisted architectural review using Claude (Anthropic)
 
 In a landscape crowded with agentic AI frameworks built primarily for speed and developer convenience, K9-AIF takes a notably different approach — it begins with architecture.

@@ -1,5 +1,12 @@
+<<<<<<< HEAD
 # K9 Model Router in K9-AIF
 
+=======
+---
+layout: post
+title: "K9 Model Router in K9-AIF"
+---
+>>>>>>> 6a3d7f9 (Clean up post titles and keep front matter)
 **Date:** 2026-03-15
 **Author:** Ravi Natarajan
 
