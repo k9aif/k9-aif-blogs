@@ -172,6 +172,8 @@ That is the model.
 Do not start from scratch.  
 Start from the scaffold, extend the framework correctly, and build the solution in the layer where it belongs.
 
+---
+
 ## The K9-AIF Generator in practice
 
 The K9-AIF developer workflow starts with the generator.
