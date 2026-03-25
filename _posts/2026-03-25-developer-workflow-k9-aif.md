@@ -1,167 +1,173 @@
 ---
 layout: post
-title: "K9-AIF Developer Workflow: From Architectural Building Blocks to Running Applications"
+title: "K9-AIF Developer Workflow: From Generated Scaffold to Solution Building Blocks"
 date: 2026-03-25
-categories: [k9-aif, architecture, enterprise-ai, development]
-tags: [K9-AIF, ABB, SBB, enterprise architecture, developer workflow, AI framework, TOGAF]
+categories: [k9-aif, development, enterprise-ai]
+tags: [K9-AIF, developer workflow, SBB, scaffolding, YAML, orchestration]
 author: Ravi Nat
 ---
 
-Modern AI application development often becomes messy for one simple reason: architecture, implementation, runtime behavior, and governance tend to get mixed together too early.
+K9-AIF is designed so that application developers do not start from a blank page.
 
-A system may begin as a straightforward agent workflow, but as it grows, teams quickly run into familiar enterprise problems:
+The framework already comes with reusable core Architectural Building Blocks (ABBs), such as base orchestrators, base agents, persistence abstractions, factories, and supporting runtime capabilities. As K9-AIF is adopted within an organization, those ABBs may be enhanced over time, but for the application developer, the starting point is already available.
 
-- Where should orchestration logic live?
-- How do we keep reusable framework code separate from application-specific code?
-- How do we enforce governance without hardcoding policies everywhere?
-- How can teams evolve runtime behavior without constantly rewriting source code?
+The developer workflow in K9-AIF is therefore straightforward:
 
-K9-AIF addresses this by introducing a layered development model that separates **architecture**, **implementation**, and **configuration** into distinct concerns.
+1. Use the generator to create the application scaffold.
+2. Extend the generated scaffold into application-specific Solution Building Blocks (SBBs).
+3. Configure flows and governance behavior through YAML.
+4. Run, test, and refine the application without reworking the framework core.
 
 ## The K9-AIF Developer Workflow
 
 ![K9-AIF Developer Workflow](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/developer_workdlow.png)
 
-*Figure: K9-AIF Developer Workflow — showing the relationship between reusable Architectural Building Blocks (ABBs), application-specific Solution Building Blocks (SBBs), configuration, and runtime execution.*
+*Figure: K9-AIF Developer Workflow — K9-AIF provides the reusable core, developers build Solution Building Blocks on top of it, and runtime behavior is controlled through configuration.*
 
-## Why this workflow matters
+## Start with the generator, not from scratch
 
-One of the core design goals of K9-AIF is to make AI systems **architecturally disciplined** and **easier to evolve over time**.
+A developer using K9-AIF should not be hand-building the project structure from the ground up.
 
-Rather than treating every application as a one-off collection of agents, prompts, and tools, K9-AIF introduces a development workflow with clearly separated responsibilities:
+The first step is to use the **K9 generator** to produce the initial application scaffold. That scaffold provides the starting structure for:
 
-- **Architects define reusable Architectural Building Blocks (ABBs)**
-- **Application developers extend those ABBs into Solution Building Blocks (SBBs)**
-- **Business analysts and platform teams configure runtime behavior using YAML**
+- orchestrators
+- agents
+- persistence hooks
+- provider extensions
+- configuration files
+- runtime integration points
 
-This creates a cleaner path from architectural intent to executable AI systems.
+This gives the developer a consistent project layout aligned with K9-AIF conventions.
 
-## 1. Architects define reusable Architectural Building Blocks (ABBs)
+Instead of deciding where everything should live, the developer begins with a framework-aligned structure and focuses on implementing the application.
 
-At the foundation of K9-AIF is a reusable core made up of **Architectural Building Blocks (ABBs)**.
+## K9-AIF already provides the ABB foundation
 
-These are not application-specific implementations.  
-They represent the reusable architectural backbone of the framework.
+In this workflow, the developer is not expected to define the core Architectural Building Blocks.
 
-Examples include:
+K9-AIF already comes with that foundation.
 
-- `BaseOrchestrator`
-- `BaseAgent`
-- `BasePersistence`
-- Factories for LLMs, connectors, security, and supporting services
-
-These ABBs establish the structure and responsibilities of the system without tying the design to a particular business domain or use case.
-
-This is an important distinction.
-
-In many AI frameworks, application code and framework code become tightly coupled very quickly.  
-K9-AIF avoids that by making the architectural layer explicit and reusable.
-
-## 2. Application developers extend ABBs into Solution Building Blocks (SBBs)
-
-Application developers build on top of the ABB layer by creating **Solution Building Blocks (SBBs)**.
-
-These are the concrete, domain-specific implementations that make an application actually work.
+These ABBs represent the reusable platform-level structure of the framework. They define the extension points that application teams build on top of.
 
 Examples include:
 
-- `AppOrchestrator`
-- `DomainAgents`
-- `CustomPersistence`
-- `ProviderPlugins`
+- base orchestrator classes
+- base agent classes
+- persistence abstractions
+- factories for LLMs, connectors, security, and related services
+- monitoring and governance hooks
 
-This means developers are not reinventing the architecture every time they build a new system.
+From the developer’s point of view, these are the building blocks already supplied by the framework.
 
-Instead, they extend a stable foundation into application-specific solutions.
+The job is not to recreate them.  
+The job is to **use them correctly and extend them cleanly**.
 
-This creates several advantages:
+## The developer creates the SBBs
 
-- cleaner code organization
-- more predictable extension points
-- easier maintenance
-- stronger consistency across applications
+Once the scaffold is generated, the developer creates the **Solution Building Blocks (SBBs)** for the application.
 
-In other words, K9-AIF encourages teams to build **on top of architecture**, not around it.
+This is where application-specific logic is implemented.
 
-## 3. Business analysts and platform teams configure behavior without modifying code
+Typical SBBs may include:
 
-Not all important system behavior should require source code changes.
+- an application orchestrator
+- domain-specific agents
+- custom persistence implementations
+- provider-specific plugins
+- integration adapters for external systems
 
-K9-AIF externalizes important runtime controls into configuration such as:
+This is the main development activity in K9-AIF.
+
+The developer takes the framework-provided foundation and turns it into a working business solution by filling in the application layer.
+
+That is the key mindset:
+
+**K9-AIF supplies the reusable structure.  
+The developer supplies the solution-specific implementation.**
+
+## Configuration is part of the workflow
+
+In K9-AIF, not every change should require code changes.
+
+A major part of the developer workflow is understanding what belongs in code and what belongs in configuration.
+
+Runtime behavior can be influenced through configuration such as:
 
 - `flows.yaml`
 - `governance.yaml`
 - environment settings
 
-These configuration artifacts allow teams to influence:
+These files can be used to define things such as:
 
-- workflow routing
-- policy enforcement
-- runtime execution behavior
-- governance controls
+- flow selection
+- routing behavior
+- policy controls
+- governance rules
+- environment-specific runtime settings
 
-without modifying the application’s implementation.
+This means the developer does not need to hardcode every execution detail into the application.
 
-This is especially valuable in enterprise environments, where governance and process behavior often evolve independently of the application codebase.
+Instead, the application code focuses on the SBB implementations, while configuration files control how the runtime behaves.
 
-It also creates a clearer separation between:
+## How a developer should think in K9-AIF
 
-- **what the application is**
-- **how the application behaves**
-- **how the application is governed**
+A useful way to think about the K9-AIF workflow is this:
 
-That separation is one of the reasons K9-AIF is better suited for long-term enterprise adoption.
+The framework gives you the architectural skeleton.  
+The generator gives you the scaffold.  
+Your job is to implement the application-specific SBBs and wire them into the runtime model.
 
-## The architectural benefit of separating ABBs, SBBs, and configuration
+That makes the development path much cleaner:
 
-This layered approach is not just a design preference.  
-It has practical implications for how teams build and maintain AI systems.
+- do not redesign the framework
+- do not rebuild the base classes
+- do not hardcode what should live in configuration
+- focus on extending the scaffold into a real application
 
-By separating architecture, implementation, and configuration, K9-AIF enables:
+This keeps development aligned with the framework’s architecture instead of drifting into ad hoc implementation.
 
-- **Reusable architecture across multiple applications**
-- **Modular application implementations**
-- **Externalized governance and runtime policies**
-- **Minimal-code evolution of workflows**
-- **Clearer collaboration across architecture, development, and business teams**
+## Why this workflow matters
 
-This is particularly important in organizations where AI systems must be:
+This approach gives developers several practical advantages.
 
-- governed
-- auditable
-- adaptable
-- maintainable over time
+First, it reduces startup friction.  
+A team can begin from a generated scaffold instead of spending time inventing project structure.
 
-Without these separations, AI solutions often become difficult to scale and harder to control.
+Second, it makes extension points clearer.  
+Developers know where orchestration logic goes, where agent logic goes, and where runtime behavior should be configured.
 
-## More than a runtime framework
+Third, it improves maintainability.  
+Because framework concerns, application code, and configuration are separated, systems can evolve with less disruption.
 
-Many agentic AI frameworks focus primarily on runtime execution:
+Finally, it supports enterprise adoption.  
+As organizations mature their use of K9-AIF, they can strengthen the ABB layer while allowing teams to continue building SBBs consistently on top of it.
 
-- defining agents
-- chaining prompts
-- invoking tools
-- executing tasks
+## More than coding: building the right layer
 
-Those are important capabilities, but they are only part of what enterprise AI systems need.
+A developer in K9-AIF is not just writing code.
 
-K9-AIF includes those concerns, but places them within a broader architectural model where:
+The developer is building the **solution layer** on top of an existing architectural base.
 
-- reusable building blocks are defined first
-- application extensions are controlled and intentional
-- runtime behavior is configuration-driven
-- governance is built directly into the execution model
+That distinction matters.
 
-That is what makes K9-AIF more than a framework for running agents.
+In many AI projects, framework logic, application logic, and runtime rules get mixed together very quickly. K9-AIF avoids that by giving the developer a defined path:
 
-It is a framework for **engineering AI systems responsibly**.
+- generate the scaffold
+- implement the SBBs
+- configure the runtime
+- test and evolve the application
+
+That is a much cleaner way to build enterprise AI systems.
 
 ## Closing thought
 
-K9-AIF is designed to help teams move from architectural intent to executable AI systems without collapsing everything into code.
+The K9-AIF developer workflow is intentionally structured.
 
-By separating **Architectural Building Blocks (ABBs)**, **Solution Building Blocks (SBBs)**, and **configuration**, it creates a developer workflow that is cleaner, more extensible, and far better suited for enterprise-scale AI applications.
+The framework already provides the core ABB foundation.  
+The generator gives the developer a consistent scaffold.  
+The developer then creates the application-specific SBBs and uses configuration to guide runtime behavior.
 
-That separation is not overhead.
+That is the model.
 
-It is what makes long-term AI engineering sustainable.
+Do not start from scratch.  
+Start from the scaffold, extend the framework correctly, and build the solution in the layer where it belongs.
