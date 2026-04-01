@@ -215,3 +215,14 @@ A full walkthrough of the generator and the generated structure is available her
 
 [https://github.com/k9aif/k9-aif-framework/blob/main/generator/Sample-Run.md](https://github.com/k9aif/k9-aif-framework/blob/main/generator/Sample-Run.md)
 
+---
+
+## Learn More
+
+K9-AIF is an architecture-first framework for modular and governed
+agentic AI systems.
+
+More at:
+
+**https://k9aif.com**
+
