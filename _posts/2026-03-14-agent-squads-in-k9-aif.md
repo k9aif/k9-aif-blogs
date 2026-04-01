@@ -36,3 +36,14 @@ within a defined context.
 
 Future releases will extend squad capabilities for monitoring,
 parallel execution, and cross-squad orchestration.
+
+---
+
+## Learn More
+
+K9-AIF is an architecture-first framework for modular and governed
+agentic AI systems.
+
+More at:
+
+**https://k9aif.com**
