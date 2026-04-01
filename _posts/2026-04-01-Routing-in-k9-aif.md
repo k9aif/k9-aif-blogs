@@ -174,3 +174,14 @@ The following example shows how deterministic and non-deterministic routing can 
 
 ![ACME Insurance Routing Example](/assets/images/blogs/acme-insurance-routing.png)
 
+---
+
+## Learn More
+
+K9-AIF is an architecture-first framework for modular and governed
+agentic AI systems.
+
+More at:
+
+**https://k9aif.com**
+
