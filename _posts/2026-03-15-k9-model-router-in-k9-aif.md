@@ -179,3 +179,14 @@ The following diagram shows how the Model Router fits within the
 K9-AIF inference layer and interacts with `LLMFactory` and providers.
 
 ![K9-AIF Model Router](/assets/images/blogs/k9-aif-model-router.png)
+
+---
+
+## Learn More
+
+K9-AIF is an architecture-first framework for modular and governed
+agentic AI systems.
+
+More at:
+
+**https://k9aif.com**
