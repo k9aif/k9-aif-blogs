@@ -224,5 +224,7 @@ agentic AI systems.
 
 More at:
 
-**https://k9aif.com**
+<a href="https://k9aif.com" target="_blank" rel="noopener noreferrer">
+  Visit K9-AIF
+</a>
 
