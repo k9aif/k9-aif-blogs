@@ -97,3 +97,13 @@ It ensures governance by making it unavoidable.
 
 [![K9-AIF Governance](https://raw.githubusercontent.com/k9aif/k9-aif-framework/main/docs/diagrams/k9-aif-governance.png)](https://github.com/k9aif/k9-aif-framework/blob/main/docs/diagrams/k9-aif-governance.png)
 
+---
+
+## Learn More
+
+K9-AIF is an architecture-first framework for modular and governed
+agentic AI systems.
+
+More at:
+
+**https://k9aif.com**
