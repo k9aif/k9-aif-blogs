@@ -189,13 +189,6 @@ agentic AI systems.
 
 More at:
 
-## Learn More
-
-K9-AIF is an architecture-first framework for modular and governed
-agentic AI systems.
-
-More at:
-
 <a href="https://k9aif.com" target="_blank" rel="noopener noreferrer">
   Visit K9-AIF
 </a>
