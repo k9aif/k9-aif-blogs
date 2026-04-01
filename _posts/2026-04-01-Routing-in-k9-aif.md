@@ -183,5 +183,5 @@ agentic AI systems.
 
 More at:
 
-**https://k9aif.com**
+[https://k9aif.com](https://k9aif.com)
 
