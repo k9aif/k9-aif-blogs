@@ -166,5 +166,11 @@ The following high-level view shows how routing can work inside K9-AIF.
 
 ![K9-AIF Routing Model](/assets/images/blogs/k9-aif-routing-model.png)
 
+---
+
+## ACME Insurance Routing Example
+
+The following example shows how deterministic and non-deterministic routing can coexist within the same application.
+
 ![ACME Insurance Routing Example](/assets/images/blogs/acme-insurance-routing.png)
 
