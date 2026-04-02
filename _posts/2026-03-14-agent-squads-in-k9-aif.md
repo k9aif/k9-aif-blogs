@@ -30,7 +30,7 @@ In this model:
 - a **Squad** represents a bounded group of cooperating agents
 - individual **Agents** perform specialized tasks inside the squad
 
-![K9-AIF Squads and Agents](/assets/images/k9-aif-squads-and-agents.png)
+![K9-AIF Squads and Agents](/assets/images/blogs/k9-aif-squads-and-agents.png)
 
 Squads provide a cleaner boundary between orchestration and execution.
 They make it easier to define, reuse, and evolve business-aligned agent groups
