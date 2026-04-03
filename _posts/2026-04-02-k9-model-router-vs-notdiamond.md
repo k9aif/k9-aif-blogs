@@ -76,6 +76,20 @@ This means you can:
 | OOB default router | Yes — ships with a working default router | Yes — pre-trained cross-domain router available immediately |
 | Swap without app changes | Yes — router is isolated behind the ABB contract | No — requires code changes at call sites |
 
+
+### Example: Hybrid Router in `config.yaml`
+
+K9-AIF supports hybrid routing — combining **rule-based governance** with **dynamic intelligence** from NotDiamond.ai:
+
+```yaml
+router:
+  type: hybrid
+  base: rule_based
+  intelligence: notdiamond
+  governance:
+    allowed_providers: [openai, anthropic, groq]
+    compliance: enterprise_policy
+```
 ---
 
 ## Integration and Governance
