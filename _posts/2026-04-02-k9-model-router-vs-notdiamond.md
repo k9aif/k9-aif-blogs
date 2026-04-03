@@ -85,6 +85,8 @@ router:
   base: rule_based
   intelligence: notdiamond
   governance:
+    allowed_providers: [openai, anthropic, groq]
+    compliance: enterprise_policy
 ```
 
 ---
