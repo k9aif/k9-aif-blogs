@@ -85,5 +85,57 @@ router:
   base: rule_based
   intelligence: notdiamond
   governance:
+```
+
+---
+
+## Integration and Governance
+
+| Concern | **K9-AIF Model Router** | **NotDiamond** |
+|---|---|---|
+| Governance integration | First-class — sits inside K9-AIF’s governance layer | None — standalone tool, no governance framework |
+| Policy enforcement | Allow/deny lists and compliance rules enforced at routing time | Not supported |
+| Data privacy | All data stays inside your environment | Query content sent to NotDiamond’s external API |
+| Auditability | Routing decisions persisted and auditable | Session IDs available, but no audit trail in your system |
+| Enterprise deployment | Self-hosted, air-gap compatible, PostgreSQL-backed | On-premise or SaaS — depends on deployment |
+| Orchestration awareness | Aware of agent, squad, and orchestration context | Stateless per call — no orchestration context |
+| LLMFactory integration | Routing decisions feed directly into LLMFactory | Returns a provider recommendation — caller handles instantiation |
+
+---
+
+## How They Relate
+
+NotDiamond and the K9-AIF Model Router are not competing solutions. They solve different problems.
+
+- **NotDiamond** is excellent at the routing decision itself — its ML-trained intelligence is difficult to replicate with hand-written rules, especially across diverse query types and model providers.  
+- **K9-AIF Model Router** is excellent at **where routing fits** in a governed enterprise architecture — persisted, policy-aware, session-aware, and architecturally isolated behind a stable ABB contract.
+
+The right enterprise design uses both: **K9-AIF provides the governed inference layer**, and a NotDiamond-backed SBB provides the intelligent routing strategy inside it.
+
+---
+
+## Summary
+
+K9-AIF treats model routing as a first-class architectural concern — not an implementation detail. The default router works out of the box with SQLite persistence and rule-based configuration. For teams that need ML-driven routing intelligence, NotDiamond can be introduced as an SBB without changing anything else in the architecture.
+
+That separation — between *where routing lives* and *how routing decisions are made* — is the key architectural insight.
+
+---
+
+### Diagram: K9 Model Router in K9-AIF
+
+The following diagram shows how the Model Router fits within the K9-AIF inference layer and interacts with `LLMFactory` and providers:
+
+![K9-AIF Model Router](/assets/images/blogs/k9-aif-model-router.png)
+
+---
+
+### Smoke Test
+
+A simple test script (`./test_model_router.sh`) is included to verify the router and end-to-end inference flow. It works with **SQLite**, **PostgreSQL**, or **in-memory** backends as configured in `config.yaml`.
+
+---
+
+*K9-AIF is an architecture-first framework for modular and governed agentic AI systems. Learn more at [k9aif.com](https://k9aif.com).*
     allowed_providers: [openai, anthropic, groq]
     compliance: enterprise_policy
