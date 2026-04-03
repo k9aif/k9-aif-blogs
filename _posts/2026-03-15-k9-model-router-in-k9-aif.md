@@ -182,6 +182,32 @@ K9-AIF inference layer and interacts with `LLMFactory` and providers.
 
 ---
 
+## Persistence Support
+
+The K9 Model Router can optionally persist runtime routing state.
+
+This includes:
+
+- session records
+- user turns
+- routing decisions
+- model affinity
+
+This capability allows the router to evolve from simple one-shot
+selection into a **session-aware routing component**.
+
+For example, future routing decisions may consider prior interactions,
+model affinity, or context summarization.
+
+By default, K9-AIF now provides **SQLite-based persistence out of the box**,
+allowing the Model Router to work immediately without requiring any
+external database setup.
+
+For enterprise deployments, the router can be configured to use
+**PostgreSQL**.
+
+---
+
 ## Learn More
 
 K9-AIF is an architecture-first framework for modular and governed
