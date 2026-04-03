@@ -206,6 +206,10 @@ external database setup.
 For enterprise deployments, the router can be configured to use
 **PostgreSQL**.
 
+Persistence backend selection is controlled through `config.yaml`.
+
+A simple smoke test script (`./test_model_router.sh`) is included to verify the router and end-to-end inference flow.
+
 ---
 
 ## Learn More
