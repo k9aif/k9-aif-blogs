@@ -75,6 +75,7 @@ This means you can:
 | OOB default router | Yes — ships with a working default router | Yes — pre-trained cross-domain router available immediately |
 | Swap without app changes | Yes — router is isolated behind the ABB contract | No — requires code changes at call sites |
 
+---
 
 ## Decision Guidance
 
