@@ -58,7 +58,7 @@ The result is a system that is easier to evolve, govern, and scale across teams.
 
 ---
 
-Why This Matters for Enterprises
+### Why This Matters for Enterprises
 
 Enterprise AI systems rarely live in isolation. They must integrate with:
 
@@ -73,7 +73,7 @@ The review observed that K9-AIF is designed specifically for long-term system ma
 
 ---
 
-Current State of the Framework
+### Current State of the Framework
 
 K9-AIF is still an early-stage project, but it already demonstrates:
 
@@ -88,7 +88,7 @@ The framework’s repository structure also reflects a disciplined architectural
 
 ---
 
-Where K9-AIF Fits in the Ecosystem
+### Where K9-AIF Fits in the Ecosystem
 
 Rather than replacing existing agent runtimes, K9-AIF is better understood as an architectural layer above them.
 
@@ -98,7 +98,7 @@ In that sense, it fills a gap that most frameworks currently leave open.
 
 ---
 
-Final Thoughts from the Review
+### Final Thoughts from the Review
 
 One observation from the evaluation stood out:
 
