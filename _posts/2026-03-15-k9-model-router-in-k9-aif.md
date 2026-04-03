@@ -153,33 +153,6 @@ This makes the capability suitable for both:
 More advanced implementations may also be packaged as reusable
 **Solution Building Blocks (SBBs)**.
 
-## Conclusion
-
-The K9 Model Router helps separate **inference access** from
-**model/provider decision-making**.
-
-This separation improves portability, maintainability, governance, and
-future flexibility.
-
-Rather than embedding model choices across the system, K9-AIF provides
-a cleaner architectural approach for managing inference in a structured
-and extensible way.
-
-## Next Steps
-
-Future posts will demonstrate:
-
-- a **default K9 Model Router implementation**
-- a more advanced **routing policy design**
-- an example **NotDiamond-style router SBB**
-
-## K9 Model Router in K9-AIF
-
-The following diagram shows how the Model Router fits within the
-K9-AIF inference layer and interacts with `LLMFactory` and providers.
-
-![K9-AIF Model Router](/assets/images/blogs/k9-aif-model-router.png)
-
 ---
 
 ## Persistence Support
@@ -209,6 +182,28 @@ For enterprise deployments, the router can be configured to use
 Persistence backend selection is controlled through `config.yaml`.
 
 A simple smoke test script (`./test_model_router.sh`) is included to verify the router and end-to-end inference flow.
+
+---
+
+## Conclusion
+
+The K9 Model Router helps separate **inference access** from
+**model/provider decision-making**.
+
+This separation improves portability, maintainability, governance, and
+future flexibility.
+
+Rather than embedding model choices across the system, K9-AIF provides
+a cleaner architectural approach for managing inference in a structured
+and extensible way.
+
+
+## K9 Model Router in K9-AIF
+
+The following diagram shows how the Model Router fits within the
+K9-AIF inference layer and interacts with `LLMFactory` and providers.
+
+![K9-AIF Model Router](/assets/images/blogs/k9-aif-model-router.png)
 
 ---
 
