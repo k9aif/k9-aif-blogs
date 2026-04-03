@@ -120,14 +120,8 @@ router:
 
 ### Routing Flows (Visualized)
 
-**NotDiamond Flow:**  
-User Query → Meta-Model → Provider Recommendation → LLM Call
-
-**K9-AIF Flow:**  
-User Query → Governance Rules → Router → LLMFactory → Selected LLM
-
-**Hybrid Flow:**  
-User Query → Governance Rules → NotDiamond Intelligence → LLMFactory → Selected LLM
+![NotDiamond + K9-AIF Hybrid Routing Flow](/assets/images/blogs/notdiamond-k9aif-hybrid-flow.png)
+*Diagram: NotDiamond, K9-AIF, and Hybrid routing flows showing governance and ML paths.*
 
 ---
 
