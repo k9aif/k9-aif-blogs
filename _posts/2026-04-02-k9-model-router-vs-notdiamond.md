@@ -75,6 +75,34 @@ This means you can:
 | OOB default router | Yes — ships with a working default router | Yes — pre-trained cross-domain router available immediately |
 | Swap without app changes | Yes — router is isolated behind the ABB contract | No — requires code changes at call sites |
 
+
+## Decision Guidance
+
+To help teams choose the right routing strategy, here’s a scenario-based guide:
+
+| Scenario | Best Choice | Why |
+|---|---|---|
+| Strict governance, compliance, audit | K9-AIF Router | Deterministic, policy-aware, auditable |
+| Max quality across diverse tasks | NotDiamond | ML meta-model selects optimal model per query |
+| Hybrid enterprise routing | Both | Governance + intelligence combined |
+| Air-gapped or on-prem deployment | K9-AIF | Self-hosted, no external API required |
+
+---
+
+## Why NotDiamond Matters
+
+NotDiamond solves a difficult problem: predicting the best model for each query dynamically. Key benefits:
+
+- Reduces cost by avoiding overuse of large models
+- Improves quality by learning from evaluation data
+- Complements K9-AIF governance with ML-driven decision-making
+- Can be integrated as a hybrid SBB inside K9-AIF
+
+---
+
+## Hybrid Routing Flow (Visualized)
+
+For hybrid setups combining governance and dynamic intelligence:
 ### Example: Hybrid Router in `config.yaml`
 
 K9-AIF supports hybrid routing — combining **rule-based governance** with **dynamic intelligence** from NotDiamond.ai:
@@ -88,6 +116,17 @@ router:
     allowed_providers: [openai, anthropic, groq]
     compliance: enterprise_policy
 ```
+
+### Routing Flows (Visualized)
+
+**NotDiamond Flow:**  
+User Query → Meta-Model → Provider Recommendation → LLM Call
+
+**K9-AIF Flow:**  
+User Query → Governance Rules → Router → LLMFactory → Selected LLM
+
+**Hybrid Flow:**  
+User Query → Governance Rules → NotDiamond Intelligence → LLMFactory → Selected LLM
 
 ---
 
@@ -132,9 +171,9 @@ The following diagram shows how the Model Router fits within the K9-AIF inferenc
 
 ---
 
-### Smoke Test
-
-A simple test script (`./test_model_router.sh`) is included to verify the router and end-to-end inference flow. It works with **SQLite**, **PostgreSQL**, or **in-memory** backends as configured in `config.yaml`.
+Want to see a NotDiamond-backed router inside K9-AIF in action? 
+A demo showcasing the hybrid configuration and session-aware routing 
+will be released soon — stay tuned!
 
 ---
 
