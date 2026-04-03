@@ -173,5 +173,3 @@ will be released soon — stay tuned!
 ---
 
 *K9-AIF is an architecture-first framework for modular and governed agentic AI systems. Learn more at [k9aif.com](https://k9aif.com).*
-    allowed_providers: [openai, anthropic, groq]
-    compliance: enterprise_policy
