@@ -17,7 +17,7 @@ This post compares both from an architectural and operational perspective.
 
 The K9-AIF Model Router is an **Architecture Building Block (ABB)** — a governed slot in the inference layer of a K9-AIF application. Routing decisions are deterministic by default, driven by configuration, policy rules, and enterprise constraints. The router is part of your architecture, not a dependency on it.
 
-NotDiamond is a **predictive routing service** — a trained meta-model that dynamically selects the best LLM for each query based on quality, cost, or latency signals. Its routing intelligence is learned from data, not configured as rules. It can be deployed on-premise or as a cloud service depending on licensing.
+NotDiamond is a **predictive routing service** — a trained meta-model that dynamically selects the best LLM for each query based on quality, cost, or latency signals. Its routing intelligence is learned from data, not configured as rules. It operates primarily as a cloud service, with VPC deployment available for enterprise customers.
 
 ---
 
@@ -99,7 +99,7 @@ router:
 | Policy enforcement | Allow/deny lists and compliance rules enforced at routing time | Not supported |
 | Data privacy | All data stays inside your environment | Query content sent to NotDiamond’s external API |
 | Auditability | Routing decisions persisted and auditable | Session IDs available, but no audit trail in your system |
-| Enterprise deployment | Self-hosted, air-gap compatible, PostgreSQL-backed | On-premise or SaaS — depends on deployment |
+| Enterprise deployment | Self-hosted, air-gap compatible, PostgreSQL-backed | SaaS, with VPC deployment available for enterprise customers |
 | Orchestration awareness | Aware of agent, squad, and orchestration context | Stateless per call — no orchestration context |
 | LLMFactory integration | Routing decisions feed directly into LLMFactory | Returns a provider recommendation — caller handles instantiation |
 
