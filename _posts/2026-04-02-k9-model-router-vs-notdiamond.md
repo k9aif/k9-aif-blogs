@@ -15,7 +15,7 @@ This post compares both from an architectural and operational perspective.
 
 ## Core Philosophy
 
-The K9-AIF Model Router is an **Architecture Building Block (ABB)** — a governed slot in the inference layer of a K9-AIF application. Routing decisions are deterministic by default, driven by configuration, policy rules, and enterprise constraints. The router is part of your architecture, not a dependency on it.
+The K9-AIF Model Router is an **Architecture Building Block (ABB)** — a governed slot in the inference layer of a K9-AIF application. By default, routing decisions are policy-driven and configuration-led, shaped by enterprise constraints, provider rules, and deployment context. The router is part of your architecture, not a dependency on it.
 
 NotDiamond is a **predictive routing service** — a trained meta-model that dynamically selects the best LLM for each query based on quality, cost, or latency signals. Its routing intelligence is learned from data, not configured as rules. It operates primarily as a cloud service, with VPC deployment available for enterprise customers.
 
@@ -25,7 +25,7 @@ NotDiamond is a **predictive routing service** — a trained meta-model that dyn
 
 | Strategy | K9-AIF Model Router | NotDiamond |
 |---|---|---|
-| Decision model | Deterministic — rule-based, config-driven via YAML | Dynamic — ML meta-model trained on evaluation data |
+| Decision model | Policy-driven — rule-based, config-driven via YAML | Dynamic — ML meta-model trained on evaluation data |
 | Capability-based routing | Route by model class, size, task type, or provider priority | Automatically infers task complexity and routes accordingly |
 | Sensitivity-aware routing | Enterprise allow/deny lists, compliance-driven provider filtering | Not natively supported |
 | Cost / latency tradeoffs | Configurable as routing criteria in YAML | Built-in tradeoff modes: cost, latency, or quality |
@@ -51,7 +51,7 @@ The persistence backend is selected via `config.yaml`. What gets persisted:
 - Routing decisions per request
 - Model affinity across sessions
 
-This allows the router to evolve from simple one-shot selection into a **session-aware routing component** — where future decisions can consider prior interactions and model affinity.
+This allows the router to evolve from simple one-shot selection into a **session-aware routing component** — where future routing decisions can take prior interactions, workload history, and model affinity into account.
 
 NotDiamond, by contrast, returns a session ID per routing call. That ID can be used to submit feedback and track decisions, but there is no server-side session persistence, model affinity tracking across sessions, or configurable backend. State management is left entirely to the caller.
 
@@ -83,7 +83,7 @@ To help teams choose the right routing strategy, here’s a scenario-based guide
 
 | Scenario | Best Choice | Why |
 |---|---|---|
-| Strict governance, compliance, audit | K9-AIF Router | Deterministic, policy-aware, auditable |
+| Strict governance, compliance, audit | K9-AIF Router | Policy-driven, governable, and auditable |
 | Max quality across diverse tasks | NotDiamond | ML meta-model selects optimal model per query |
 | Hybrid enterprise routing | Both | Governance + intelligence combined |
 | Air-gapped or on-prem deployment | K9-AIF | Self-hosted, no external API required |
@@ -141,7 +141,7 @@ router:
 
 ## How They Relate
 
-NotDiamond and the K9-AIF Model Router are not competing solutions. They solve different problems.
+NotDiamond and the K9-AIF Model Router operate at different architectural layers. One focuses on how model decisions are made; the other focuses on where model routing belongs inside an enterprise architecture.
 
 - **NotDiamond** is excellent at the routing decision itself — its ML-trained intelligence is difficult to replicate with hand-written rules, especially across diverse query types and model providers.  
 - **K9-AIF Model Router** is excellent at **where routing fits** in a governed enterprise architecture — persisted, policy-aware, session-aware, and architecturally isolated behind a stable ABB contract.
