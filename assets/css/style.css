@@ -1,17 +1,17 @@
 /* ── K9-AIF Blog Unified style.css ── */
 
 :root {
-  --bg: #09090f;
-  --text: #e8e8f0;
-  --muted: #8a90c0;
-  --border: rgba(255,255,255,0.10);
-  --accent: #63a8ff;
-  --accent-hover: #8ab9ff;
-  --accent-light: #16161f;
-  --accent-text: #d7e7ff;
-  --code-bg: #111118;
-  --quote-bg: #111118;
-  --quote-color: #dbe8ff;
+  --bg: #f8f7f4;
+  --text: #1c1c1c;
+  --muted: #888;
+  --border: #ddd7cf;
+  --accent: #2d6ae0;
+  --accent-hover: #1a4fba;
+  --accent-light: #eef3fc;
+  --accent-text: #1a3a6e;
+  --code-bg: #eef3fc;
+  --quote-bg: #eef3fc;
+  --quote-color: #2a4a80;
 }
 
 * { box-sizing: border-box; }
@@ -33,7 +33,7 @@ body {
 /* ── Header ── */
 .site-header {
   padding: 36px 0 22px;
-  border-bottom: 2px solid var(--accent);
+  border-bottom: 3px solid var(--accent);
   margin-bottom: 32px;
 }
 
@@ -93,14 +93,7 @@ blockquote {
 hr { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
 
 /* ── Code ── */
-code {
-  background: var(--code-bg);
-  color: var(--accent-text);
-  padding: 0.13rem 0.33rem;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
+code { background: var(--code-bg); color: var(--accent-text); padding: 0.13rem 0.33rem; border-radius: 4px; font-size: 0.9em; }
 pre {
   background: var(--code-bg);
   padding: 1rem;
@@ -109,7 +102,6 @@ pre {
   line-height: 1.55;
   margin: 1rem 0 1.2rem;
 }
-
 pre code { background: none; color: var(--accent-text); padding: 0; }
 pre:hover { box-shadow: 0 0 6px rgba(0,0,0,0.05); }
 
@@ -123,39 +115,21 @@ table {
   margin: 1rem 0 1.5rem;
   font-size: 0.95rem;
   line-height: 1.5;
-  background: #111118;
+  background: #fff;
   border: 1px solid var(--border);
   border-radius: 6px;
   overflow: hidden;
 }
-
-th, td {
-  padding: 0.6rem 0.8rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-th {
-  background: var(--accent-light);
-  color: var(--accent-text);
-  font-weight: 600;
-}
-
+th, td { padding: 0.6rem 0.8rem; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--accent-light); color: var(--accent-text); font-weight: 600; }
 tr:last-child td { border-bottom: none; }
-tbody tr:hover { background: #16161f; }
+tbody tr:hover { background: #f1f1f1; }
 
 /* ── Post meta ── */
-.post-meta {
-  display: block;
-  color: var(--muted);
-  font-size: 0.9rem;
-  font-family: Georgia, serif;
-  margin-bottom: 0.25rem;
-}
+.post-meta { display: block; color: var(--muted); font-size: 0.9rem; font-family: Georgia, serif; margin-bottom: 0.25rem; }
 
 /* ── Tags / Pills ── */
 .post-tags { margin: 0.6rem 0 1rem; }
-
 .post-tag {
   display: inline-block;
   background: var(--accent-light);
@@ -169,12 +143,7 @@ tbody tr:hover { background: #16161f; }
   margin-bottom: 4px;
   text-decoration: none;
 }
-
-.post-tag:hover {
-  background: var(--accent);
-  color: #fff;
-  text-decoration: none;
-}
+.post-tag:hover { background: var(--accent); color: #fff; text-decoration: none; }
 
 /* ── Post list (index) ── */
 .post-list-heading { margin-top: 1.5rem; }
@@ -199,12 +168,7 @@ tbody tr:hover { background: #16161f; }
 .post-index h2 { margin-top: 0; margin-bottom: 0.9rem; font-size: 1.6rem; }
 
 /* ── Footer ── */
-.site-footer {
-  border-top: 1px solid var(--border);
-  padding: 22px 0 38px;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
+.site-footer { border-top: 1px solid var(--border); padding: 22px 0 38px; color: var(--muted); font-size: 0.9rem; }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
