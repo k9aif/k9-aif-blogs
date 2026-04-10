@@ -2,6 +2,7 @@
 layout: post
 title: "From Agents to Architecture: Integrating CrewAI into K9-AIF"
 date: 2026-04-10
+author: Ravi Natarajan
 categories: [architecture, ai, agent-systems]
 tags: [CrewAI, K9-AIF, architecture, agents, orchestration]
 ---
