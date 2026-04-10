@@ -56,6 +56,14 @@ Same application. Different architecture.
 
 ---
 
+## Integration Class Diagram
+
+![K9-AIF + CrewAI Integration](/assets/images/blogs/k9-aif-crewai-integration-flow.png)
+
+*This diagram illustrates how a standalone CrewAI application is integrated into K9-AIF using an adapter-based architecture, with clear separation between orchestration, integration, and execution layers.*
+
+---
+
 ## Key Components
 
 ### K9-AIF (Architecture Layer)
