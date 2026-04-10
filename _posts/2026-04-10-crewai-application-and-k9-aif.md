@@ -42,18 +42,16 @@ We built a simple **Weather Assist application** in two ways:
 
 ### 1. Pure CrewAI (Standalone)
 
-``` bash
 User-> CrewAI -> Agents -> Output
 
 - Fast to build  
 - Direct execution  
 - No architectural boundary  
-```
+
 ---
 
 ### 2. K9-AIF Integrated
 
-``` bash
 Same application. Different architecture.
 
 ---
@@ -93,8 +91,6 @@ This remains unchanged.
 ## The Flow
 
 Here’s what happens at runtime:
-
-```
 
 K9 Orchestrator
 → Adapter
