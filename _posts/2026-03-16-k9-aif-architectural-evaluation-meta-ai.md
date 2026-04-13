@@ -203,7 +203,7 @@ in mind.
 # Links
 
 Project Website
-https://k9aif.com
+https://k9x.ai
 
 Framework Repository
 https://github.com/k9aif/k9-aif-framework

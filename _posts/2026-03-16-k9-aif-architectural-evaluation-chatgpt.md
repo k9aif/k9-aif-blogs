@@ -185,7 +185,7 @@ https://github.com/k9aif/k9-aif-framework
 https://github.com/k9aif/k9aif-patterns
 
 **Project Website**  
-https://k9aif.com
+https://k9x.ai
 
 ---
 
