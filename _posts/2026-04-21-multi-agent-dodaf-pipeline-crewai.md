@@ -174,6 +174,7 @@ Each pipeline is independently orchestrated but connected through structured out
 The **Principal Orchestrator governs the transitions between these pipelines**, ensuring a consistent and traceable flow from:
 
 > architecture → capability → systems engineering
+
 ---
 
 # Technology Architecture
