@@ -180,3 +180,18 @@ tbody tr:hover { background: #f1f1f1; }
   h2 { font-size: 1.28rem; }
   .post-link { font-size: 1.15rem; }
 }
+
+.blog-nav {
+  margin-top: 10px;
+}
+
+.blog-nav .nav-link {
+  margin-right: 16px;
+  text-decoration: none;
+  color: #2f6fed;
+  font-weight: 500;
+}
+
+.blog-nav .nav-link:hover {
+  text-decoration: underline;
+}

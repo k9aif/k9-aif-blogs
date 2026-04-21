@@ -24,12 +24,26 @@
   <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}">
 </head>
 <body>
-  <header class="site-header">
-    <div class="container">
-      <a class="site-title" href="{{ '/' | relative_url }}">{{ site.title }}</a>
-      <p class="site-description">{{ site.description }}</p>
-    </div>
-  </header>
+<header class="site-header">
+  <div class="container">
+
+    <!-- Clickable title -->
+    <a class="site-title" href="https://k9x.ai/" style="text-decoration:none;color:inherit;">
+      {{ site.title }}
+    </a>
+
+    <p class="site-description">{{ site.description }}</p>
+
+    <!-- Navigation -->
+    <nav class="blog-nav">
+      <a href="https://k9x.ai/" class="nav-link">Home</a>
+      <a href="https://graph.k9x.ai/" class="nav-link" target="_blank">Graph</a>
+      <a href="https://pydocs.k9x.ai/starthere/" class="nav-link" target="_blank">Docs</a>
+      <a href="https://github.com/k9aif/k9-aif-framework" class="nav-link" target="_blank">GitHub</a>
+    </nav>
+
+  </div>
+</header>
 
   <main class="container content">
     {{ content }}
