@@ -1,6 +1,7 @@
 ---
 title: "Designing a Multi-Agent DoDAF 2.0 Pipeline with CrewAI"
 date: 2026-04-21
+author: Ravi Natarajan
 tags: [CrewAI, DoDAF, Agentic AI, Systems Engineering, Architecture, Neo4j]
 ---
 
