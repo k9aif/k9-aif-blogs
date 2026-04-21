@@ -4,8 +4,6 @@ date: 2026-04-21
 tags: [CrewAI, DoDAF, Agentic AI, Systems Engineering, Architecture, Neo4j]
 ---
 
-# Designing a Multi-Agent DoDAF 2.0 Pipeline with CrewAI
-
 Modern systems engineering—especially under frameworks like DoDAF 2.0—requires processing large volumes of structured and unstructured inputs, generating multiple architectural views, and maintaining traceability across the entire lifecycle.
 
 Traditionally, this process is manual, time-consuming, and difficult to scale.
