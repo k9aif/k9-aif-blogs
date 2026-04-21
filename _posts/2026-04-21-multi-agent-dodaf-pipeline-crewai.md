@@ -116,15 +116,17 @@ Aligns with **Performance View (PV)** and **Standards View (StdV)**.
 
 ---
 
-## Stage 6 — Final Document Assembly
+## Stage 6 — Initial Document Assembly
 
-Assembles outputs into structured deliverables:
+Assembles architecture-driven outputs into structured deliverables:
 
-- ICD document  
-- summary artifacts  
-- architecture outputs  
+- Initial ICD (architecture-derived, HIL-reviewed)  
+- F2P summary  
+- OV/CV/SV/PV/StdV artifacts  
 
-No new architecture is created here—this stage focuses on presentation.
+This stage focuses on consolidating architectural insights into a coherent initial document.
+
+It does not complete the full capability development lifecycle. The initial ICD serves as input to the **JCIDS pipeline**, which performs further analysis and produces formal capability documents such as CDD, CPD, and KPP/KSA bundles.
 
 ---
 
@@ -146,18 +148,32 @@ This provides:
 
 # Orchestration Model
 
-A **central orchestrator** manages:
+A **Principal Orchestrator** acts as the central coordination layer across the system.
 
-- stage execution order  
-- data flow between squads  
-- conditional routing based on Stage 1 output  
+It is responsible for:
 
-This enables:
+- interpreting routing decisions from the intake layer  
+- triggering the appropriate pipeline  
+- managing stage execution within each pipeline  
+- controlling data flow between stages and downstream systems  
 
-- deterministic flow control  
-- flexible execution paths  
-- extensibility for additional stages  
+The orchestrator ensures that execution is **structured, deterministic, and traceable**, while still allowing flexibility in how different pipelines are invoked.
 
+---
+
+## Coordinated Pipeline Execution
+
+The system operates across three coordinated pipelines:
+
+- **DoDAF 2.0 Pipeline** → performs architectural decomposition and produces the initial ICD and full architectural views  
+- **JCIDS Pipeline** → consumes the initial ICD and performs capability development (CDD, CPD, KPP/KSA, DOTmLPF-P)  
+- **Systems Engineering (DAU) Pipeline** → produces engineering artifacts (SRD, SPS, TEMP, TPMs)  
+
+Each pipeline is independently orchestrated but connected through structured outputs and inputs.
+
+The **Principal Orchestrator governs the transitions between these pipelines**, ensuring a consistent and traceable flow from:
+
+> architecture → capability → systems engineering
 ---
 
 # Technology Architecture
