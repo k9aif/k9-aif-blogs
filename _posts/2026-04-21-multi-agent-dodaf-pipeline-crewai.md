@@ -53,80 +53,57 @@ Pipeline (SBB)
 - **Outputs** are structured DoDAF artifacts  
 
 ---
+# The 6-Stage DoDAF-SE Pipeline
 
-# The 6-Stage DoDAF Pipeline
+The pipeline is executed as a sequence of **stage-specific squads**, where each squad is responsible for a distinct architectural function aligned with DoDAF 2.0.
 
-The pipeline is divided into six stages, each aligned with DoDAF 2.0 viewpoints and lifecycle practices:
+## Stage 1 Squad — Identify Intended Use (F2P Gate)
 
-## Stage 1 — Fit-for-Purpose (F2P) Gate
-
-Determines whether full architectural processing is required.
-
-- Applies rules-based evaluation  
-- Produces a routing decision  
-- Prevents unnecessary computation  
+- Performs Fit-for-Purpose evaluation  
+- Determines document type and mission context  
+- Produces routing decisions and constraints  
 
 ---
 
-## Stage 2 — Architecture Scope & ICD Framing
+## Stage 2 Squad — Define Architecture Scope
 
-Initializes the architecture:
-
-- capability definition  
-- scope identification  
-- gap analysis  
-
-This stage begins the **Initial Capabilities Document (ICD)**.
+- Establishes scope boundaries  
+- Extracts capability gaps  
+- Seeds ICD Sections 1–2  
 
 ---
 
-## Stage 3 — Operational Data Extraction
+## Stage 3 Squad — Extract Operational Data
 
-Extracts operational facts:
-
-- actors  
-- activities  
-- operational flows  
-
-Outputs structured data aligned with DoDAF’s **Operational Viewpoint (OV)**.
+- Develops OV viewpoint inputs  
+- Extracts tasks, activities, and mission flows  
+- Identifies operational performers and interactions  
 
 ---
 
-## Stage 4 — System & Service Modeling
+## Stage 4 Squad — Build System & Service Views
 
-Maps operational requirements to systems and services:
-
-- system relationships  
-- service interactions  
-- traceability to operational needs  
-
-Supports **System View (SV)** and **Service View (SvcV)**.
+- Develops SV/SvcV viewpoints  
+- Identifies systems, services, and interfaces  
+- Establishes DM2 correlations  
 
 ---
 
-## Stage 5 — Performance & Standards Analysis
+## Stage 5 Squad — Performance & Standards Analysis
 
-Evaluates:
-
-- Key Performance Parameters (KPPs)  
-- Key System Attributes (KSAs)  
-- standards compliance  
-
-Aligns with **Performance View (PV)** and **Standards View (StdV)**.
+- Develops PV and StdV viewpoints  
+- Defines performance measures and constraints  
+- Produces KPP/KSA seeds  
 
 ---
 
-## Stage 6 — Initial Document Assembly
+## Stage 6 Squad — Present Results
 
-Assembles architecture-driven outputs into structured deliverables:
+- Assembles the initial ICD and F2P summary  
+- Applies templates and inserts diagrams  
+- Produces deliverables for HIL review  
 
-- Initial ICD (architecture-derived, HIL-reviewed)  
-- F2P summary  
-- OV/CV/SV/PV/StdV artifacts  
-
-This stage focuses on consolidating architectural insights into a coherent initial document.
-
-It does not complete the full capability development lifecycle. The initial ICD serves as input to the **JCIDS pipeline**, which performs further analysis and produces formal capability documents such as CDD, CPD, and KPP/KSA bundles.
+The resulting **initial ICD** serves as input to the **JCIDS pipeline**, which performs further capability development.
 
 ---
 
