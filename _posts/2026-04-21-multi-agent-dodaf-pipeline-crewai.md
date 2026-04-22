@@ -59,10 +59,13 @@ Pipeline (SBB)
 
 The pipeline is executed as a sequence of **stage-specific squads**, where each squad is responsible for a distinct architectural function aligned with DoDAF 2.0.
 
+In addition to document classification and orchestration, the pipeline incorporates a **DoW Retriever layer** that enriches inputs with relevant knowledge sources, prior artifacts, and reference data. This ensures that each stage operates with contextual awareness rather than isolated inputs.
+
 ## Stage 1 Squad — Identify Intended Use (F2P Gate)
 
 - Performs Fit-for-Purpose evaluation
 - Determines document type and mission context
+- Leverages the DoW Retriever to incorporate prior context and reference artifacts
 - Produces routing decisions and constraints
 
 ---
@@ -71,6 +74,7 @@ The pipeline is executed as a sequence of **stage-specific squads**, where each 
 
 - Establishes scope boundaries
 - Extracts capability gaps
+- Uses retrieved knowledge to refine scope and identify relevant architectural patterns
 - Seeds ICD Sections 1–2
 
 ---
@@ -80,6 +84,7 @@ The pipeline is executed as a sequence of **stage-specific squads**, where each 
 - Develops OV viewpoint inputs
 - Extracts tasks, activities, and mission flows
 - Identifies operational performers and interactions
+- Enriches extracted data with contextual references from the DoW Retriever
 
 ---
 
