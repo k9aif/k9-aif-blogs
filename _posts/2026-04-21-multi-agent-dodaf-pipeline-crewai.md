@@ -28,9 +28,13 @@ This enables:
 ---
 The following diagram illustrates the end-to-end agentic pipeline:
 
-<figure style="text-align:center; margin: 2rem 0; background:#0b1a24; padding:1rem; border-radius:10px;">
-  <img src="../assets/images/blogs/agentic_dodaf_full_pipeline.svg" 
-       style="width:100%; max-width:900px;">
+<figure style="text-align:center; margin: 2rem 0; background:#071a24; padding:1.25rem; border-radius:12px;">
+  <img src="../assets/images/blogs/agentic_dodaf_full_pipeline.svg"
+       alt="Agentic DoDAF 2.0 pipeline"
+       style="width:100%; max-width:860px; height:auto; display:block; margin:0 auto;">
+  <figcaption style="margin-top:0.65rem; font-size:0.92rem; color:#5f6b76;">
+    Figure: Agentic DoDAF 2.0 pipeline — document classification, orchestrated stage execution, and multi-pipeline traceability.
+  </figcaption>
 </figure>
 ---
 
