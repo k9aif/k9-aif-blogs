@@ -26,13 +26,12 @@ This enables:
 - governed and repeatable processing
 
 ---
-
 The following diagram illustrates the end-to-end agentic pipeline:
 
-![Agentic DoDAF Pipeline](../assets/images/blogs/dow-crewai-blog.png)
-
-*Figure: Multi-agent DoDAF 2.0 pipeline showing document routing, orchestration, and stage-based execution.*
-
+<figure style="text-align:center; margin: 2rem 0; background:#0b1a24; padding:1rem; border-radius:10px;">
+  <img src="../assets/images/blogs/agentic_dodaf_full_pipeline.svg" 
+       style="width:100%; max-width:900px;">
+</figure>
 ---
 
 # High-Level Architecture
@@ -209,7 +208,7 @@ The real value comes from combining:
 - **clear orchestration patterns**
 - **structured stage decomposition**
 
-This approach transforms complex systems engineering workflows into  
+This approach transforms complex systems engineering workflows into
 **manageable, scalable, and governed pipelines**.
 
 K9-AIF is designed to address exactly this gap. Its squad-based decomposition, orchestration hierarchy, and SBB-driven pipeline structure reflect core architectural patterns that move agentic systems from experimentation to structured, enterprise-ready execution.
