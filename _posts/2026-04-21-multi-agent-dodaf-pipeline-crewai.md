@@ -242,3 +242,14 @@ Future enhancements could include:
 If you’re exploring agentic systems in enterprise or systems engineering contexts, this pattern provides a strong foundation to build on.
 
 ---
+
+## Learn More
+
+K9-AIF is an architecture-first framework for modular, governed,  
+agentic AI systems.
+
+Explore more:
+
+<a href="https://k9x.ai" target="_blank" rel="noopener noreferrer">
+  https://k9x.ai
+</a>
