@@ -48,33 +48,35 @@ they are governed, scalable, and built to last.
 
 ---
 
+``` markdown
 ## 500 Miles — Architecture First
 
 *(inspired by Robert Plant & Saving Grace)*
 
-If you miss the track I’m on
-You will know that I am gone
-You will hear the signal fire a hundred miles
-A hundred miles
-You will hear the signal fire a hundred miles
+If you miss the track I’m on  
+You will know that I am gone  
+You will hear the signal fire a hundred miles  
+A hundred miles  
+You will hear the signal fire a hundred miles  
 
-And if you say so…
-I will sidetrack my engine
-And take the Architecture First
-Architecture First
-I’ll sidetrack my engine and take the Architecture First
+And if you say so…  
+I will sidetrack my engine  
+And take the Architecture First  
+Architecture First  
+I’ll sidetrack my engine and take the Architecture First  
 
-Lord, I’m one layer deep, Lord, I’m two
-Lord, I’m three, Lord, I’m four
-Lord, I’m five hundred miles toward a system that works
-A system that works
-Lord, I’m five hundred miles toward a system that works
+Lord, I’m one layer deep, Lord, I’m two  
+Lord, I’m three, Lord, I’m four  
+Lord, I’m five hundred miles toward a system that works  
+A system that works  
+Lord, I’m five hundred miles toward a system that works  
 
-And when I arrive
-The foundation is right
-The design is solid, the outcome will last
-It will last
-Architecture First — built to last
+And when I arrive  
+The foundation is right  
+The design is solid, the outcome will last  
+It will last  
+**Architecture First — built to last**
+```
 
 ---
 
