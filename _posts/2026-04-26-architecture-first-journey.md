@@ -48,10 +48,12 @@ they are governed, scalable, and built to last.
 
 ---
 
-```markdown
+
 ## 500 Miles — Architecture First
 
 *(inspired by Robert Plant & Saving Grace)*
+
+```markdown
 
 If you miss the track I’m on  
 You will know that I am gone  
