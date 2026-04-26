@@ -48,7 +48,7 @@ they are governed, scalable, and built to last.
 
 ---
 
-``` markdown
+```markdown
 ## 500 Miles — Architecture First
 
 *(inspired by Robert Plant & Saving Grace)*
@@ -92,14 +92,3 @@ Architecture First is how AI systems are built to scale, govern, and endure.
 Architecture First — built to last.
 
 ---
-
-## Learn More
-
-K9-AIF is an architecture-first framework for modular, governed,
-agentic AI systems.
-
-Explore more:
-
-<a href="https://k9x.ai" target="_blank" rel="noopener noreferrer">
-  https://k9x.ai
-</a>
