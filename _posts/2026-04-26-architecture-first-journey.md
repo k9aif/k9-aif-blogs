@@ -76,9 +76,9 @@ Lord, I’m five hundred miles toward a system that works
 And when I arrive  
 The foundation is right  
 The design is solid, the outcome will last  
-It will last  
-**Architecture First — built to last**
+It will last 
 ```
+**Architecture First — built to last**
 
 ---
 
