@@ -1,1 +1,1 @@
-https://blog.k9aif.com
+https://blog.k9x.ai
