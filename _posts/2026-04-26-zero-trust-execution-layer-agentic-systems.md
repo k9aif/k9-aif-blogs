@@ -90,7 +90,7 @@ This enables controlled execution rather than simple blocking.
 
 The execution flow above is implemented in K9-AIF using ABB-level security components.
 
-![K9-AIF Zero Trust ABB Class Diagram](../assets/images/blogs/k9-security_class_diagram.png)
+[![K9-AIF Zero Trust ABB Class Diagram](../assets/images/blogs/k9-security_class_diagram.png)](../assets/images/blogs/k9-security_class_diagram.png)
 
 The diagram shows how the Zero Trust layer is structured around:
 
