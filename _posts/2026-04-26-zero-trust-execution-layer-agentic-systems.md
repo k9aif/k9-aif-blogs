@@ -86,6 +86,27 @@ This enables controlled execution rather than simple blocking.
 
 ---
 
+## ABB Class Structure
+
+The execution flow above is implemented in K9-AIF using ABB-level security components.
+
+![K9-AIF Zero Trust ABB Class Diagram](../assets/images/blogs/k9-security_class_diagram.png)
+
+The diagram shows how the Zero Trust layer is structured around:
+
+- `ExecutionContext`
+- `BaseZeroTrustGuard`
+- `BaseRiskEvaluator`
+- `BaseCompromiseGuard`
+- `BaseDataLossGuard`
+- `BasePolicyEnforcer`
+- `TrustDecision`
+
+This keeps the pattern extensible while allowing concrete SBB implementations to plug into the framework.
+
+
+---
+
 ## Architectural Integration in K9-AIF
 
 The Zero Trust Execution Layer is not a standalone component.
