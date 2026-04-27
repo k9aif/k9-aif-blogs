@@ -118,6 +118,11 @@ These flows are not only executed but also visualized.
 ## Visualization
 
 The architecture is available as a live graph in the K9-AIF Graph Explorer.
+https://graph.k9x.ai
+
+Navigate to:
+
+**Examples → Zero Trust Execution Demo**
 
 This makes it possible to:
 
