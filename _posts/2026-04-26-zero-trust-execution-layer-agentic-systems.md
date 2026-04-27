@@ -16,7 +16,7 @@ That model breaks down with agentic systems.
 
 Because the real risk is not access.
 
-It’s **execution**.
+It is what the system is allowed to do.
 
 ---
 
@@ -52,8 +52,6 @@ Every action — whether initiated by an agent, orchestrator, or workflow — is
 - risk-scored  
 - policy-controlled  
 
-before execution.
-
 Not at the edge.  
 Not at login.  
 But **at the moment of execution**.
@@ -88,16 +86,22 @@ This enables controlled execution rather than simple blocking.
 
 ---
 
-## Architectural Integration
+## Architectural Integration in K9-AIF
 
 The Zero Trust Execution Layer is not a standalone component.
 
-It is integrated directly into:
+It is implemented as a native capability within the K9-AIF framework and integrated directly into core architectural layers:
 
-- **Router (pre-routing checks)**  
-- **Orchestrator (pre-execution checks)**  
+- **BaseRouter** → enforcement before routing  
+- **BaseOrchestrator** → enforcement before execution  
 
-This ensures enforcement happens consistently across all execution paths.
+Built using K9-AIF’s Architecture Building Blocks (ABB), the Zero Trust layer is:
+
+- reusable  
+- extensible  
+- configuration-driven  
+
+This allows Zero Trust to be applied consistently across all agentic workflows without requiring application-specific logic.
 
 > Zero Trust is not a gate. It is a layer.
 
@@ -118,7 +122,7 @@ These flows are not only executed but also visualized.
 ## Visualization
 
 The architecture is available as a live graph in the K9-AIF Graph Explorer.
-https://graph.k9x.ai
+👉 https://graph.k9x.ai
 
 Navigate to:
 
