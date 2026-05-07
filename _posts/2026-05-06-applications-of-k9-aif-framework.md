@@ -3,8 +3,6 @@ title: "Applications of K9-AIF — CrewAI, watsonx, LangChain, and Enterprise AI
 date: 2026-05-06
 author: Ravi Natarajan
 ---
-# Practical Applications of K9-AIF
-
 One of the most common questions I receive about K9-AIF (k9x.ai) is:
 
 > **“Where exactly does K9-AIF sit in relation to CrewAI, IBM watsonx products, assistants, and other agent frameworks?”**
