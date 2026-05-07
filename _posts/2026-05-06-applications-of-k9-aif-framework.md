@@ -148,13 +148,6 @@ watsonx Orchestrate handles:
 * automation,
 * and task coordination.
 
-CrewAI handles:
-
-* document analysis agents,
-* summarization agents,
-* enrichment agents,
-* and validation agents.
-
 K9-AIF provides:
 
 * orchestration architecture patterns,
