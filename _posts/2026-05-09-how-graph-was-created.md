@@ -1,6 +1,6 @@
 ---
 title: "How graph.k9x.ai Was Created"
-date: 2026-05-09
+date: 2026-05-08
 tags:
   - K9-AIF
   - Neo4j
