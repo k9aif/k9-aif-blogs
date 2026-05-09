@@ -1,6 +1,7 @@
 ---
 title: "How graph.k9x.ai Was Created"
 date: 2026-05-08
+author: Ravi Natarajan
 tags:
   - K9-AIF
   - Neo4j
@@ -11,8 +12,6 @@ tags:
   - OOP
   - Enterprise Architecture
 ---
-# How graph.k9x.ai Was Created
-
 One of the most interesting parts of the K9-AIF journey was not just building the framework itself — but visualizing it.
 
 The result eventually became:
@@ -37,9 +36,8 @@ The K9-AIF framework ABB classes evolved over roughly seven months.
 The graph was therefore not simply a visualization layer.
 
 It became a living architectural representation of the framework itself.
----
 
-# **The Hard Part Was Not Neo4j**
+# The Hard Part Was Not Neo4j
 
 Neo4j itself was not the hardest part.
 
@@ -67,6 +65,7 @@ Several visualization layers eventually emerged:
 * Factory Relationship Views
 
 The design of the graph navigation itself became an architectural exercise.
+
 ---
 
 # **The Bigger Lesson**
@@ -87,6 +86,7 @@ When architecture is intentional:
 The graph eventually became more than documentation.
 
 It became a living architectural representation of the framework itself.
+
 ---
 
 # **Closing Thoughts**
