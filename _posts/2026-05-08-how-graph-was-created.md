@@ -11,16 +11,13 @@ tags:
   - OOD
   - OOP
   - Enterprise Architecture
-  
 ---
 
 One of the most interesting parts of the K9-AIF journey was not just building the framework itself — but visualizing it.
 
 The result eventually became:
 
-Live Graph:
-
-[https://graph.k9x.ai](https://graph.k9x.ai)
+Live Graph: [https://graph.k9x.ai](https://graph.k9x.ai)
 
 A live graph visualization of the K9-AIF framework structure, relationships, runtime components, orchestration layers, and example applications.
 
@@ -45,6 +42,35 @@ The K9-AIF framework ABB classes evolved over roughly seven months.
 The graph was therefore not simply a visualization layer.
 
 It became a living architectural representation of the framework itself.
+
+---
+
+## From Framework Artifacts to Graph Generation
+
+The graph generation process itself evolved iteratively alongside the framework.
+
+The K9-AIF ABB classes, PlantUML diagrams, architectural relationships, and framework structures were used as structured input into an LLM-assisted process for generating Neo4j Cypher statements representing framework nodes and edges.
+
+The overall flow evolved roughly like this:
+
+```text
+Framework Artifacts
+        ↓
+ABB Classes + PlantUML + Relationships
+        ↓
+LLM Semantic Analysis
+        ↓
+Neo4j Cypher Generation
+        ↓
+Node + Edge Creation
+        ↓
+Manual Review and Relationship Tuning
+        ↓
+Testing and Visualization Refinement
+        ↓
+Continuous Graph Evolution
+```
+---
 
 ## The Hard Part Was Not Neo4j
 
@@ -92,19 +118,15 @@ When architecture is intentional:
 * Governance improves
 * Runtime traceability improves
 
-The graph eventually became more than documentation.
-
-It became a living architectural representation of the framework itself.
+The graph emerged as a natural byproduct of intentional architecture.
 
 ---
 
 ## Closing Thoughts
 
-graph.k9x.ai was never intended to be “just another graph visualization.”
+graph.k9x.ai was never intended to be "just another graph visualization."
 
 It became an experiment in how architecture discipline, structured engineering, iterative framework evolution, and AI-assisted reasoning can work together.
-
-The graph emerged as a natural byproduct of intentional architecture.
 
 And as the framework continues evolving, the graph evolves with it.
 
