@@ -11,7 +11,9 @@ tags:
   - OOD
   - OOP
   - Enterprise Architecture
+  
 ---
+
 One of the most interesting parts of the K9-AIF journey was not just building the framework itself — but visualizing it.
 
 The result eventually became:
@@ -25,6 +27,7 @@ A live graph visualization of the K9-AIF framework structure, relationships, run
 But the graph was never the starting point.
 
 The architecture was.
+
 ---
 
 ## Architecture First
