@@ -32,7 +32,13 @@ The architecture was.
 
 ## Architecture First
 
-![K9-AIF Iterative Evolution](../assets/images/blogs/graph-k9x-creation.png)
+<div style="text-align:center;">
+  <img 
+    src="../assets/images/blogs/graph-k9x-creation.png"
+    alt="K9-AIF Iterative Evolution"
+    width="520"
+  />
+</div>
 
 The K9-AIF framework ABB classes evolved over roughly seven months.
 
