@@ -27,7 +27,7 @@ But the graph was never the starting point.
 The architecture was.
 ---
 
-# Architecture First
+## Architecture First
 
 ![K9-AIF Iterative Evolution](../assets/images/blogs/graph-k9x-creation.png)
 
@@ -37,7 +37,7 @@ The graph was therefore not simply a visualization layer.
 
 It became a living architectural representation of the framework itself.
 
-# The Hard Part Was Not Neo4j
+## The Hard Part Was Not Neo4j
 
 Neo4j itself was not the hardest part.
 
@@ -68,7 +68,7 @@ The design of the graph navigation itself became an architectural exercise.
 
 ---
 
-# **The Bigger Lesson**
+## The Bigger Lesson
 
 One major takeaway from the process was this:
 
@@ -89,7 +89,7 @@ It became a living architectural representation of the framework itself.
 
 ---
 
-# **Closing Thoughts**
+## Closing Thoughts
 
 graph.k9x.ai was never intended to be “just another graph visualization.”
 
