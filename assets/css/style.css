@@ -33,7 +33,7 @@ body {
 /* ── Header ── */
 .site-header {
   padding: 36px 0 22px;
-  border-bottom: 3px solid var(--accent);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 32px;
 }
 
@@ -59,7 +59,7 @@ body {
 
 /* ── Headings ── */
 h1 { font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1.2; margin-top: 0; margin-bottom: 0.65rem; }
-h2 { font-size: 1.45rem; font-weight: 700; color: var(--accent); line-height: 1.25; margin-top: 1.8rem; margin-bottom: 0.5rem; padding-left: 0.7rem; border-left: 4px solid var(--accent); }
+h2 { font-size: 1.45rem; font-weight: 700; color: var(--accent); line-height: 1.25; margin-top: 1.8rem; margin-bottom: 0.5rem; padding-left: 0; border-left: none}
 h3 { font-size: 1.25rem; font-weight: 600; color: var(--text); line-height: 1.3; margin-top: 1.2rem; margin-bottom: 0.4rem; }
 h4 { font-size: 1.05rem; font-weight: 600; color: var(--text); line-height: 1.3; margin-top: 1rem; margin-bottom: 0.35rem; }
 
@@ -165,7 +165,7 @@ tbody tr:hover { background: #f1f1f1; }
 .home-intro p { margin: 0; font-size: 1.02rem; color: var(--text); }
 
 /* ── Post index ── */
-.post-index h2 { margin-top: 0; margin-bottom: 0.9rem; font-size: 1.6rem; }
+.post-index h2 { margin-top: 0; margin-bottom: 0.9rem; font-size: 1.6rem; color: var(--text); }
 
 /* ── Footer ── */
 .site-footer { border-top: 1px solid var(--border); padding: 22px 0 38px; color: var(--muted); font-size: 0.9rem; }
