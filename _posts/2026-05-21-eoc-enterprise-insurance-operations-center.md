@@ -12,7 +12,7 @@ The **K9X Enterprise Insurance Operations Center (EOC)** is that for K9-AIF.
 
 One coherent, runnable system. A real domain — insurance operations. Every framework feature working together: Kafka event routing, domain squads, intelligent model routing, zero trust execution, PII guard, immutable audit trail, Neo4j knowledge graph. Built entirely from YAML configuration, with no governance logic hardcoded in application code.
 
-Most AI framework examples are toy applications. A chat bot. A weather lookup. A simple summarizer. The EOC is the answer to the question every serious adopter eventually asks: *"What does a complete K9-AIF application actually look like?"*
+Many AI framework examples begin with focused applications — chat interfaces, summarizers, assistants, or small workflows. The EOC explores the next question serious enterprise adopters eventually ask: “What does a complete, governed, enterprise-grade K9-AIF application actually look like?”
 
 ---
 
