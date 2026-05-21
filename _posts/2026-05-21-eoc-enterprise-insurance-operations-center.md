@@ -39,11 +39,11 @@ Everything is loaded from YAML. No routing logic, model assignments, or governan
 
 The full runtime architecture — including the Kafka flow, squad pipeline, model router rules, zero trust thresholds, and governance policies — is documented in the interactive blueprint below.
 
-[![EOC Architecture — Architecture](../assets/images/blogs/eoc-arch-1.png)]
+![EOC Architecture — Architecture](../assets/images/blogs/eoc-arch-1.png)
 
 ### Governance Policies
 
-[![EOC Architecture — Governance](../assets/images/blogs/eoc-arch-gov-policies.png)]
+![EOC Architecture — Governance](../assets/images/blogs/eoc-arch-gov-policies.png)
 
 ## Dashboard
 
@@ -77,7 +77,7 @@ This makes cost, latency, and compliance tradeoffs explicit in configuration —
 
 ### Model
 
-[![EOC Architecture — Model](../assets/images/blogs/eoc-arch-model.png)]
+![EOC Architecture — Model](../assets/images/blogs/eoc-arch-model.png)
 
 ---
 
@@ -92,7 +92,7 @@ The EOC Zero Trust layer runs on every orchestrator flow without exception. It i
 
 The separation between the confidence threshold (which gates agent decisions) and the GuardAgent (which gates PII and compliance) is intentional. They serve different purposes and run independently.
 
-[![EOC Architecture — Zero Trust](../assets/images/blogs/eoc-arch-zero-trust.png)]
+![EOC Architecture — Zero Trust](../assets/images/blogs/eoc-arch-zero-trust.png)
 
 ---
 
@@ -134,6 +134,5 @@ The EOC is not a template to copy. It is a reference implementation to read.
 When you are designing your own K9-AIF application and asking "how should I structure the model router for compliance tasks?" or "where does the zero trust gate plug in?" — this is the answer. A complete, working system that made all those decisions and documented the reasons in YAML.
 
 The [architecture blueprint](/eoc-blueprint.html) is the best place to start.
-
 
 ---
