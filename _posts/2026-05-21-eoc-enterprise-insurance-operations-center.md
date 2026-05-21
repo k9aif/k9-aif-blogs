@@ -51,7 +51,7 @@ The full runtime architecture — including the Kafka flow, squad pipeline, mode
 
 *The EOC dashboard showing a Claim Submitted scenario in flight: Kafka routing → ClaimsProcessingSquad → Guard Layer → escalation. The runtime trace on the right shows each agent step with latency. Pipeline result: Escalated at 50% confidence.*
 
-> **[View the full interactive architecture blueprint →](./eoc-blueprint.html)**
+> **[View the full interactive architecture blueprint →](../eoc-blueprint.html)**
 
 The blueprint covers four sections:
 
