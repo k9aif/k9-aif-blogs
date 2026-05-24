@@ -7,7 +7,7 @@ title: "Build a K9-AIF Example App in Minutes Using Claude Code"
 
 I actually built the EOC example using Claude Code. The result is the [K9X Enterprise Insurance Operations Center](https://github.com/k9aif/k9-aif-framework/tree/main/examples/K9X_Enterprise_Insurance_OperationsCenter) — a production-grade, runnable multi-agent application covering claims processing, fraud detection, document intelligence, HITL escalation, and governed audit trails. Here's exactly how I built it — and you can do the same for your own domain.
 
-![Build flow: Spec → Clone → VS Code + Claude Code → Generated App](../assets/images/claude-code-k9aif-flow.svg)
+![Build flow: Spec → Clone → VS Code + Claude Code → Generated App](../assets/images/blogs/claude-code-k9aif-flow.svg)
 
 ---
 

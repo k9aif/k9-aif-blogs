@@ -1,12 +1,11 @@
 ---
-title: "Applications of K9-AIF — CrewAI, Watsonx, LangChain, and Enterprise AI Systems"
+title: "How K9-AIF Connects the IBM Watsonx Suite"
 date: 2026-05-06
 author: Ravi Natarajan
 ---
-
 One of the most common questions I receive about K9-AIF is:
 
-> **"Where exactly does K9-AIF sit in relation to CrewAI, IBM Watsonx, and other agent frameworks?"**
+> **"Where exactly does K9-AIF sit in relation to IBM Watsonx and other enterprise AI platforms?"**
 
 It is a fair question — the enterprise AI ecosystem already includes orchestration frameworks, agent runtimes, assistants, workflow platforms, model gateways, and low-code automation tools.
 
@@ -18,45 +17,23 @@ The short answer:
 
 ## Understanding the Layers
 
-| Layer | Responsibility | Examples |
-|---|---|---|
-| **User / Business Layer** | Business workflows and user experiences | Support portals, claims dashboards |
-| **Architecture & Governance Layer** | Cross-system routing, governance, audit, Zero Trust | **K9-AIF** |
-| **Agent Collaboration Layer** | Agent teamwork and task execution | CrewAI, LangGraph |
-| **Enterprise AI Services** | Models, workflow engines, AI tooling | Watsonx suite, OpenAI |
-| **Infrastructure Layer** | Storage, APIs, messaging, databases | Kafka, PostgreSQL, Neo4j |
+| Layer                                     | Responsibility                                      | Examples                           |
+| ----------------------------------------- | --------------------------------------------------- | ---------------------------------- |
+| **User / Business Layer**           | Business workflows and user experiences             | Support portals, claims dashboards |
+| **Architecture & Governance Layer** | Cross-system routing, governance, audit, Zero Trust | **K9-AIF**                   |
+| **Agent Collaboration Layer**       | Agent teamwork and task execution                   | CrewAI, LangGraph                  |
+| **Enterprise AI Services**          | Models, workflow engines, AI tooling                | Watsonx suite, OpenAI              |
+| **Infrastructure Layer**            | Storage, APIs, messaging, databases                 | Kafka, PostgreSQL, Neo4j           |
 
 K9-AIF operates in the **architecture and governance layer** — above agent runtimes, but below business applications. It can coexist with every layer without replacing any of them.
 
 ---
 
-## Example 1 — CrewAI + K9-AIF
+## Example 1 — IBM Watsonx Suite + K9-AIF
 
-CrewAI handles agent collaboration well — roles, delegation, task execution. What it does not provide is the enterprise layer: governed routing, audit trails, confidence-gated escalation, model abstraction, or cross-system integration.
+![K9-AIF and IBM Watsonx — Architecture](../assets/images/blogs/K9X-Watsonx.png)
 
-In K9-AIF, a CrewAI crew becomes a **Solution Building Block (SBB)** — a unit of agent collaboration that plugs into a larger governed architecture:
-
-```
-[ User Request ]
-      ↓
-[ K9EventRouter ]       ← routes by event_type
-      ↓
-[ K9Orchestrator ]      ← coordinates squads
-      ↓
-[ CrewAI Crew (SBB) ]   ← agent collaboration and execution
-      ↓
-[ GuardAgent ]          ← PII check, policy compliance
-      ↓
-[ AuditAgent ]          ← immutable audit trail
-```
-
-CrewAI handles execution. K9-AIF handles governance, routing, and auditability. Neither replaces the other.
-
-The [Weather Assist example](https://github.com/k9aif/k9-aif-framework/tree/main/examples/weather_assist) demonstrates this pattern side-by-side — the same application built as a pure CrewAI app and as a K9-AIF governed version.
-
----
-
-## Example 2 — IBM Watsonx Suite + K9-AIF
+*K9-AIF as the architectural layer connecting the IBM Watsonx suite — routing, governance, and cross-platform coordination across product boundaries.*
 
 This is the integration I think about most, because the Watsonx suite is comprehensive:
 
@@ -72,55 +49,11 @@ Who routes an event from watsonx Assistant into a multi-agent reasoning pipeline
 
 That is what K9-AIF is designed to provide: the architectural layer *above* the product boundaries.
 
-```
-watsonx Assistant        (conversation front-end)
-        │
-        ▼
-K9-AIF  Router → Orchestrator → Squads → Agents
-                                    │
-             ┌──────────────────────┼──────────────────────┐
-             ▼                      ▼                       ▼
-       watsonx.ai             Watson Discovery        watsonx Orchestrate
-    (Granite models)       (enterprise search/RAG)   (process execution)
-             └──────────────────────┴──────────────────────┘
-                                    │
-                          watsonx.governance
-                        (model compliance monitoring)
-```
-
 K9-AIF is not competing with any Watsonx product. It is the architectural connective tissue the suite does not ship — but every serious enterprise implementation needs.
 
 ---
 
-## Example 3 — K9ModelRouter and Intelligent Model Selection
-
-The K9-AIF model router (`K9ModelRouter`) makes model selection an explicit architectural decision rather than hardcoded application logic.
-
-Every `InferenceRequest` carries routing signals:
-
-```python
-InferenceRequest(
-    prompt="...",
-    task_type="reasoning",       # +3 if model has this capability
-    sensitivity="confidential",  # +2 if model is approved for confidential data
-    latency_budget="interactive", # +2 if model's latency_tier matches
-    cost_profile="standard",     # +2 if model's cost_tier matches
-)
-```
-
-The router scores every configured model and selects the highest scorer. Falls back to the default model if nothing scores above zero.
-
-In the [EOC reference example](https://github.com/k9aif/k9-aif-framework/tree/main/examples/K9X_Enterprise_Insurance_OperationsCenter), this means:
-
-- A `FraudDetectionAgent` request with `task_type="reasoning"` routes to `granite3-dense:2b`
-- A `GuardAgent` request with `sensitivity="confidential"` routes to `granite3-guardian:latest` — a hard requirement with no fallback
-- A commodity `CustomerServiceAgent` request routes to `llama3.2:1b` for cost and latency
-
-The model catalog and routing rules live entirely in `config.yaml`. No model names appear in application code.
-
----
-
-## Example 4 — Assistants and Existing Enterprise Systems
+## Example 2 — Assistants and Existing Enterprise Systems
 
 Most enterprises already have internal assistants, chatbot systems, or legacy orchestration tools. K9-AIF treats these as composable services within a larger architecture.
 
@@ -135,16 +68,6 @@ This creates architectural consistency across otherwise disconnected systems —
 
 ---
 
-## MCP — Connecting External Tool Servers
-
-K9-AIF includes a full MCP (Model Context Protocol) client stack — `MCPHttpConnector`, `MCPStdioConnector`, and `BaseMCPAgent` — so agents can call external tool servers as first-class integrations.
-
-In the EOC, the `DocumentExtractorAgent` calls a [Docling OCR MCP server](https://github.com/DS4SD/docling) to convert PDFs and DOCX files to clean Markdown before LLM extraction. The connector type is configuration-driven — any MCP-compatible tool server can be substituted without changing squad or orchestrator code.
-
-This means external AI services, enterprise APIs, and specialized tools integrate into K9-AIF pipelines through the same governed, auditable path as native agents.
-
----
-
 ## Where K9-AIF Adds the Most Value
 
 K9-AIF becomes most valuable when organizations face:
@@ -155,15 +78,6 @@ K9-AIF becomes most valuable when organizations face:
 - **Scaling from prototype to production** — the architecture that works for a demo does not always hold under enterprise requirements
 
 This is especially relevant in healthcare, insurance, banking, government, and defense — regulated environments where auditability, Zero Trust, and compliance are non-negotiable.
-
----
-
-## The Reference Implementation
-
-The **K9X Enterprise Insurance Operations Center** is the concrete demonstration of everything described here: Kafka-driven event routing, 7 domain squads, 8 specialized agents, intelligent model routing across 4 models, Zero Trust execution, PII guard, immutable audit trail, Neo4j graph sync, and a live HITL escalation dashboard.
-
-→ [Browse the EOC on GitHub](https://github.com/k9aif/k9-aif-framework/tree/main/examples/K9X_Enterprise_Insurance_OperationsCenter)
-→ [EOC architecture deep-dive](https://blog.k9x.ai/eoc-enterprise-insurance-operations-center/)
 
 ---
 
