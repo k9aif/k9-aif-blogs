@@ -96,6 +96,50 @@ The separation between the confidence threshold (which gates agent decisions) an
 
 ---
 
+## Document Intelligence — MCP and Docling
+
+Insurance documents arrive in every format: scanned PDFs, DOCX attachments, image files, fax-to-email. Before any agent can reason over a document, it needs clean, structured text. The EOC handles this through the **DocumentIntelligenceSquad**, and the mechanism is the K9-AIF MCP integration layer.
+
+K9-AIF's ABB layer includes a full **Model Context Protocol (MCP)** client stack — `MCPHttpConnector`, `MCPStdioConnector`, and `BaseMCPAgent` — so agents can call external tool servers as first-class integrations rather than ad-hoc HTTP calls. The EOC wires this to a **Docling OCR MCP server** running at `http://192.168.1.98:5001/v1/parse`. Docling does more than OCR: it converts PDFs and DOCX files to clean Markdown — preserving tables, headings, and layout — which agents can reason over directly without pre-processing.
+
+```
+DocumentReceived event  (PDF · DOCX · image)
+           │
+           ▼
+ ┌──────────────────────────┐
+ │  DocumentExtractorAgent  │  (SBB — extends BaseAgent)
+ └────────────┬─────────────┘
+              │  MCPHttpConnector  (ABB)
+              │  k9_core/integration/mcp_http_connector.py
+              │
+              ▼  POST /v1/parse
+ ┌──────────────────────────┐
+ │   Docling  MCP  Server   │
+ │   192.168.1.98 : 5001    │
+ │                          │
+ │  PDF  →  Markdown        │
+ │  DOCX →  Markdown        │
+ │  Image → OCR text        │
+ │  Tables → structured     │
+ └────────────┬─────────────┘
+              │  clean Markdown + metadata
+              ▼
+ ┌──────────────────────────┐
+ │  granite3-dense:2b       │
+ │  (extraction model)      │
+ │  llm_invoke()            │
+ └────────────┬─────────────┘
+              │  validated JSON fields
+              ▼
+ GuardAgent → GraphSyncAgent → AuditAgent
+```
+
+The important detail: Docling does not just return raw text. It returns **structured Markdown** — the same format agents use for prompt context. This means a DOCX policy document or a multi-page PDF claim submission arrives at the LLM as clean, formatted text, not noise. The `DocumentExtractorAgent` then uses the extraction model to produce a validated JSON record (claimant, policy number, incident date, amount, provider) that flows into the GuardAgent compliance check and then into the Neo4j knowledge graph via `GraphSyncAgent`.
+
+The ABB MCP stack means the connector type — Docling, any other OCR service, or a future multimodal model endpoint — can be swapped in configuration without touching squad or orchestrator code.
+
+---
+
 ## Live Demo
 
 The EOC is running live on RHEL at [eoc.k9x.ai](https://eoc.k9x.ai).
