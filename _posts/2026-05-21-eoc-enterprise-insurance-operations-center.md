@@ -147,4 +147,6 @@ When you are designing your own K9-AIF application and asking "how should I stru
 
 The [architecture blueprint](/eoc-blueprint.html) is the best place to start.
 
+If you want to see how an example like this is built end-to-end using Claude Code, see [Building a K9-AIF Example with Claude Code](https://blog.k9x.ai/build-k9-aif-example-with-claude-code/).
+
 ---
