@@ -46,20 +46,15 @@ examples/[YourProjectName]/docs/your-spec.docx
 > - Create all files under: `examples/K9X_Healthcare_ClaimsProcessor/`
 > - Spec doc location: `examples/K9X_Healthcare_ClaimsProcessor/docs/your-spec.docx`
 >
-> Before writing any code, read and understand:
-> 1. The framework base classes:
->    - `k9_aif_abb/k9_core/agent/base_agent.py`
->    - `k9_aif_abb/k9_core/orchestration/base_orchestrator.py`
->    - `k9_aif_abb/k9_squad/base_squad.py`
->    - `k9_aif_abb/k9_core/router/base_router.py`
->    - `k9_aif_abb/k9_core/governance/pipeline.py`
-> 2. The canonical reference example:
->    `examples/K9X_Enterprise_Insurance_OperationsCenter/`
-> 3. The project specification document above.
+> Before writing any code, read:
+> 1. `CLAUDE.md` — framework architecture, execution hierarchy, and contracts
+> 2. `SKILLS.md` — development recipes for agents, squads, LLM invocation, and governance
+> 3. The canonical reference example: `examples/K9X_Enterprise_Insurance_OperationsCenter/`
+> 4. The project specification document above.
 >
 > Then implement the new example following the same structure and conventions as the reference. Rules:
 > - Every agent must extend `BaseAgent` and implement `execute()`
-> - Every squad must be defined in `squads.yaml` with a `flow`
+> - Every squad must be defined in a squad YAML with a `flow`
 > - The router must route by `event_type`
 > - Governance must be explicit — do not use `NoopGovernance` in production code
 > - Folder structure, naming, and config patterns must match the reference example
@@ -70,6 +65,8 @@ examples/[YourProjectName]/docs/your-spec.docx
 
 The spec doc defines the **business domain**.  
 The reference example defines the **framework contract**.  
+`CLAUDE.md` and `SKILLS.md` give Claude Code the architecture and the recipes — so it knows not just what the framework is, but exactly how to build in it.
+
 Together, they give Claude Code enough context to generate code that is architecturally consistent — not just syntactically correct.
 
 That's the difference between a scaffold and a solution.
