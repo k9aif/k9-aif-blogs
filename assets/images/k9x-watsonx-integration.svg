@@ -1,0 +1,83 @@
+<svg width="1920" height="1080" viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="cardshadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#001080" flood-opacity="0.08"/>
+    </filter>
+    <filter id="centershadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="20" flood-color="#0030CC" flood-opacity="0.30"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="#F2F5FF"/>
+
+  <!-- Top accent bar -->
+  <rect x="0" y="0" width="1920" height="7" fill="#0530AD"/>
+
+  <!-- Subtle orbit ring -->
+  <circle cx="960" cy="540" r="380" fill="none" stroke="#D0DCFF" stroke-width="1.5" stroke-dasharray="6,6"/>
+  <circle cx="960" cy="540" r="220" fill="none" stroke="#E0E8FF" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- Connecting lines -->
+  <line x1="960" y1="540" x2="960" y2="165"  stroke="#C8D4EE" stroke-width="2"/>
+  <line x1="960" y1="540" x2="1280" y2="353" stroke="#C8D4EE" stroke-width="2"/>
+  <line x1="960" y1="540" x2="1280" y2="727" stroke="#C8D4EE" stroke-width="2"/>
+  <line x1="960" y1="540" x2="960" y2="915"  stroke="#C8D4EE" stroke-width="2"/>
+  <line x1="960" y1="540" x2="640" y2="727"  stroke="#C8D4EE" stroke-width="2"/>
+  <line x1="960" y1="540" x2="640" y2="353"  stroke="#C8D4EE" stroke-width="2"/>
+
+  <!-- ═══ CENTER ═══ -->
+  <rect x="824" y="468" width="272" height="144" rx="20" fill="#0530AD" filter="url(#centershadow)"/>
+  <text x="960" y="524" text-anchor="middle" fill="white"
+        font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="bold" letter-spacing="5">K9X</text>
+  <text x="960" y="553" text-anchor="middle" fill="#B0CCFF"
+        font-family="Arial, Helvetica, sans-serif" font-size="17" letter-spacing="1">Framework</text>
+  <text x="960" y="574" text-anchor="middle" fill="#6A9EDD"
+        font-family="Arial, Helvetica, sans-serif" font-size="11" letter-spacing="2.5">ARCHITECTURE  LAYER</text>
+
+  <!-- ═══ NODE 1 — watsonx Assistant  top (960, 165) ═══ -->
+  <rect x="870" y="120" width="180" height="90" rx="13" fill="white" stroke="#E0E8F8" stroke-width="1.5" filter="url(#cardshadow)"/>
+  <rect x="870" y="120" width="6" height="90" rx="3" fill="#0530AD"/>
+  <text x="893" y="148" fill="#0530AD" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold">01</text>
+  <text x="893" y="167" fill="#9AA8C0" font-family="Arial, Helvetica, sans-serif" font-size="11">watsonx</text>
+  <text x="893" y="188" fill="#1A2040" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold">Assistant</text>
+
+  <!-- ═══ NODE 2 — watsonx.ai  top-right (1280, 353) ═══ -->
+  <rect x="1190" y="308" width="180" height="90" rx="13" fill="white" stroke="#E0E8F8" stroke-width="1.5" filter="url(#cardshadow)"/>
+  <rect x="1190" y="308" width="6" height="90" rx="3" fill="#0530AD"/>
+  <text x="1213" y="336" fill="#0530AD" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold">02</text>
+  <text x="1213" y="355" fill="#9AA8C0" font-family="Arial, Helvetica, sans-serif" font-size="11">watsonx</text>
+  <text x="1213" y="376" fill="#1A2040" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold">.ai</text>
+
+  <!-- ═══ NODE 3 — Watson Discovery  bottom-right (1280, 727) ═══ -->
+  <rect x="1190" y="682" width="180" height="90" rx="13" fill="white" stroke="#E0E8F8" stroke-width="1.5" filter="url(#cardshadow)"/>
+  <rect x="1190" y="682" width="6" height="90" rx="3" fill="#0530AD"/>
+  <text x="1213" y="710" fill="#0530AD" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold">03</text>
+  <text x="1213" y="729" fill="#9AA8C0" font-family="Arial, Helvetica, sans-serif" font-size="11">Watson</text>
+  <text x="1213" y="750" fill="#1A2040" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold">Discovery</text>
+
+  <!-- ═══ NODE 4 — watsonx Orchestrate  bottom (960, 915) ═══ -->
+  <rect x="870" y="870" width="180" height="90" rx="13" fill="white" stroke="#E0E8F8" stroke-width="1.5" filter="url(#cardshadow)"/>
+  <rect x="870" y="870" width="6" height="90" rx="3" fill="#0530AD"/>
+  <text x="893" y="898" fill="#0530AD" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold">04</text>
+  <text x="893" y="917" fill="#9AA8C0" font-family="Arial, Helvetica, sans-serif" font-size="11">watsonx</text>
+  <text x="893" y="938" fill="#1A2040" font-family="Arial, Helvetica, sans-serif" font-size="14" font-weight="bold">Orchestrate</text>
+
+  <!-- ═══ NODE 5 — watsonx.governance  bottom-left (640, 727) ═══ -->
+  <rect x="550" y="682" width="180" height="90" rx="13" fill="white" stroke="#E0E8F8" stroke-width="1.5" filter="url(#cardshadow)"/>
+  <rect x="550" y="682" width="6" height="90" rx="3" fill="#0530AD"/>
+  <text x="573" y="710" fill="#0530AD" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold">05</text>
+  <text x="573" y="729" fill="#9AA8C0" font-family="Arial, Helvetica, sans-serif" font-size="11">watsonx</text>
+  <text x="573" y="750" fill="#1A2040" font-family="Arial, Helvetica, sans-serif" font-size="13" font-weight="bold">.governance</text>
+
+  <!-- ═══ NODE 6 — watsonx.data  top-left (640, 353) ═══ -->
+  <rect x="550" y="308" width="180" height="90" rx="13" fill="white" stroke="#E0E8F8" stroke-width="1.5" filter="url(#cardshadow)"/>
+  <rect x="550" y="308" width="6" height="90" rx="3" fill="#0530AD"/>
+  <text x="573" y="336" fill="#0530AD" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="bold">06</text>
+  <text x="573" y="355" fill="#9AA8C0" font-family="Arial, Helvetica, sans-serif" font-size="11">watsonx</text>
+  <text x="573" y="376" fill="#1A2040" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="bold">.data</text>
+
+  <!-- Footer -->
+  <text x="960" y="1048" text-anchor="middle" fill="#A8B4CC"
+        font-family="Arial, Helvetica, sans-serif" font-size="13" letter-spacing="0.5">Architecture-first governed multi-agent AI framework  ·  k9x.ai  ·  github.com/k9aif/k9-aif-framework</text>
+</svg>

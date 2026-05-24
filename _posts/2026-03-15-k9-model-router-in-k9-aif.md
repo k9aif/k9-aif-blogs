@@ -3,217 +3,151 @@ layout: post
 title: "K9 Model Router in K9-AIF"
 ---
 
-**Date:** 2026-03-15  
+**Date:** 2026-03-15 (updated 2026-05-23)  
 **Author:** Ravi Natarajan
 
 ## Motivation
 
-Modern AI systems increasingly rely on multiple models with different
-strengths, limitations, costs, latency profiles, and governance
-constraints.
+Modern AI systems rely on multiple models with different strengths, costs, latency profiles, and governance constraints. A single model is rarely the right choice for every task. Hardcoding model choices inside every agent creates tight coupling, drives up cost, and makes compliance impossible to enforce consistently.
 
-A single model is often not the best choice for every task.
+K9-AIF introduces the **K9ModelRouter** — a weighted-scoring model router built into the framework's inference layer. Every agent call goes through it. Model selection is centralized, governed, and fully observable.
 
-Some requests may be better handled by a smaller and faster model,
-while others may require a stronger reasoning model, a domain-specific
-model, or a provider approved for enterprise use.
+---
 
-Hardcoding these decisions inside every agent or workflow creates
-tight coupling and reduces flexibility.
+## What the K9ModelRouter Does
 
-K9-AIF introduces the concept of a **Model Router** to address this
-problem in a structured and extensible way.
+The `K9ModelRouter` selects the most appropriate model for each `InferenceRequest` by scoring all catalog candidates and choosing the highest scorer. It is not a round-robin or a hardcoded priority list — it is a signal-driven decision.
 
-## What is a Model Router?
+Four signals drive the score:
 
-A **Model Router** is a capability that selects the most appropriate
-model or inference provider for a given inference request.
+| Signal | Condition | Score |
+|---|---|---|
+| Capability match | `task_type` appears in model's `capabilities[]` | +3 |
+| Sensitivity gate | `sensitivity == "confidential"` and model has `"confidential"` capability | +2 |
+| Latency match | `latency_budget` matches model's `latency_tier` | +2 |
+| Cost match | `cost_profile` matches model's `cost_tier` | +2 |
 
-Its responsibility is not to perform the task itself, but to decide
-which model should handle the request.
+The model with the highest total score wins. If no candidate scores above zero — no signal fired — the router falls back to the configured `default_model`.
 
-This allows the rest of the system to request inference through a
-stable abstraction while the actual model choice is determined by
-routing policy.
+---
 
-## Architectural Context
+## Architectural Position
 
-Within K9-AIF, the **Model Router belongs to the inference layer**.
+The router belongs to the **inference layer** and sits between agents and model providers. Agents never call model providers directly.
 
-It exists to support model selection without forcing agents,
-orchestrators, or other runtime components to depend directly on
-specific model providers.
+```
+Agent
+  └─ llm_invoke(config, InferenceRequest)
+       └─ ModelRouterFactory.get_router(config)     # cached router instance
+            └─ K9ModelRouter.route(request)          # scores all catalog models
+                 └─ ModelCatalog.get_model(alias)    # looks up llm_ref
+                      └─ LLMFactory.get(llm_ref)    # cached OllamaLLM instance
+                           └─ OllamaLLM.invoke(prompt)
+```
 
-This creates a cleaner separation between:
+This chain is the same for every agent in every squad. Agents declare a `task_type` in their YAML — the router resolves it to a model. No agent ever names a model directly.
 
-- **task execution logic**
-- **model/provider selection logic**
+---
 
-The result is a more modular and portable architecture.
+## InferenceRequest — the Routing Contract
 
-## Why It Matters
+Agents build an `InferenceRequest` to signal what they need:
 
-Without a model router, model choices are often embedded directly
-inside code.
+```python
+from k9_aif_abb.k9_inference.models.inference_request import InferenceRequest
 
-That may work for small experiments, but it quickly becomes difficult
-to manage in real systems where teams need to balance:
+req = InferenceRequest(
+    prompt="Assess this claim for fraud indicators...",
+    task_type="reasoning",          # +3 for any model with "reasoning" capability
+    sensitivity="confidential",     # +2 for models with "confidential" capability
+    latency_budget="interactive",   # +2 if model's latency_tier matches
+    cost_profile="standard",        # +2 if model's cost_tier matches
+    metadata={"agent": "FraudDetectionAgent"},
+)
+```
 
-- quality
-- latency
-- cost
-- provider availability
-- governance controls
-- deployment environment
-- operational fallback requirements
+All fields except `prompt` are optional. Omitting them degrades gracefully — the router simply fires fewer signals, which is fully backwards compatible.
 
-A model router centralizes those concerns and makes them manageable.
+---
 
-## Design Goals
+## Concrete Example — EOC Model Catalog
 
-The K9 Model Router aims to support:
+The K9X Enterprise Insurance Operations Center configures four models:
 
-- provider independence
-- model abstraction
-- cost-aware selection
-- latency-aware selection
-- quality-aware routing
-- policy-driven routing
-- governance-aligned controls
-- extensible routing strategies
+| Alias | Model | Capabilities | Latency | Cost |
+|---|---|---|---|---|
+| `general` | llama3.2:1b | general, chat, summarization | realtime | minimal |
+| `reasoning` | granite3-dense:2b | reasoning, adjudication, fraud, policy_compliance | interactive | standard |
+| `guardian` | granite3-guardian:latest | guardrails, policy, confidential, pii_detection | interactive | standard |
+| `extraction` | granite3-dense:2b | extraction, structured_output, ocr_post_processing | interactive | standard |
 
-These goals are important because model choice is not only a technical
-decision — it is often an architectural and operational decision.
+For a `FraudDetectionAgent` request with `task_type="reasoning"`:
 
-## Default Router
+- `reasoning` model scores: +3 (capability match) = **3.0**
+- `guardian` model scores: 0 (no "reasoning" capability)
+- `general` model scores: 0 (no "reasoning" capability)
+- `extraction` model scores: 0
 
-K9-AIF can provide a simple **default model router** capable of
-selecting models using straightforward rules or configuration.
+**Winner: `granite3-dense:2b` via the `reasoning` alias.**
 
-A default implementation may consider factors such as:
+For a `GuardAgent` request with `task_type="guardrails"` and `sensitivity="confidential"`:
 
-- task type
-- configured provider priority
-- model class or model size
-- environment or deployment context
-- enterprise allow-list / deny-list rules
+- `guardian` model scores: +3 (guardrails) + 2 (confidential) = **5.0**
+- All others: 0
 
-This provides a practical baseline while keeping the design open for
-future extension.
+**Winner: `granite3-guardian:latest`. No fallback. Hard requirement.**
 
-## Advanced Routing
+---
 
-More advanced routers may implement richer strategies such as:
+## Persistence
 
-- quality-based selection
-- benchmark-informed routing
-- cost / latency / quality trade-offs
-- provider fallback and failover
-- dynamic policy evaluation
-- adaptive model selection over time
+After every routing decision, the router persists to the state store (SQLite in development, PostgreSQL in production):
 
-These more advanced implementations can be introduced without changing
-the rest of the application architecture, because the routing concern
-remains isolated.
+- **Session** — created or resumed per request
+- **Turn** — the user prompt, role, token count
+- **Routing decision** — selected model, rationale, `complexity_score`, `governance_score`, `score`, provider metadata
 
-This is one of the main architectural benefits of the approach.
+`complexity_score` is derived from `task_type` (reasoning=0.8, extraction=0.6, general=0.3). `governance_score` is 1.0 when `sensitivity=="confidential"`, 0.0 otherwise. Both are stored alongside every decision — enabling compliance reporting and routing analytics.
 
-## Why K9-AIF Treats This as an Architectural Concern
+Persistence backend is configured in `config.yaml`:
 
-In many AI projects, model selection is treated as an implementation
-detail.
+```yaml
+inference:
+  router:
+    persistence: sqlite   # or "postgres" for production
+```
 
-K9-AIF treats it as a **first-class architectural concern**.
+---
 
-That is important because the chosen model affects not only response
-quality, but also:
+## Why This Is an Architectural Concern
+
+In most AI projects, model selection is buried in application code. K9-AIF treats it as a **first-class architectural concern** because the model chosen affects:
 
 - operational cost
-- performance
-- reliability
-- compliance posture
-- deployment flexibility
+- latency
+- compliance posture — some models must never handle PII
+- deployment flexibility — swap providers without touching application code
 - long-term maintainability
 
-By isolating model selection behind a dedicated routing capability,
-K9-AIF makes this concern explicit and governable.
-
-## Extensibility
-
-The Model Router is designed to be extensible.
-
-Organizations may begin with a simple default router and later replace
-or extend it with more sophisticated strategies as their needs evolve.
-
-This makes the capability suitable for both:
-
-- lightweight local experimentation
-- enterprise-grade production systems
-
-More advanced implementations may also be packaged as reusable
-**Solution Building Blocks (SBBs)**.
+Centralizing this behind the router makes every model decision explicit, auditable, and changeable without modifying agents.
 
 ---
 
-## Persistence Support
+## For Developers
 
-The K9 Model Router can optionally persist runtime routing state.
+The full invocation pattern, how to add a model to the catalog, and how to extend the scoring signals are documented in [`SKILLS.md`](https://github.com/k9aif/k9-aif-framework/blob/main/SKILLS.md) (Skills 2, 3, 8).
 
-This includes:
-
-- session records
-- user turns
-- routing decisions
-- model affinity
-
-This capability allows the router to evolve from simple one-shot
-selection into a **session-aware routing component**.
-
-For example, future routing decisions may consider prior interactions,
-model affinity, or context summarization.
-
-By default, K9-AIF now provides **SQLite-based persistence out of the box**,
-allowing the Model Router to work immediately without requiring any
-external database setup.
-
-For enterprise deployments, the router can be configured to use
-**PostgreSQL**.
-
-Persistence backend selection is controlled through `config.yaml`.
-
-A simple smoke test script (`./test_model_router.sh`) is included to verify the router and end-to-end inference flow.
+The EOC is the reference implementation showing the router in production across 7 squads and 8 agents:
+→ [K9X Enterprise Insurance Operations Center](https://github.com/k9aif/k9-aif-framework/tree/main/examples/K9X_Enterprise_Insurance_OperationsCenter)
 
 ---
 
-## Conclusion
+## Architecture Diagram
 
-The K9 Model Router helps separate **inference access** from
-**model/provider decision-making**.
-
-This separation improves portability, maintainability, governance, and
-future flexibility.
-
-Rather than embedding model choices across the system, K9-AIF provides
-a cleaner architectural approach for managing inference in a structured
-and extensible way.
-
-
-## K9 Model Router in K9-AIF
-
-The following diagram shows how the Model Router fits within the
-K9-AIF inference layer and interacts with `LLMFactory` and providers.
-
-![K9-AIF Model Router](/assets/images/blogs/k9-aif-model-router.png)
+![K9-AIF Model Router](../assets/images/blogs/k9-aif-model-router.png)
 
 ---
 
-## Learn More
+K9-AIF is an architecture-first framework for governed, enterprise-scale multi-agent AI systems.
 
-K9-AIF is an architecture-first framework for modular and governed
-agentic AI systems.
-
-More at:
-
-<a href="https://k9aif.com" target="_blank" rel="noopener noreferrer">
-  Visit K9-AIF
-</a>
+More at [k9x.ai](https://k9x.ai) · [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework)
