@@ -162,4 +162,6 @@ The [architecture blueprint](/eoc-blueprint.html) is the best place to start.
 
 If you want to see how an example like this is built end-to-end using Claude Code, see [Building a K9-AIF Example with Claude Code](https://blog.k9x.ai/build-k9-aif-example-with-claude-code/).
 
+The full EOC architecture — every squad, agent, orchestrator, and inheritance relationship — is navigable as a live knowledge graph. Open [graph.k9x.ai](https://graph.k9x.ai), switch to the **Examples** tab, and select **EOC — Enterprise Insurance Operations Center**.
+
 ---
