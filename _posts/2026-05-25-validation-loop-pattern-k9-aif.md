@@ -5,15 +5,15 @@ date: 2026-05-25
 author: Ravi Natarajan
 ---
 
-OpenAI recently published details on **Aardvark** — their autonomous security research agent that can discover, exploit, and verify real-world vulnerabilities without human intervention.
+Most AI agents are one-shot: payload in, result out. That works when the answer is deterministic — classify this, extract that, format this response.
 
-If you read past the security headlines, the architectural insight buried in that paper is more interesting than any individual vulnerability it found.
+It breaks the moment the answer is uncertain and must be earned.
 
-Aardvark does not guess once and report. It hypothesizes, tests, observes, updates its understanding, and decides whether to keep going or stop. The loop is the agent. The one-shot `execute()` call is not sufficient for problems that require convergence.
+A fraud detection agent that correlates signals across multiple passes produces meaningfully better risk assessments than one that calls the LLM once and reports. A document extraction agent that checks its own output against a required-fields schema — and re-extracts when fields are missing — is more reliable than one that hopes the first parse was complete. A claims adjudication agent that returns 60% confidence needs somewhere to put that uncertainty: re-query, observe, decide again.
 
-That pattern — **hypothesis → tool/test → observation → re-reason → continue or finalize** — is domain-agnostic. The same structure that drives a security agent discovering exploits also drives a claims adjudication agent building evidence, a fraud detection agent correlating signals, or a compliance agent narrowing down gaps.
+The pattern is **hypothesis → tool/test → observation → re-reason → continue or finalize**. It is domain-agnostic. Every team that builds iterative agents reinvents it. Most do it badly — ad-hoc while loops, uncapped retries, no structured step history, no clean escalation path.
 
-K9-AIF now ships this as a first-class Architecture Building Block: **`BaseValidationLoopAgent`**.
+K9-AIF ships this once, as a first-class Architecture Building Block: **`BaseValidationLoopAgent`**.
 
 ---
 
@@ -264,7 +264,7 @@ BaseValidationLoopAgent   ← loop skeleton, error handling, telemetry (ABB)
 
 The pattern is domain-agnostic. The same ABB that drives `ClaimsEvidenceAgent` also drives:
 
-- **Security** — commit scan → exploit attempt → confirm/deny (Aardvark-style)
+- **Security** — commit scan → exploit attempt → confirm/deny
 - **Fraud** — signal correlation → rule check → risk confirmation
 - **Compliance** — regulation lookup → clause match → gap assessment
 - **Document extraction** — parse attempt → schema validation → confidence check
@@ -326,7 +326,7 @@ Most enterprise AI projects hit a wall when the problem stops being one-shot. A 
 
 `BaseValidationLoopAgent` is K9-AIF's answer to that gap. The loop skeleton is solved once. Every solution team that needs iterative reasoning inherits it — and only writes the five domain methods that are actually their problem to solve.
 
-The pattern Aardvark demonstrated for security is now a reusable ABB for any domain. That is the point.
+The pattern is domain-agnostic. That is the point.
 
 ---
 
