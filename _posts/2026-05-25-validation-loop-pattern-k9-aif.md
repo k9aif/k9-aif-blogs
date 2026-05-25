@@ -163,6 +163,133 @@ All keys are optional. Defaults are reasonable for most domains. Override per ag
 
 ---
 
+## K9ValidationLoopAgent — the OOB implementation
+
+Just as `K9ModelRouter` is the ready-to-run OOB implementation of `BaseModelRouter`, **`K9ValidationLoopAgent`** is the OOB implementation of `BaseValidationLoopAgent`.
+
+The LLM is the validation tool. Each iteration asks the LLM to assess the payload, return a confidence score, and signal whether another iteration would help. The loop continues until confidence reaches the threshold, the cap is hit, or the LLM says it can't improve further.
+
+The `class:` field in agent YAML is a **config index key** — `AgentLoader` uses it to look up which YAML config belongs to which Python class. It must match the registered Python class name exactly.
+
+**Two valid approaches:**
+
+**Option A — Pure OOB, no custom Python class.** Register `K9ValidationLoopAgent` directly and point the YAML `class:` at it:
+
+```yaml
+# agents/yaml/risk_assessment_agent.yaml
+name: RiskAssessmentAgent
+class: K9ValidationLoopAgent     # ← matches what you register in _load_squad()
+
+role: >
+  You are a risk assessment specialist. Evaluate the input for financial and
+  operational risk signals.
+
+goal: >
+  Assess overall risk level with a confidence score. Return JSON with
+  conclusion, confidence, reasoning, and needs_more.
+
+model: reasoning
+max_iterations: 4
+confidence_threshold: 0.85
+finalize_on_max_iterations: true
+```
+
+```python
+# In _load_squad()
+from k9_aif_abb.k9_agents.validation import K9ValidationLoopAgent
+
+agent_registry.register(
+    "K9ValidationLoopAgent",
+    lambda: K9ValidationLoopAgent(config=loader.merge_with_global("K9ValidationLoopAgent", self.config)),
+)
+```
+
+No custom Python file needed.
+
+**Option B — SBB subclass (most common).** Create a thin SBB class, name the YAML `class:` to match it:
+
+```yaml
+# agents/yaml/risk_assessment_agent.yaml
+name: RiskAssessmentAgent
+class: RiskAssessmentAgent       # ← matches the SBB Python class name
+
+role: >
+  You are a risk assessment specialist...
+model: reasoning
+max_iterations: 4
+confidence_threshold: 0.85
+```
+
+```python
+# agents/src/risk_assessment_agent.py
+from k9_aif_abb.k9_agents.validation import K9ValidationLoopAgent
+
+class RiskAssessmentAgent(K9ValidationLoopAgent):
+    layer = "RiskAssessmentAgent SBB"
+    # override only what differs from OOB
+```
+
+```python
+# In _load_squad()
+from agents.src.risk_assessment_agent import RiskAssessmentAgent
+
+agent_registry.register(
+    "RiskAssessmentAgent",
+    lambda: RiskAssessmentAgent(config=loader.merge_with_global("RiskAssessmentAgent", self.config)),
+)
+```
+
+Option B is the standard pattern — the `class:` field, the Python class name, and the registry key all match.
+
+### When to extend instead
+
+If your validation tool is not the LLM — a rule engine, a database query, a sandbox — extend `K9ValidationLoopAgent` and override only `run_validation()`:
+
+```python
+from k9_aif_abb.k9_agents.validation import K9ValidationLoopAgent
+
+
+class FraudValidationAgent(K9ValidationLoopAgent):
+    """
+    Extends K9ValidationLoopAgent — swaps in a rule engine as the validation
+    tool.  Everything else (hypothesis generation, observation parsing,
+    continuation logic, finalize) is inherited OOB.
+    """
+
+    layer = "FraudValidationAgent SBB"
+
+    def run_validation(self, hypothesis, loop_ctx):
+        # Replace LLM call with domain rule engine
+        return fraud_rule_engine.evaluate(loop_ctx.payload)
+```
+
+One override. Everything else — step history, confidence clamping, telemetry, error handling, escalation — is inherited.
+
+If your continuation logic also differs, override `should_continue()` too:
+
+```python
+    def should_continue(self, observation, loop_ctx):
+        if observation["confidence"] >= 0.9:
+            return ValidationDisposition.FINALIZE
+        if observation["confidence"] < 0.2:
+            return ValidationDisposition.FAIL   # ruled out definitively
+        return ValidationDisposition.CONTINUE
+```
+
+Two overrides. Still no loop code, no step management, no telemetry wiring.
+
+The hierarchy is:
+
+```
+BaseValidationLoopAgent   ← loop skeleton, error handling, telemetry (ABB)
+  └── K9ValidationLoopAgent  ← LLM-driven OOB implementation
+        └── FraudValidationAgent  ← domain SBB, overrides only what differs
+```
+
+`K9ValidationLoopAgent` ships with 16 tests covering OOB loop behaviour, JSON parsing, multi-iteration convergence, max-iteration caps, and subclass extension — all fully offline, no LLM or network required. See `k9_aif_abb/tests/test_k9_validation_loop_agent.py`.
+
+---
+
 ## Applicable domains
 
 The pattern is domain-agnostic. The same ABB that drives `ClaimsEvidenceAgent` also drives:
@@ -185,6 +312,44 @@ This separation is intentional. Loop state can be persisted to PostgreSQL, writt
 
 ---
 
+## The Solutions Architect decision — and why it matters
+
+The generator, intake, and Claude Code all scaffold agents extending `BaseAgent` by default. One-shot. That is the right default for most agents — triage, routing, guard, audit, graph sync. These produce their answer in a single pass and should stay one-shot.
+
+The SA must make an explicit design-time decision for each agent:
+
+> *"Does this agent need to test something, observe the result, and decide whether to try again — or does it produce its answer in one pass?"*
+
+| One-pass → `BaseAgent` | Iterative convergence → `K9ValidationLoopAgent` |
+|---|---|
+| Triage, routing, audit, guard, graph sync | Fraud signal correlation, claims evidence, compliance gap, document confidence |
+
+This is not an automatic upgrade. The generator cannot make this decision — only the SA can, because it requires domain knowledge about whether the problem requires convergence.
+
+When the decision is made, the change is surgical:
+
+```python
+# Before — generated default
+class FraudDetectionAgent(BaseAgent):
+    def execute(self, payload): ...
+
+# After — SA changes to iterative
+class FraudDetectionAgent(K9ValidationLoopAgent):
+    def generate_hypothesis(self, loop_ctx): ...
+    def run_validation(self, hypothesis, loop_ctx): ...
+    def evaluate_observation(self, tool_result, loop_ctx): ...
+    def should_continue(self, observation, loop_ctx): ...
+    def finalize(self, loop_ctx): ...
+```
+
+The squad YAML, the orchestrator, the agent YAML `class:` field — none of these change. The loop is internal to the agent.
+
+**EOC reference agents identified for this migration:**
+- `FraudDetectionAgent` — currently does rule signals + one LLM pass. Fraud correlation is the canonical iterative use case — multiple passes produce meaningfully better signal confidence.
+- `DocumentExtractorAgent` — currently one-shot extract. Extraction confidence check + re-extraction on parse failure is a natural validation loop.
+
+---
+
 ## What this means for enterprise AI
 
 Most enterprise AI projects hit a wall when the problem stops being one-shot. A document classifier is straightforward. A claims adjudication engine that must build evidence, handle uncertainty, escalate to humans, and maintain an audit trail is not. The gap between those two is where most frameworks leave you on your own.
@@ -195,4 +360,4 @@ The pattern Aardvark demonstrated for security is now a reusable ABB for any dom
 
 ---
 
-*`BaseValidationLoopAgent` is available in `k9_aif_abb/k9_agents/validation/`. The full usage guide is in [Skill 10 of SKILLS.md](https://github.com/k9aif/k9-aif-framework/blob/main/SKILLS.md). The framework is open source at [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework).*
+*`BaseValidationLoopAgent` and `K9ValidationLoopAgent` are available in `k9_aif_abb/k9_agents/validation/`. The full usage guide — including the SA decision table — is in [Skill 10 of SKILLS.md](https://github.com/k9aif/k9-aif-framework/blob/main/SKILLS.md). The framework is open source at [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework).*
