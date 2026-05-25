@@ -30,6 +30,7 @@ It demonstrates every major K9-AIF capability in a single coherent system:
 - **AuditAgent** — immutable PostgreSQL audit trail with SHA-256 prompt and response hashes
 - **GraphSyncAgent** — Neo4j knowledge graph sync for entities and relationships across every processed event
 - **SSE result streaming** — results pushed back to the dashboard in real time via Server-Sent Events
+- **Iterative validation loop** — `FraudDetectionAgent` and `DocumentExtractorAgent` extend `K9ValidationLoopAgent`, iterating across multiple passes until confidence is sufficient before producing a result
 
 Everything is loaded from YAML. No routing logic, model assignments, or governance rules are hardcoded in application code.
 
@@ -93,6 +94,18 @@ The EOC Zero Trust layer runs on every orchestrator flow without exception. It i
 The separation between the confidence threshold (which gates agent decisions) and the GuardAgent (which gates PII and compliance) is intentional. They serve different purposes and run independently.
 
 ![EOC Architecture — Zero Trust](../assets/images/blogs/eoc-arch-zero-trust.png)
+
+---
+
+## Iterative Agents — Validation Loop in the EOC
+
+Not every agent in the EOC produces its answer in one pass. Two agents extend **`K9ValidationLoopAgent`** — the K9-AIF OOB iterative reasoning ABB — rather than the standard one-shot `BaseAgent`:
+
+**`FraudDetectionAgent`** — fraud signal correlation is not a binary decision. The first pass applies rule-based signals (keyword matching, amount thresholds, repeat claimant flags) and runs an LLM analysis. If the risk score is high enough, the loop finalizes. If not, the next iteration re-queries with the accumulated signals and prior rationale as context — each pass building a richer picture. The loop terminates on FINALIZE (high confidence fraud), FAIL (clear negative), or ESCALATE (LLM requests human review).
+
+**`DocumentExtractorAgent`** — document extraction confidence is scored by how many required fields (`document_type`, `claimant_name`, `policy_number`) are successfully parsed. If the first extraction attempt misses fields, the next iteration generates a targeted prompt that calls out exactly what is missing and where to look. OCR runs once on the first pass and is cached — subsequent iterations refine the LLM prompt, not the raw text.
+
+From the squad's perspective, both agents are indistinguishable from any other `BaseAgent` — `execute(payload)` in, `dict` out. The loop is internal. The result includes an `iterations` field showing how many passes were needed, visible in the trace drawer on the dashboard.
 
 ---
 
