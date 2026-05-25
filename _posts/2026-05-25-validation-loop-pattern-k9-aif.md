@@ -171,14 +171,12 @@ The LLM is the validation tool. Each iteration asks the LLM to assess the payloa
 
 The `class:` field in agent YAML is a **config index key** — `AgentLoader` uses it to look up which YAML config belongs to which Python class. It must match the registered Python class name exactly.
 
-**Two valid approaches:**
-
-**Option A — Pure OOB, no custom Python class.** Register `K9ValidationLoopAgent` directly and point the YAML `class:` at it:
+Always create a named SBB subclass — the `class:` field, the Python class name, and the registry key all match:
 
 ```yaml
 # agents/yaml/risk_assessment_agent.yaml
 name: RiskAssessmentAgent
-class: K9ValidationLoopAgent     # ← matches what you register in _load_squad()
+class: RiskAssessmentAgent       # ← matches the SBB Python class name
 
 role: >
   You are a risk assessment specialist. Evaluate the input for financial and
@@ -192,32 +190,6 @@ model: reasoning
 max_iterations: 4
 confidence_threshold: 0.85
 finalize_on_max_iterations: true
-```
-
-```python
-# In _load_squad()
-from k9_aif_abb.k9_agents.validation import K9ValidationLoopAgent
-
-agent_registry.register(
-    "K9ValidationLoopAgent",
-    lambda: K9ValidationLoopAgent(config=loader.merge_with_global("K9ValidationLoopAgent", self.config)),
-)
-```
-
-No custom Python file needed.
-
-**Option B — SBB subclass (most common).** Create a thin SBB class, name the YAML `class:` to match it:
-
-```yaml
-# agents/yaml/risk_assessment_agent.yaml
-name: RiskAssessmentAgent
-class: RiskAssessmentAgent       # ← matches the SBB Python class name
-
-role: >
-  You are a risk assessment specialist...
-model: reasoning
-max_iterations: 4
-confidence_threshold: 0.85
 ```
 
 ```python
@@ -238,8 +210,6 @@ agent_registry.register(
     lambda: RiskAssessmentAgent(config=loader.merge_with_global("RiskAssessmentAgent", self.config)),
 )
 ```
-
-Option B is the standard pattern — the `class:` field, the Python class name, and the registry key all match.
 
 ### When to extend instead
 
