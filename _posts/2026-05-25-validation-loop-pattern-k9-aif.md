@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "The Validation Loop Pattern — How K9-AIF Agents Reason Until They're Sure"
+title: "When One Pass Isn't Enough — Two Iterative Agent Patterns in K9-AIF"
 date: 2026-05-25
 author: Ravi Natarajan
 ---
@@ -9,51 +9,44 @@ Most AI agents are one-shot: payload in, result out. That works when the answer 
 
 It breaks the moment the answer is uncertain and must be earned.
 
-A fraud detection agent that correlates signals across multiple passes produces meaningfully better risk assessments than one that calls the LLM once and reports. A document extraction agent that checks its own output against a required-fields schema — and re-extracts when fields are missing — is more reliable than one that hopes the first parse was complete. A claims adjudication agent that returns 60% confidence needs somewhere to put that uncertainty: re-query, observe, decide again.
+A fraud detection agent that correlates signals across multiple passes produces meaningfully better risk assessments than one that calls the LLM once and reports. A document extraction agent that checks its own output against a required-fields schema — and re-extracts when fields are missing — is more reliable than one that hopes the first parse was complete. A contract drafting agent whose first clause fails a compliance checklist needs to revise, not just stop.
 
-The pattern is **hypothesis → tool/test → observation → re-reason → continue or finalize**. It is domain-agnostic. Every team that builds iterative agents reinvents it. Most do it badly — ad-hoc while loops, uncapped retries, no structured step history, no clean escalation path.
+These are two different problems. They share the same root cause — one-shot agents have nowhere to put uncertainty or quality feedback — but they need different structures to solve them.
 
-K9-AIF ships this once, as a first-class Architecture Building Block: **`BaseValidationLoopAgent`**.
+K9-AIF ships both as first-class Architecture Building Blocks:
 
----
-
-## The problem with one-shot agents
-
-A standard `BaseAgent.execute()` is synchronous and single-pass: payload in, result out. That works for deterministic tasks — extract a field, classify a document, format a response.
-
-It breaks down the moment the answer is uncertain and must be earned through iteration.
-
-Consider a claims adjudication agent. The first evidence pass might return 60% confidence — not enough to approve, not enough to deny. The agent needs to re-query with a refined hypothesis, observe what comes back, and decide again. A one-shot agent has nowhere to put that reasoning loop. Every team reinvents it. Most do it badly — ad-hoc while loops, uncapped retries, no structured step history, no clean escalation path.
-
-`BaseValidationLoopAgent` fixes this once, at the framework level.
+- **`BaseValidationLoopAgent`** — for agents that must test a hypothesis, observe the result, and decide whether to try again
+- **`BaseCriticActorAgent`** — for agents that must produce output, have it evaluated, and refine until it meets a quality bar
 
 ---
 
-## The loop
+## Pattern 1 — BaseValidationLoopAgent
+
+### The question it answers
+
+> *"Is this hypothesis true — and am I confident enough to act on it?"*
+
+The loop runs until the agent is sure, gives up, or hits a cap.
+
+### Loop structure
 
 ![K9-AIF Validation Loop Pattern](../assets/images/blogs/k9x-framework-validation-loop-pattern.png)
 
-Every iteration of the loop runs the same four steps:
+Every iteration runs the same four steps:
 
-1. **Generate hypothesis** — form the next thing to test, using prior steps and the original payload
-2. **Run validation** — invoke the tool, function, rule engine, or LLM that tests it
+1. **Generate hypothesis** — form the next thing to test, informed by prior iterations
+2. **Run validation** — invoke the tool, rule engine, database, or LLM that tests it
 3. **Evaluate observation** — interpret the raw result into a structured observation with a confidence score
-4. **Decide** — return one of four dispositions
-
-The four dispositions are:
+4. **Decide** — return a disposition
 
 | Disposition | Meaning |
 |---|---|
-| `CONTINUE` | Confidence not yet sufficient — run another iteration |
-| `FINALIZE` | Confidence sufficient — produce the validated output |
-| `ESCALATE` | Unresolvable uncertainty — route to human-in-the-loop |
+| `CONTINUE` | Confidence insufficient — run another iteration |
+| `FINALIZE` | Confidence sufficient — produce validated output |
+| `ESCALATE` | Unresolvable — route to human-in-the-loop |
 | `FAIL` | Definitive negative result |
 
-The loop runs until a terminal disposition is reached or `max_iterations` is hit. If the cap is hit, the agent either finalizes with best-effort output or escalates — configurable per deployment.
-
----
-
-## How it is built in K9-AIF
+### How it is built
 
 The ABB lives in `k9_aif_abb/k9_agents/validation/`. Five abstract methods define the contract. The loop skeleton is fixed.
 
@@ -71,7 +64,6 @@ class ClaimsEvidenceAgent(BaseValidationLoopAgent):
     layer = "ClaimsEvidenceAgent SBB"
 
     def generate_hypothesis(self, loop_ctx: ValidationLoopContext):
-        # Use prior steps + payload to form the next evidence query
         prior = loop_ctx.steps[-1].observation if loop_ctx.steps else {}
         return {
             "query":    "policy_coverage",
@@ -80,7 +72,6 @@ class ClaimsEvidenceAgent(BaseValidationLoopAgent):
         }
 
     def run_validation(self, hypothesis, loop_ctx: ValidationLoopContext):
-        # Call your rule engine, database, or LLM here
         return policy_engine.check(hypothesis)
 
     def evaluate_observation(self, tool_result, loop_ctx: ValidationLoopContext):
@@ -110,224 +101,254 @@ class ClaimsEvidenceAgent(BaseValidationLoopAgent):
         )
 ```
 
-All domain logic is in those five methods. The loop, the step history, the telemetry, the error handling, the cap enforcement — all in the ABB.
+All domain logic is in those five methods. The loop, step history, telemetry, error handling, cap enforcement — all in the ABB.
 
----
+### OOB implementation — K9ValidationLoopAgent
 
-## What the framework handles so you don't have to
-
-**Structured step history.** Every iteration is recorded as a `ValidationLoopStep` — hypothesis, observation, disposition, confidence. The full history is available inside the loop (to inform the next hypothesis) and in the final output (for audit trails, Neo4j lineage, human review).
-
-**Telemetry hooks.** The ABB emits structured events at every stage: `loop_started`, `hypothesis_generated`, `validation_tool_invoked`, `observation_evaluated`, `loop_continued`, `loop_finalized`, `loop_escalated`, `loop_failed`. These flow through `publish_event()` — wired to the monitor and message bus if configured.
-
-**Tool error handling.** If `run_validation()` raises, the loop does not crash. The exception is caught, recorded as a step with confidence 0.0, and the agent returns `FAIL` — or `ESCALATE` if `escalate_on_tool_error: true` is set in config. No uncaught exceptions reach the Squad.
-
-**Safe config parsing.** `finalize_on_max_iterations: false` is correctly read as `False`, not `True`. Python's `bool("false") == True` is a known trap — the ABB uses `_parse_bool()` to handle it.
-
-**Confidence clamping.** Subclasses that return confidence values outside `[0.0, 1.0]` are silently clamped. Bad data from a tool never corrupts the confidence semantics.
-
-**Sensitive data exclusion.** Raw tool results are never included in the step output dict. The `run_validation()` return value is available inside the loop (passed to `evaluate_observation()`) but stripped before the result leaves the agent. Tool responses often contain sensitive data — the ABB protects against accidental exposure.
-
----
-
-## It is still just an agent
-
-From the outside, `BaseValidationLoopAgent` is indistinguishable from any other `BaseAgent`. The Squad calls `execute(payload)` and receives a `dict`. It has no idea the agent iterated three times internally.
-
-```yaml
-flow:
-  - agent: ClaimsTriageAgent       # one-shot
-    result_key: triage
-  - agent: ClaimsEvidenceAgent     # may iterate 1–5 times internally
-    result_key: evidence
-  - agent: AdjudicationAgent       # one-shot, resumes when evidence is done
-    result_key: adjudication
-```
-
-The loop is an implementation detail. The squad contract is unchanged. The orchestrator contract is unchanged. The caller does not know and does not need to know.
-
-This is the point of architecture building blocks — the complexity lives in the ABB, not scattered across every solution that needs iterative reasoning.
-
----
-
-## Config
-
-```yaml
-max_iterations:             5      # hard cap — loop never runs forever
-confidence_threshold:       0.8    # available to should_continue() via self.config
-finalize_on_max_iterations: true   # true → finalize with best effort; false → escalate
-escalate_on_tool_error:     false  # false → FAIL on tool exception; true → ESCALATE
-```
-
-All keys are optional. Defaults are reasonable for most domains. Override per agent deployment without touching code.
-
----
-
-## K9ValidationLoopAgent — the OOB implementation
-
-Just as `K9ModelRouter` is the ready-to-run OOB implementation of `BaseModelRouter`, **`K9ValidationLoopAgent`** is the OOB implementation of `BaseValidationLoopAgent`.
-
-The LLM is the validation tool. Each iteration asks the LLM to assess the payload, return a confidence score, and signal whether another iteration would help. The loop continues until confidence reaches the threshold, the cap is hit, or the LLM says it can't improve further.
-
-The `class:` field in agent YAML is a **config index key** — `AgentLoader` uses it to look up which YAML config belongs to which Python class. It must match the registered Python class name exactly.
-
-Always create a named SBB subclass — the `class:` field, the Python class name, and the registry key all match:
-
-```yaml
-# agents/yaml/risk_assessment_agent.yaml
-name: RiskAssessmentAgent
-class: RiskAssessmentAgent       # ← matches the SBB Python class name
-
-role: >
-  You are a risk assessment specialist. Evaluate the input for financial and
-  operational risk signals.
-
-goal: >
-  Assess overall risk level with a confidence score. Return JSON with
-  conclusion, confidence, reasoning, and needs_more.
-
-model: reasoning
-max_iterations: 4
-confidence_threshold: 0.85
-finalize_on_max_iterations: true
-```
-
-```python
-# agents/src/risk_assessment_agent.py
-from k9_aif_abb.k9_agents.validation import K9ValidationLoopAgent
-
-class RiskAssessmentAgent(K9ValidationLoopAgent):
-    layer = "RiskAssessmentAgent SBB"
-    # override only what differs from OOB
-```
-
-```python
-# In _load_squad()
-from agents.src.risk_assessment_agent import RiskAssessmentAgent
-
-agent_registry.register(
-    "RiskAssessmentAgent",
-    lambda: RiskAssessmentAgent(config=loader.merge_with_global("RiskAssessmentAgent", self.config)),
-)
-```
-
-### When to extend instead
-
-If your validation tool is not the LLM — a rule engine, a database query, a sandbox — extend `K9ValidationLoopAgent` and override only `run_validation()`:
+Just as `K9ModelRouter` is the ready-to-run OOB implementation of `BaseModelRouter`, **`K9ValidationLoopAgent`** is the OOB implementation of `BaseValidationLoopAgent`. The LLM is the validation tool. Override only what differs:
 
 ```python
 from k9_aif_abb.k9_agents.validation import K9ValidationLoopAgent
 
-
-class FraudValidationAgent(K9ValidationLoopAgent):
-    """
-    Extends K9ValidationLoopAgent — swaps in a rule engine as the validation
-    tool.  Everything else (hypothesis generation, observation parsing,
-    continuation logic, finalize) is inherited OOB.
-    """
-
-    layer = "FraudValidationAgent SBB"
+class FraudDetectionAgent(K9ValidationLoopAgent):
+    layer = "FraudDetectionAgent SBB"
 
     def run_validation(self, hypothesis, loop_ctx):
-        # Replace LLM call with domain rule engine
+        # Swap in a rule engine — everything else is inherited OOB
         return fraud_rule_engine.evaluate(loop_ctx.payload)
 ```
 
-One override. Everything else — step history, confidence clamping, telemetry, error handling, escalation — is inherited.
+### When to use it
 
-If your continuation logic also differs, override `should_continue()` too:
+- **Fraud signal correlation** — iterate until risk confidence is sufficient
+- **Claims evidence** — policy coverage checks until adjudication confidence is sufficient
+- **Security exploit validation** — attempt, observe, confirm or rule out
+- **Compliance gap assessment** — regulation lookup until gap coverage is sufficient
+- **Document extraction confidence** — re-extract until required fields are present
 
-```python
-    def should_continue(self, observation, loop_ctx):
-        if observation["confidence"] >= 0.9:
-            return ValidationDisposition.FINALIZE
-        if observation["confidence"] < 0.2:
-            return ValidationDisposition.FAIL   # ruled out definitively
-        return ValidationDisposition.CONTINUE
+### Config
+
+```yaml
+max_iterations:             5
+confidence_threshold:       0.8
+finalize_on_max_iterations: true
+escalate_on_tool_error:     false
 ```
-
-Two overrides. Still no loop code, no step management, no telemetry wiring.
-
-The hierarchy is:
-
-```
-BaseValidationLoopAgent   ← loop skeleton, error handling, telemetry (ABB)
-  └── K9ValidationLoopAgent  ← LLM-driven OOB implementation
-        └── FraudValidationAgent  ← domain SBB, overrides only what differs
-```
-
-`K9ValidationLoopAgent` ships with 16 tests covering OOB loop behaviour, JSON parsing, multi-iteration convergence, max-iteration caps, and subclass extension — all fully offline, no LLM or network required. See `k9_aif_abb/tests/test_k9_validation_loop_agent.py`.
 
 ---
 
-## Applicable domains
+## Pattern 2 — BaseCriticActorAgent
 
-The pattern is domain-agnostic. The same ABB that drives `ClaimsEvidenceAgent` also drives:
+### The question it answers
 
-- **Security** — commit scan → exploit attempt → confirm/deny
-- **Fraud** — signal correlation → rule check → risk confirmation
-- **Compliance** — regulation lookup → clause match → gap assessment
-- **Document extraction** — parse attempt → schema validation → confidence check
-- **Diagnostics** — symptom query → test → differential narrowing
+> *"Is this output good enough — and if not, what specifically should be fixed?"*
 
-Different domains, different tools in `run_validation()`, same loop structure.
+The Actor produces. The Critic evaluates and lists issues. The Actor revises. The loop continues until the Critic accepts or the round cap is hit.
+
+### Loop structure
+
+```
+Round 1:  generate()  →  critique()  →  should_accept()
+Round 2+: refine()    →  critique()  →  should_accept()
+          ...
+Terminal: ACCEPTED → finalize()
+          ESCALATE → escalate()
+          FAIL     → fail()
+```
+
+| Disposition | Meaning |
+|---|---|
+| `ACCEPTED` | Critic is satisfied — produce final output |
+| `REJECTED` | Issues found — Actor must refine and retry |
+| `ESCALATE` | Cannot converge — route to human-in-the-loop |
+| `FAIL` | Definitively unacceptable — cannot be fixed |
+
+### How it is built
+
+The ABB lives in `k9_aif_abb/k9_agents/critic_actor/`. Five abstract methods define the contract.
+
+```python
+from k9_aif_abb.k9_agents.critic_actor import (
+    BaseCriticActorAgent,
+    CriticActorContext,
+    CriticActorDisposition,
+    CriticActorResult,
+)
+
+
+class ContractDraftingAgent(BaseCriticActorAgent):
+
+    layer = "ContractDraftingAgent SBB"
+
+    def generate(self, ctx: CriticActorContext):
+        return llm.draft_clause(ctx.payload)
+
+    def critique(self, draft, ctx: CriticActorContext):
+        issues = compliance_checker.scan(draft)
+        score  = 1.0 if not issues else max(0.0, 1.0 - len(issues) * 0.2)
+        return {
+            "accepted": not issues,
+            "score":    score,
+            "issues":   issues,
+            "summary":  f"{len(issues)} compliance issues found",
+        }
+
+    def refine(self, draft, feedback, ctx: CriticActorContext):
+        return llm.revise_clause(draft, feedback["issues"])
+
+    def should_accept(self, feedback, ctx: CriticActorContext):
+        if feedback.get("accepted") or feedback.get("score", 0) >= 0.9:
+            return CriticActorDisposition.ACCEPTED
+        return CriticActorDisposition.REJECTED
+
+    def finalize(self, ctx: CriticActorContext) -> CriticActorResult:
+        last = ctx.steps[-1]
+        return CriticActorResult(
+            disposition = CriticActorDisposition.ACCEPTED,
+            output      = {"clause": last.draft, "score": last.score},
+            steps       = ctx.steps,
+            rounds      = ctx.round,
+            final_score = last.score,
+        )
+```
+
+### OOB implementation — K9CriticActorAgent
+
+**`K9CriticActorAgent`** is the OOB implementation — the LLM plays both Actor and Critic roles using role-switched system prompts. Override `critique()` to plug in a real external validator:
+
+```python
+from k9_aif_abb.k9_agents.critic_actor import K9CriticActorAgent
+
+class SchemaExtractionAgent(K9CriticActorAgent):
+    layer = "SchemaExtractionAgent SBB"
+
+    def critique(self, draft, ctx):
+        # Swap in Pydantic schema validator — everything else is inherited OOB
+        try:
+            data    = json.loads(draft)
+            missing = REQUIRED_FIELDS - set(data.keys())
+            score   = 1.0 if not missing else max(0.0, 1.0 - len(missing) * 0.3)
+            return {
+                "accepted": not missing,
+                "score":    score,
+                "issues":   [f"missing: {f}" for f in sorted(missing)],
+                "summary":  "schema valid" if not missing else f"{len(missing)} fields missing",
+            }
+        except Exception:
+            return {"accepted": False, "score": 0.0, "issues": ["not valid JSON"], "summary": "parse error"}
+```
+
+### When to use it
+
+- **Contract drafting** — Actor writes clause, Critic checks compliance checklist
+- **Schema extraction** — Actor extracts JSON, Critic validates required fields
+- **Report improvement** — Actor drafts, Critic scores quality and lists issues
+- **Policy language refinement** — Actor writes, Critic checks regulatory alignment
+- **Code generation** — Actor writes function, Critic runs unit tests and returns error traces
+
+### Config
+
+```yaml
+max_rounds:              3
+acceptance_threshold:    0.8
+finalize_on_max_rounds:  true
+escalate_on_critic_error: false
+```
+
+---
+
+## When to use which
+
+The tell is the question the agent is trying to answer:
+
+| Question | Pattern |
+|---|---|
+| *"Is this hypothesis true?"* | `BaseValidationLoopAgent` |
+| *"Is this output good enough?"* | `BaseCriticActorAgent` |
+
+More concretely:
+
+| Scenario | Pattern | Why |
+|---|---|---|
+| Fraud signal correlation | Validation Loop | Testing whether signals confirm fraud |
+| Claims evidence | Validation Loop | Testing whether coverage holds |
+| Security exploit confirmation | Validation Loop | Testing whether a vulnerability is real |
+| Contract clause drafting | Critic-Actor | Improving output against a compliance bar |
+| JSON schema extraction | Critic-Actor | Refining output until required fields are present |
+| Report generation | Critic-Actor | Improving quality until the Critic accepts |
+
+One-shot agents (`BaseAgent`) remain the right default for triage, routing, guard, audit, and graph sync — tasks that produce their answer in a single pass. The iterative patterns are an explicit SA design-time decision, not an automatic upgrade.
+
+---
+
+## Both are invisible to the caller
+
+From the Squad's perspective, both patterns look identical to a plain `BaseAgent`:
+
+```yaml
+flow:
+  - agent: ClaimsTriageAgent        # one-shot
+    result_key: triage
+  - agent: FraudDetectionAgent      # ValidationLoop — may iterate 1–5 times internally
+    result_key: fraud
+  - agent: ContractDraftingAgent    # CriticActor — may refine 1–3 times internally
+    result_key: contract
+  - agent: AuditAgent               # one-shot
+    result_key: audit
+```
+
+The Squad calls `execute(payload)` and receives a `dict`. The number of internal iterations is an implementation detail. The squad contract, the orchestrator contract, the agent YAML — none of these change.
 
 ---
 
 ## State contracts in `models/`
 
-The data classes (`ValidationLoopContext`, `ValidationLoopStep`, `ValidationLoopResult`, `ValidationDisposition`) live in `k9_agents/validation/models/` — separate from the execution logic. No loop code is in `models/`. No model code is in the agent.
+Both ABBs follow the same separation principle: data contracts live in `models/`, separate from execution logic.
 
-This separation is intentional. Loop state can be persisted to PostgreSQL, written to the Neo4j knowledge graph, fed into telemetry dashboards, or serialized for human review — without touching the agent implementation. The contracts are stable; the execution logic can evolve independently.
+| Package | Models |
+|---|---|
+| `k9_agents/validation/models/` | `ValidationLoopContext`, `ValidationLoopStep`, `ValidationLoopResult`, `ValidationDisposition` |
+| `k9_agents/critic_actor/models/` | `CriticActorContext`, `CriticActorStep`, `CriticActorResult`, `CriticActorDisposition` |
+
+Loop state can be persisted to PostgreSQL, written to the Neo4j knowledge graph, fed into telemetry dashboards, or serialized for human review — without touching the agent implementation.
 
 ---
 
-## The Solutions Architect decision — and why it matters
+## Inheritance hierarchy
 
-The generator, intake, and Claude Code all scaffold agents extending `BaseAgent` by default. One-shot. That is the right default for most agents — triage, routing, guard, audit, graph sync. These produce their answer in a single pass and should stay one-shot.
-
-The SA must make an explicit design-time decision for each agent:
-
-> *"Does this agent need to test something, observe the result, and decide whether to try again — or does it produce its answer in one pass?"*
-
-| One-pass → `BaseAgent` | Iterative convergence → `K9ValidationLoopAgent` |
-|---|---|
-| Triage, routing, audit, guard, graph sync | Fraud signal correlation, claims evidence, compliance gap, document confidence |
-
-This is not an automatic upgrade. The generator cannot make this decision — only the SA can, because it requires domain knowledge about whether the problem requires convergence.
-
-When the decision is made, the change is surgical:
-
-```python
-# Before — generated default
-class FraudDetectionAgent(BaseAgent):
-    def execute(self, payload): ...
-
-# After — SA changes to iterative
-class FraudDetectionAgent(K9ValidationLoopAgent):
-    def generate_hypothesis(self, loop_ctx): ...
-    def run_validation(self, hypothesis, loop_ctx): ...
-    def evaluate_observation(self, tool_result, loop_ctx): ...
-    def should_continue(self, observation, loop_ctx): ...
-    def finalize(self, loop_ctx): ...
+```
+BaseAgent
+  ├── BaseValidationLoopAgent   (hypothesis-test-observe ABB)
+  │     └── K9ValidationLoopAgent   (LLM-driven OOB)
+  │           └── FraudDetectionAgent / ClaimsEvidenceAgent   (domain SBB)
+  │
+  └── BaseCriticActorAgent      (actor-critic-refine ABB)
+        └── K9CriticActorAgent      (LLM-driven OOB)
+              └── ContractDraftingAgent / SchemaExtractionAgent   (domain SBB)
 ```
 
-The squad YAML, the orchestrator, the agent YAML `class:` field — none of these change. The loop is internal to the agent.
-
-**EOC reference agents identified for this migration:**
-- `FraudDetectionAgent` — currently does rule signals + one LLM pass. Fraud correlation is the canonical iterative use case — multiple passes produce meaningfully better signal confidence.
-- `DocumentExtractorAgent` — currently one-shot extract. Extraction confidence check + re-extraction on parse failure is a natural validation loop.
+Both OOB implementations follow the same principle as `K9ModelRouter` — ready to use without modification, extensible by overriding only what the domain requires.
 
 ---
 
-## What this means for enterprise AI
+## Tests
 
-Most enterprise AI projects hit a wall when the problem stops being one-shot. A document classifier is straightforward. A claims adjudication engine that must build evidence, handle uncertainty, escalate to humans, and maintain an audit trail is not. The gap between those two is where most frameworks leave you on your own.
+- `K9ValidationLoopAgent` — 16 tests covering convergence, caps, escalation, JSON parsing, subclass extension. See `k9_aif_abb/tests/test_k9_validation_loop_agent.py`.
+- `K9CriticActorAgent` — 15 tests covering acceptance, refinement, max-round behaviour, critic errors, JSON parsing, subclass extension (`SchemaValidatorAgent`). See `k9_aif_abb/tests/test_k9_critic_actor_agent.py`.
 
-`BaseValidationLoopAgent` is K9-AIF's answer to that gap. The loop skeleton is solved once. Every solution team that needs iterative reasoning inherits it — and only writes the five domain methods that are actually their problem to solve.
-
-The pattern is domain-agnostic. That is the point.
+All tests are fully offline — no LLM or network required.
 
 ---
 
-*`BaseValidationLoopAgent` and `K9ValidationLoopAgent` are available in `k9_aif_abb/k9_agents/validation/`. The full usage guide — including the SA decision table — is in [Skill 10 of SKILLS.md](https://github.com/k9aif/k9-aif-framework/blob/main/SKILLS.md). The framework is open source at [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework).*
+## EOC reference
+
+The K9X Enterprise Insurance Operations Center implements both patterns:
+
+- **`FraudDetectionAgent`** — `K9ValidationLoopAgent`; iterates rule signals + LLM until risk confidence is sufficient
+- **`DocumentExtractorAgent`** — `K9ValidationLoopAgent`; OCR runs once on iteration 1, cached; re-extracts until required fields are present
+
+The full EOC architecture — squads, agents, orchestrators, and the `K9ValidationLoopAgent` ABB node — is navigable as a live knowledge graph at [graph.k9x.ai](https://graph.k9x.ai), under the **Examples** tab.
+
+---
+
+*`BaseValidationLoopAgent`, `K9ValidationLoopAgent`, `BaseCriticActorAgent`, and `K9CriticActorAgent` are available in `k9_aif_abb/k9_agents/`. The full usage guide is in [SKILLS.md](https://github.com/k9aif/k9-aif-framework/blob/main/SKILLS.md). The framework is open source at [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework).*
