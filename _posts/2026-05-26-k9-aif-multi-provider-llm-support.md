@@ -44,7 +44,11 @@ LLMFactory
   → BaseLLM
 ```
 
-![K9-AIF LLM Provider Class Diagram](../assets/images/blogs/k9-aif-inference-llm-provider-class-diagram.png)
+<a href="../assets/images/blogs/k9-aif-inference-llm-provider-class-diagram.png" target="_blank">
+  <img src="../assets/images/blogs/k9-aif-inference-llm-provider-class-diagram.png"
+       alt="K9-AIF LLM Provider Class Diagram"
+       style="width:100%;max-width:960px;cursor:zoom-in;">
+</a>
 
 `LLMFactory` reads `backend:` from config, asks the registry for the matching adapter, and calls `create_llm()`. That is all it does. It has no knowledge of Ollama, OpenAI, or Grok — and it never will.
 
