@@ -3,7 +3,7 @@ layout: post
 title: "Routing in K9-AIF: Deterministic and Non-Deterministic Paths"
 ---
 
-**Date:** 2026-04-01  
+**Date:** 2026-04-01 — *Updated 2026-05-31 with OOB implementation in v1.2.x*  
 **Author:** Ravi Natarajan
 
 ## Why Routing Matters
@@ -173,6 +173,109 @@ The following high-level view shows how routing can work inside K9-AIF.
 The following example shows how deterministic and non-deterministic routing can coexist within the same application.
 
 ![ACME Insurance Routing Example](/assets/images/blogs/acme-insurance-routing.png)
+
+---
+
+---
+
+## What This Looks Like in K9-AIF 1.2.x
+
+The concepts above are now fully implemented as OOB components in `k9-aif 1.2.x`.
+
+The **Router** is the single entry point for all events — always. It never sits behind a pre-classification step.
+
+```
+Event → K9EventRouter (single entry point)
+    ├── event_type in routing table ──────────────────► domain topic
+    └── event_type unknown ──────────► intent.in
+                                            │
+                              IntentOrchestrator (consumes intent.in)
+                                  → IntentSquad → K9IntentAgent
+                                      ├── intent resolved ──► domain topic
+                                      └── intent unclear  ──► responses.out
+```
+
+There are exactly **three routing outcomes**:
+
+1. **Deterministic** — `event_type` is in the routing table. The Router publishes directly to the domain topic. No LLM, no latency.
+2. **Non-deterministic, resolved** — `event_type` is unknown. The Router publishes to `intent.in`. The `IntentOrchestrator` picks it up, runs intent classification, and re-publishes to the correct domain topic.
+3. **Clarification required** — intent classification cannot determine the path with sufficient confidence. The `IntentOrchestrator` publishes a "please clarify" response. Nothing is silently dropped.
+
+The `IntentOrchestrator` is a **Kafka-decoupled process** — it consumes `intent.in` independently of the Router. The Router does not know it exists. This is the same topology used throughout K9-AIF: Router publishes, Orchestrators consume.
+
+---
+
+## The IntentOrchestrator is OOB
+
+The `IntentOrchestrator` self-bootstraps with `K9IntentAgent` and `IntentSquad` out of the box.
+
+`K9IntentAgent` follows a three-step classification order:
+
+1. **`intent_map` rule lookup** — zero latency, no LLM, configured in YAML
+2. **LLM via `llm_invoke`** — for truly ambiguous free-text input
+3. **Fallback** — `event_type` verbatim or `"unknown"`
+
+Configure the routing table and intent map in `config.yaml`:
+
+```yaml
+routing:
+  intent_topic:         intent.in
+  response_topic:       responses.out
+  confidence_threshold: 0.6
+  table:
+    fraud:    fraud.in
+    claims:   claims.in
+    document: documents.in
+  intent_map:
+    fraud_report: fraud
+    claim_form:   claims
+```
+
+No Python code required for the common case.
+
+---
+
+## SBB Extension Points
+
+Solutions override exactly what differs — nothing more.
+
+**Replace the intent agent** (e.g. keyword matching, Drools rules, NLP pipeline):
+
+```python
+class ConfigListIntentAgent(BaseIntentAgent):
+    def classify(self, payload):
+        text = payload.get("message", "").lower()
+        for intent, keywords in self._keywords.items():
+            if any(kw in text for kw in keywords):
+                return intent
+        return ""
+```
+
+**Add domain logic around classification** (pre-processing, audit trail, custom clarification message):
+
+```python
+class AcmeIntentOrchestrator(IntentOrchestrator):
+    def execute_flow(self, payload):
+        payload = self._enrich(payload)         # domain pre-processing
+        result  = super().execute_flow(payload) # OOB classification + routing
+        self._audit(result)                     # domain audit trail
+        return result
+
+    def _clarification_message(self, intent, confidence, payload):
+        return "Please choose: Report a Claim, Report Fraud, or Upload a Document."
+```
+
+The topology — Router → `intent.in` → IntentOrchestrator → domain topic — does not change regardless of which strategy is used inside the agent.
+
+---
+
+## Available Now
+
+```bash
+pip install k9-aif==1.2.1
+```
+
+The working example with all three routing outcomes and both SBB override patterns is in `examples/k9routing/` in the repository. It runs without Kafka or a live LLM.
 
 ---
 
