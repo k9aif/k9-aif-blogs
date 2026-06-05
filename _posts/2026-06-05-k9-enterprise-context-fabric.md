@@ -7,23 +7,7 @@ title: "K9 Enterprise Context Fabric — Turning Streaming Enterprise Events int
 
 ---
 
-## The Problem
-
-LLMs are stateless.
-
-They know what they were trained on. They know what you put in the prompt. That is all.
-
-For enterprise AI to be useful — not just impressive in a demo — agents need to know the current state of the enterprise when they act. Not yesterday's state. Not a batch extract from last night. The state right now.
-
-A claims agent adjudicating a claim needs to know that the policy was modified three hours ago. A fraud agent needs to know that two other claims from the same customer were filed this week. A support agent needs to know that the customer's account was flagged this morning.
-
-None of that is in the LLM. None of that is in a static RAG store. It is flowing through enterprise systems right now — SAP, CRM, claim systems, IoT sensors, workflow engines — as a continuous stream of events.
-
-The question is: how do you get that live enterprise context into your agents safely, in real time, and with governance enforced before any AI system sees it?
-
----
-
-## The K9 Answer: k9_streams
+## K9 Enterprise Context Fabric — k9_streams
 
 K9-AIF Phase 1 of `k9_streams` introduces the **K9 Enterprise Context Fabric** — a governed transport layer that continuously streams enterprise context into agentic flows.
 
