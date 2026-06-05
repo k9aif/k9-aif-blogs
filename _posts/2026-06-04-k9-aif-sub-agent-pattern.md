@@ -119,7 +119,11 @@ Parent's governance configuration flows to all ChildAgents. No child executes ou
 
 ## The Class Hierarchy
 
-![K9-AIF Sub-Agent Pattern Class Diagram](../assets/images/blogs/k9_sub_agent_pattern.png)
+<a href="../assets/images/blogs/k9_sub_agent_pattern.png" target="_blank">
+  <img src="../assets/images/blogs/k9_sub_agent_pattern.png"
+       alt="K9-AIF Sub-Agent Pattern Class Diagram"
+       style="width:100%;max-width:960px;cursor:zoom-in;">
+</a>
 
 ```
 BaseAgent
