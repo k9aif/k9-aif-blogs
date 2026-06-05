@@ -2,7 +2,7 @@
 layout: post
 title: "Applying the Multithreading Pattern to Agentic AI — The K9-AIF Sub-Agent Pattern"
 ---
-**Date:** 2026-06-04  
+**Date:** 2026-06-04
 **Author:** Ravi Natarajan
 
 ---
@@ -91,12 +91,12 @@ finally:
 
 **No Deadlocks — 4 Structural Rules**
 
-| Rule | What it prevents |
-|---|---|
-| Leaf Node Rule — ChildAgent.spawn() raises NotImplementedError | Circular spawning |
-| Mandatory Timeout — no indefinite waits | Indefinite blocking |
-| No Shared Mutable State — payloads deep-copied per child | Resource contention |
-| Bounded Concurrency — max 20 children, dedicated pool | Thread exhaustion |
+| Rule                                                            | What it prevents    |
+| --------------------------------------------------------------- | ------------------- |
+| Leaf Node Rule — ChildAgent.spawn() raises NotImplementedError | Circular spawning   |
+| Mandatory Timeout — no indefinite waits                        | Indefinite blocking |
+| No Shared Mutable State — payloads deep-copied per child       | Resource contention |
+| Bounded Concurrency — max 20 children, dedicated pool          | Thread exhaustion   |
 
 Deadlock is structurally impossible — prevented at design time, not handled at runtime.
 
@@ -184,5 +184,3 @@ The sub-agent pattern applied. Within a governed enterprise architecture. That i
 ---
 
 *K9-AIF — Architecture-First Framework for Agentic AI · [k9x.ai](https://k9x.ai)*
-
-*Author: Ravi Natarajan | IBM Consulting Solutions Architect*
