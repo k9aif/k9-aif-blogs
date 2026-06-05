@@ -164,7 +164,7 @@ This is where a non-deterministic path becomes useful.
 
 The following high-level view shows how routing can work inside K9-AIF.
 
-![K9-AIF Routing Model](/assets/images/blogs/k9-aif-routing-model.png)
+![K9-AIF Routing Model](../assets/images/blogs/k9-aif-routing-model.png)
 
 ---
 

@@ -21,10 +21,10 @@ Architecture-first means you design before you code. Claude Code enforces that d
 
 ## Steps
 
-**1. Clone the framework**
+**1. Install the framework**
 
-```
-github.com/k9aif/k9-aif-framework
+```bash
+pip install k9-aif
 ```
 
 **2. Create your project folder and drop in your spec doc**
