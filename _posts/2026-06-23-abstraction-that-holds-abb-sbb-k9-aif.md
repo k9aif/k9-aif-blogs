@@ -59,7 +59,7 @@ The key principle: **arrows only go down**. ABBs don't know which SBB will fulfi
 Here is the ABB contract for the vector database in K9-AIF:
 
 ```python
-class BaseVectorDB(BaseComponent, ABC):
+class BaseVectorDB(BaseComponent):
 
     @abstractmethod
     def insert(self, doc_id: str, embedding: List[float],
