@@ -8,6 +8,8 @@ author: Ravi Natarajan
 
 > "The entire history of software engineering is one of rising levels of abstraction. This is as it was, is now, and always shall be." — Grady Booch
 
+> "My best tool for efficiency and performance is abstraction." — Bjarne Stroustrup
+
 It was 1993. C++ was incredibly popular, and Grady Booch's *Object-Oriented Analysis and Design with Applications* was the book that changed how I thought about software. It made me transition from writing procedural code to thinking in objects — in contracts, in hierarchies, in abstractions that held. Inheritance, multiple inheritance, dynamic binding, polymorphism — these were not textbook concepts to me. They were tools that made software *beautiful*. You could write something that held its shape under change. You could build a system where adding a new capability didn't require rewriting what already worked.
 
 From that point on, every project I touched started to incorporate that approach. I coupled it with STL in C++, began using Rogue Wave's Tools.h++ — libraries that themselves were built on the same principles of abstraction and reuse. Those are the strong building blocks for Software Engineering.
@@ -171,6 +173,10 @@ When the tenth concern comes — and it will — it follows the same structure. 
 Let me be direct about something.
 
 OOA is not outdated. OOD is not outdated. UML is not outdated. Design Patterns are not outdated. In fact, they are the solid foundation for any successful software design and development. They always have been.
+
+C++ is behind every Tesla on the road, every trading system on Wall Street, every embedded system in aerospace. The language Stroustrup created — built on the principles of abstraction, inheritance, and polymorphism — runs the most demanding systems in the world. The principles that make it work are not tied to any language or era. They are universal.
+
+Many software architects often fail at the most fundamental discipline: abstraction. They skip OOA. They skip OOD. They skip patterns. They let the LLM generate what they want, just to see it work. The result compiles. The demo runs. And under the hood, it is a monolith with no structure and no future.
 
 The industry has a short memory. Every new technology wave brings voices that say the old disciplines no longer apply — that the new tool is so transformative it renders architecture thinking unnecessary. It happened with web development. It happened with cloud. It is happening now with generative AI and agentic flows.
 

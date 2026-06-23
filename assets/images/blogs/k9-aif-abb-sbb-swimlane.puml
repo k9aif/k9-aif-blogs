@@ -1,98 +1,107 @@
 @startuml k9-aif-abb-sbb-swimlane
-!theme plain
 skinparam backgroundColor #FEFEFE
 skinparam defaultFontName "Segoe UI"
-skinparam defaultFontSize 13
+skinparam defaultFontSize 11
 skinparam shadowing false
-skinparam roundcorner 8
+skinparam roundcorner 4
+skinparam nodesep 20
+skinparam ranksep 30
 
-|#E3F2FD| **ABB Layer** — Abstract Contracts |
-start
-:""BaseAgent""
-  execute(payload) → dict;
-:""BaseVectorDB""
-  insert() / search() / delete();
-:""BaseEmbeddingService""
-  embed(text) → List[float];
-:""BaseRetriever""
-  retrieve(intent, query, top_k);
-:""BaseModelRouter""
-  route(request) → RouteDecision;
-:""BaseGovernance""
-  pre_process() / post_process();
-note right
-  Stable contracts.
-  Define **what**, never **how**.
-  Never contain domain logic.
-  Located in k9_core/
-end note
+skinparam rectangle {
+  BorderColor #AAAAAA
+  FontSize 12
+}
 
-|#FFF8E1| **Factory Layer** — Config-Driven Wiring |
-:""AgentRegistry""
-  register(name, cls) / create(name);
-:""VectorDBFactory""
-  vectordb.provider → chromadb | milvus | qdrant | pgvector;
-:""EmbeddingServiceFactory""
-  vectordb.embedding_provider → ollama | custom;
-:""RetrieverFactory""
-  retrieval.default_retriever → k9 | custom;
-:""ModelRouterFactory""
-  inference.router.type → k9_model_router | custom;
-note right
-  Reads config.yaml at startup.
-  SBB teams switch providers
-  by changing one config key —
-  no code changes required.
-end note
+skinparam component {
+  BorderColor #888888
+  FontSize 10
+  BackgroundColor #FFFFFF
+}
 
-|#E8F5E9| **SBB Layer** — Concrete Implementations |
-fork
-  :**Domain Agents**
-  ----
-  FraudDetectionAgent
-  ClaimsTriageAgent
-  DocumentExtractorAgent
-  ----
-  Extend BaseAgent or
-  K9ValidationLoopAgent;
-fork again
-  :**Vector Store Adapters**
-  ----
-  ChromaDBAdapter (OOB)
-  MilvusAdapter
-  QdrantAdapter
-  PgVectorAdapter
-  ----
-  Your custom adapter;
-fork again
-  :**Embedding Services**
-  ----
-  OllamaEmbeddingService
-  (OOB default)
-  ----
-  WatsonxEmbeddingService
-  OpenAIEmbeddingService
-  Your custom service;
-fork again
-  :**Model Routers**
-  ----
-  K9ModelRouter (OOB)
-  ----
-  Custom routing logic
-  per organization;
-end fork
+' ═══════════════════════════════════════════════════════════
+' LANE 1 — ABB
+' ═══════════════════════════════════════════════════════════
+rectangle " " as lane1 #E3F2FD;line:SteelBlue {
+  rectangle "  A\n  B\n  B\n\n  L\n  a\n  y\n  e\n  r  " as l1 #5B9BD5;text:White
 
-note right
-  Organization-specific.
-  Extends ABB contracts.
-  Consistent across projects,
-  business units, enterprise.
-end note
+  component "BaseAgent\n··········\nexecute()\n→ dict" as ba #BBDEFB
+  component "BaseVectorDB\n··········\ninsert()\nsearch()\ndelete()" as bv #BBDEFB
+  component "BaseEmbedding\nService\n··········\nembed()\n→ List[float]" as be #BBDEFB
+  component "BaseRetriever\n··········\nretrieve()" as br #BBDEFB
+  component "BaseModel\nRouter\n··········\nroute()\n→ RouteDecision" as bm #BBDEFB
+  component "Base\nGovernance\n··········\npre_process()\npost_process()" as bg #BBDEFB
 
-|#E3F2FD| **ABB Layer** — Abstract Contracts |
-#LightBlue:ABB **never changes** when a new SBB is added.
-Existing tests pass after every new feature.
-**Arrows only go down — SBBs extend, never modify.**;
-stop
+  l1 -right[hidden]-> ba
+  ba -right[hidden]-> bv
+  bv -right[hidden]-> be
+  be -right[hidden]-> br
+  br -right[hidden]-> bm
+  bm -right[hidden]-> bg
+}
+
+' ═══════════════════════════════════════════════════════════
+' LANE 2 — Factory
+' ═══════════════════════════════════════════════════════════
+rectangle " " as lane2 #FFF8E1;line:Orange {
+  rectangle "  F\n  a\n  c\n  t\n  o\n  r\n  y\n\n  L\n  a\n  y\n  e\n  r  " as l2 #FFB300;text:White
+
+  component "Agent\nRegistry\n··········\nregister()\ncreate()" as fa #FFE082
+  component "VectorDB\nFactory\n··········\nvectordb\n.provider" as fv #FFE082
+  component "Embedding\nServiceFactory\n··········\n.embedding\n_provider" as fe #FFE082
+  component "Retriever\nFactory\n··········\n.default\n_retriever" as fr #FFE082
+  component "ModelRouter\nFactory\n··········\n.router\n.type" as fm #FFE082
+  component "Governance\nPipeline\n··········\nrequire_\ngovernance()" as fg #FFE082
+
+  l2 -right[hidden]-> fa
+  fa -right[hidden]-> fv
+  fv -right[hidden]-> fe
+  fe -right[hidden]-> fr
+  fr -right[hidden]-> fm
+  fm -right[hidden]-> fg
+}
+
+' ═══════════════════════════════════════════════════════════
+' LANE 3 — SBB
+' ═══════════════════════════════════════════════════════════
+rectangle " " as lane3 #E8F5E9;line:Green {
+  rectangle "  S\n  B\n  B\n\n  L\n  a\n  y\n  e\n  r  " as l3 #43A047;text:White
+
+  component "Domain Agents\n··········\nFraudDetection\nClaimsTriage\nDocExtractor" as sa #C8E6C9
+  component "VectorDB\nAdapters\n··········\nChromaDB (OOB)\nMilvus\nQdrant\nPgVector" as sv #C8E6C9
+  component "Embedding\nServices\n··········\nOllama (OOB)\n//Your custom//" as se #C8E6C9
+  component "Retrievers\n··········\nK9Retriever\n(OOB)\n//Your custom//" as sr #C8E6C9
+  component "Model\nRouters\n··········\nK9ModelRouter\n(OOB)\n//Custom//" as sm #C8E6C9
+  component "Governance\nSBBs\n··········\n//Custom policies//\n//per org//" as sg #C8E6C9
+
+  l3 -right[hidden]-> sa
+  sa -right[hidden]-> sv
+  sv -right[hidden]-> se
+  se -right[hidden]-> sr
+  sr -right[hidden]-> sm
+  sm -right[hidden]-> sg
+}
+
+' ═══════════════════════════════════════════════════════════
+' Force top-to-bottom stacking
+' ═══════════════════════════════════════════════════════════
+lane1 -[hidden]down-> lane2
+lane2 -[hidden]down-> lane3
+
+' ═══════════════════════════════════════════════════════════
+' Vertical arrows: ABB → Factory → SBB
+' ═══════════════════════════════════════════════════════════
+ba ..down..> fa
+bv ..down..> fv
+be ..down..> fe
+br ..down..> fr
+bm ..down..> fm
+bg ..down..> fg
+
+fa ..down..> sa
+fv ..down..> sv
+fe ..down..> se
+fr ..down..> sr
+fm ..down..> sm
+fg ..down..> sg
 
 @enduml
