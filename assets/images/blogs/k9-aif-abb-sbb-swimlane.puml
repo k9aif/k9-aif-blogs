@@ -1,0 +1,58 @@
+@startuml k9-aif-abb-sbb-swimlane
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam roundcorner 8
+skinparam swimlaneWidth 200
+
+|#E8F0FE| ABB Layer\n(Abstract Contracts) |
+|#FFF3E0| Factory Layer\n(Config-Driven Wiring) |
+|#E8F5E9| SBB Layer\n(Concrete Implementations) |
+
+|ABB Layer\n(Abstract Contracts)|
+:""BaseEmbeddingService""\n  embed(text) -> List[float]\n  embed_batch(texts);
+:""BaseVectorDB""\n  insert(id, embedding, metadata)\n  search(query_embedding, top_k)\n  delete(id);
+:""BaseRetriever""\n  retrieve(intent, query, top_k);
+:""BaseAgent""\n  execute(payload) -> dict;
+note right
+  ABB defines **what**, never **how**.
+  Stable contracts that never change.
+  Located in k9_core/
+end note
+
+|Factory Layer\n(Config-Driven Wiring)|
+:""EmbeddingServiceFactory""\n  config key: vectordb.embedding_provider\n  default: **ollama**;
+:""VectorDBFactory""\n  config key: vectordb.provider\n  default: **chromadb**;
+:""RetrieverFactory""\n  config key: retrieval.default_retriever\n  default: **k9**;
+:""AgentRegistry""\n  register(name, cls) / create(name);
+note right
+  Factories read config.yaml at startup.
+  SBB teams switch providers
+  without touching framework code.
+end note
+
+|SBB Layer\n(Concrete Implementations)|
+
+fork
+  :""OllamaEmbeddingService""\n(OOB default)\n----\nYour custom SBB:\n  WatsonxEmbeddingService\n  OpenAIEmbeddingService;
+fork again
+  :""ChromaDBAdapter""\n(OOB default)\n----\nSBB adapters:\n  MilvusAdapter\n  QdrantAdapter\n  PgVectorAdapter;
+fork again
+  :""K9Retriever""\n(OOB default)\n----\nVectorDB-backed search\nfalls back to source mapping;
+fork again
+  :""Domain Agents (SBB)""\n  FraudDetectionAgent\n  ClaimsTriageAgent\n  DocumentExtractorAgent\n----\nExtend BaseAgent or\nK9ValidationLoopAgent;
+end fork
+
+note right
+  SBBs extend ABBs.
+  Organization-specific.
+  Consistent across projects,
+  business units, enterprise.
+end note
+
+|ABB Layer\n(Abstract Contracts)|
+#LightBlue:The ABB **never changes**\nwhen a new SBB is added.\n----\n219 existing tests pass\nafter every new feature.;
+
+@enduml
