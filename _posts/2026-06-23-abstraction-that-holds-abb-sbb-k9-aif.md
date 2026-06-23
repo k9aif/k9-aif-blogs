@@ -22,8 +22,6 @@ Abstraction is not about hiding complexity. It is about drawing the right lines 
 
 A well-defined abstract class is a contract. It says: "Here is what you must provide. Here is what I guarantee. Everything else is your business." When that contract is right — when it captures the essential interface without leaking implementation details — you can swap the concrete implementation without touching the caller. You can add a new implementation without modifying the framework. You can test the contract independent of any specific provider.
 
-This is Liskov. This is the Open-Closed Principle. This is what every Enterprise Architect and AI Architect learned — or should have learned — before they ever touched an LLM.
-
 ---
 
 ## What Is Happening in the Agentic AI Space
