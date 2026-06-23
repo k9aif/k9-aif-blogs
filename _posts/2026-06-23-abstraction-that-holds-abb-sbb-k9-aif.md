@@ -31,7 +31,7 @@ One big monolithic script. Hardcoded provider calls. No separation between the w
 
 And it does work. For that one demo. For that one model. For that one use case.
 
-Then someone asks: "Can we swap Ollama for Watsonx?" And the answer is: rewrite everything. "Can we add a governance check before the LLM call?" Rewrite everything. "Can another team reuse this agent in a different flow?" They can't. The agent doesn't know where its own logic ends and the orchestration begins.
+Then someone asks: "Can we swap the LLM provider?" Rewrite everything. "Can we add a governance check before the inference call?" Rewrite everything. "Can we switch the vector database?" Rewrite everything. "Can another team reuse this agent in a different flow?" They can't. The agent doesn't know where its own logic ends and the orchestration begins.
 
 This is not engineering. This is prototyping without discipline — and it is dangerous, because these POCs get promoted as production-ready, and the technical debt they carry is invisible until it's too late.
 
