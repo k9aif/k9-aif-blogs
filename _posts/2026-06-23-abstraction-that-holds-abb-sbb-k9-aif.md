@@ -148,7 +148,7 @@ k9_factories/<concern>_factory.py         ← Config-driven wiring
 config.yaml                               ← Provider selection at deployment
 ```
 
-This pattern now covers nine concerns — and growing:
+This pattern now covers nine framework concerns — and growing.
 
 | Concern           | ABB                      | OOB SBB                      | Factory                     |
 | ----------------- | ------------------------ | ---------------------------- | --------------------------- |
