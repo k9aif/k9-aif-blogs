@@ -9,7 +9,7 @@ author: Ravi Natarajan
 
 > "The entire history of software engineering is one of rising levels of abstraction. This is as it was, is now, and always shall be." — Grady Booch
 
-I first encountered Object-Oriented Analysis and Design in the early 1990s. Inheritance, multiple inheritance, dynamic binding, polymorphism — these were not textbook concepts to me. They were tools that made software *beautiful*. You could write something that held its shape under change. You could build a system where adding a new capability didn't require rewriting what already worked. Over thirty-plus years in software engineering, that idea — that abstraction is the mechanism by which software survives change — has guided how I think about every system I design.
+It was 1993. C++ was incredibly popular, and Grady Booch's *Object-Oriented Analysis and Design with Applications* was the book that changed how I thought about software. It made me transition from writing procedural code to thinking in objects — in contracts, in hierarchies, in abstractions that held. Inheritance, multiple inheritance, dynamic binding, polymorphism — these were not textbook concepts to me. They were tools that made software *beautiful*. You could write something that held its shape under change. You could build a system where adding a new capability didn't require rewriting what already worked. Over thirty-plus years in software engineering, that idea — that abstraction is the mechanism by which software survives change — has guided how I think about every system I design.
 
 Abstraction is not about hiding complexity. It is about drawing the right lines — the lines that hold when requirements change, when providers change, when teams change, when the enterprise scales.
 
