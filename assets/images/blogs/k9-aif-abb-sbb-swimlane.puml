@@ -5,54 +5,94 @@ skinparam defaultFontName "Segoe UI"
 skinparam defaultFontSize 13
 skinparam shadowing false
 skinparam roundcorner 8
-skinparam swimlaneWidth 200
 
-|#E8F0FE| ABB Layer\n(Abstract Contracts) |
-|#FFF3E0| Factory Layer\n(Config-Driven Wiring) |
-|#E8F5E9| SBB Layer\n(Concrete Implementations) |
-
-|ABB Layer\n(Abstract Contracts)|
-:""BaseEmbeddingService""\n  embed(text) -> List[float]\n  embed_batch(texts);
-:""BaseVectorDB""\n  insert(id, embedding, metadata)\n  search(query_embedding, top_k)\n  delete(id);
-:""BaseRetriever""\n  retrieve(intent, query, top_k);
-:""BaseAgent""\n  execute(payload) -> dict;
+|#E3F2FD| **ABB Layer** — Abstract Contracts |
+start
+:""BaseAgent""
+  execute(payload) → dict;
+:""BaseVectorDB""
+  insert() / search() / delete();
+:""BaseEmbeddingService""
+  embed(text) → List[float];
+:""BaseRetriever""
+  retrieve(intent, query, top_k);
+:""BaseModelRouter""
+  route(request) → RouteDecision;
+:""BaseGovernance""
+  pre_process() / post_process();
 note right
-  ABB defines **what**, never **how**.
-  Stable contracts that never change.
+  Stable contracts.
+  Define **what**, never **how**.
+  Never contain domain logic.
   Located in k9_core/
 end note
 
-|Factory Layer\n(Config-Driven Wiring)|
-:""EmbeddingServiceFactory""\n  config key: vectordb.embedding_provider\n  default: **ollama**;
-:""VectorDBFactory""\n  config key: vectordb.provider\n  default: **chromadb**;
-:""RetrieverFactory""\n  config key: retrieval.default_retriever\n  default: **k9**;
-:""AgentRegistry""\n  register(name, cls) / create(name);
+|#FFF8E1| **Factory Layer** — Config-Driven Wiring |
+:""AgentRegistry""
+  register(name, cls) / create(name);
+:""VectorDBFactory""
+  vectordb.provider → chromadb | milvus | qdrant | pgvector;
+:""EmbeddingServiceFactory""
+  vectordb.embedding_provider → ollama | custom;
+:""RetrieverFactory""
+  retrieval.default_retriever → k9 | custom;
+:""ModelRouterFactory""
+  inference.router.type → k9_model_router | custom;
 note right
-  Factories read config.yaml at startup.
+  Reads config.yaml at startup.
   SBB teams switch providers
-  without touching framework code.
+  by changing one config key —
+  no code changes required.
 end note
 
-|SBB Layer\n(Concrete Implementations)|
-
+|#E8F5E9| **SBB Layer** — Concrete Implementations |
 fork
-  :""OllamaEmbeddingService""\n(OOB default)\n----\nYour custom SBB:\n  WatsonxEmbeddingService\n  OpenAIEmbeddingService;
+  :**Domain Agents**
+  ----
+  FraudDetectionAgent
+  ClaimsTriageAgent
+  DocumentExtractorAgent
+  ----
+  Extend BaseAgent or
+  K9ValidationLoopAgent;
 fork again
-  :""ChromaDBAdapter""\n(OOB default)\n----\nSBB adapters:\n  MilvusAdapter\n  QdrantAdapter\n  PgVectorAdapter;
+  :**Vector Store Adapters**
+  ----
+  ChromaDBAdapter (OOB)
+  MilvusAdapter
+  QdrantAdapter
+  PgVectorAdapter
+  ----
+  Your custom adapter;
 fork again
-  :""K9Retriever""\n(OOB default)\n----\nVectorDB-backed search\nfalls back to source mapping;
+  :**Embedding Services**
+  ----
+  OllamaEmbeddingService
+  (OOB default)
+  ----
+  WatsonxEmbeddingService
+  OpenAIEmbeddingService
+  Your custom service;
 fork again
-  :""Domain Agents (SBB)""\n  FraudDetectionAgent\n  ClaimsTriageAgent\n  DocumentExtractorAgent\n----\nExtend BaseAgent or\nK9ValidationLoopAgent;
+  :**Model Routers**
+  ----
+  K9ModelRouter (OOB)
+  ----
+  Custom routing logic
+  per organization;
 end fork
 
 note right
-  SBBs extend ABBs.
   Organization-specific.
+  Extends ABB contracts.
   Consistent across projects,
   business units, enterprise.
 end note
 
-|ABB Layer\n(Abstract Contracts)|
-#LightBlue:The ABB **never changes**\nwhen a new SBB is added.\n----\n219 existing tests pass\nafter every new feature.;
+|#E3F2FD| **ABB Layer** — Abstract Contracts |
+#LightBlue:ABB **never changes** when a new SBB is added.
+Existing tests pass after every new feature.
+**Arrows only go down — SBBs extend, never modify.**;
+stop
 
 @enduml
