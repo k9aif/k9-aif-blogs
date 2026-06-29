@@ -85,8 +85,7 @@ class ChromaDBAdapter(BaseVectorDB):
 
     def __init__(self, config=None, monitor=None):
         super().__init__(name="ChromaDBAdapter", monitor=monitor)
-        self._config = config or {}
-        self._client = None
+        ...
 
     def insert(self, doc_id, embedding, metadata):
         self._ensure_client()

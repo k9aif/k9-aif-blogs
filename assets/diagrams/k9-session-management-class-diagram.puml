@@ -1,0 +1,104 @@
+@startuml k9-session-management
+
+abstract class BaseCache <<ABB>> {
+  +get(key): Any
+  +set(key, value, ttl)
+  +delete(key)
+  +clear()
+  +exists(key): bool
+}
+
+abstract class BaseSessionStore <<ABB>> {
+  +get(session_id): K9Session
+  +save(session)
+  +delete(session_id)
+  +exists(session_id): bool
+}
+
+class K9Session {
+  +session_id: str
+  +user_id: str
+  +context: dict
+  +status: SessionStatus
+  +ttl: int
+  +created_at: datetime
+  +last_active: datetime
+  __
+  +touch()
+  +is_expired(): bool
+  +to_dict(): dict
+  +{static} from_dict(data): K9Session
+}
+
+class K9SessionManager {
+  -_store: BaseSessionStore
+  -_default_ttl: int
+  __
+  +on_session_start(user_id): K9Session
+  +on_session_get(session_id): K9Session
+  +on_session_update(session_id, delta)
+  +on_session_expire(session_id)
+  +on_session_destroy(session_id)
+  +enrich_payload(session, payload): dict
+}
+
+class SessionFactory <<Static>> {
+  +{static} create_manager(config): K9SessionManager
+  +{static} get_store(name, config): BaseSessionStore
+}
+
+class CacheFactory <<Static>> {
+  +{static} create(config): BaseCache
+  +{static} get(name, config): BaseCache
+}
+
+class RedisAdapter <<SBB>> {
+  -_client: Redis
+  -_prefix: str
+}
+
+class InMemoryAdapter <<SBB>> {
+  -_store: dict
+}
+
+class RedisSessionStore <<SBB>> {
+  -_client: Redis
+  -_prefix: str
+}
+
+class SQLiteSessionStore <<SBB>> {
+  -_db_path: str
+}
+
+class ChatAgent <<SBB>> {
+  -_cache: BaseCache
+  -_ttl: int
+  -_max_history: int
+  __
+  +execute(payload): dict
+  -_get_history(session_id): list
+  -_format_history(history): str
+}
+
+note right of ChatAgent
+  "Retrieves full conversation history
+  from cache, formats as prompt,
+  sends to LLM, stores updated
+  history back — all within
+  the standard execute() contract."
+end note
+
+BaseCache <|-- RedisAdapter
+BaseCache <|-- InMemoryAdapter
+BaseSessionStore <|-- RedisSessionStore
+BaseSessionStore <|-- SQLiteSessionStore
+
+K9SessionManager --> BaseSessionStore : uses
+K9SessionManager --> K9Session : manages lifecycle
+SessionFactory ..> K9SessionManager : creates
+SessionFactory ..> BaseSessionStore : provisions
+CacheFactory ..> BaseCache : provisions
+ChatAgent --> CacheFactory : get/set history
+ChatAgent ..> K9SessionManager : session lifecycle
+
+@enduml
