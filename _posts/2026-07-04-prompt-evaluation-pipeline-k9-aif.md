@@ -50,39 +50,7 @@ This is where prompt evaluation applies. Before you deploy a prompt template int
 
 The developer workflow looks like this:
 
-```plantuml
-@startuml PromptAuthoringWorkflow
-skinparam activityBackgroundColor #f8fafc
-skinparam activityBorderColor #94a3b8
-skinparam arrowColor #475569
-skinparam activityDiamondBackgroundColor #fef9c3
-skinparam activityDiamondBorderColor #ca8a04
-
-start
-
-:Author prompt template\n(guided chat step, agent system prompt,\nintake form instruction);
-
-:Define test cases\n(representative inputs + expected behaviour);
-
-:Run **run_suite**(prompt, test_cases);
-
-:Receive SuiteResult\n(grade per case, average score, pass rate);
-
-if (Pass rate acceptable?\nAverage grade ≥ C?) then (yes)
-  :Promote prompt to\napplication config;
-  stop
-else (no)
-  :Review failing cases\nand judge rationale;
-  :Revise prompt template;
-  :Run **compare**(v1, v2, test_cases);
-  :Receive ComparisonResult\n(winner, score delta);
-  :Adopt winning variant;
-  :Re-run suite to confirm;
-  stop
-endif
-
-@enduml
-```
+[![Prompt Authoring Workflow](../assets/images/blogs/k9-prompt-authoring-workflow.png)](../assets/images/blogs/k9-prompt-authoring-workflow.png)
 
 The loop is tight: author, test, grade, revise, compare, confirm. Every step is automated. The only human judgment is in reading the rationale — *why* did the judge score completeness at 55%? — and deciding how to improve the prompt.
 
@@ -108,86 +76,7 @@ The data model was equally deliberate:
 - `ComparisonResult` names the winner and shows both scores
 - `SuiteResult` aggregates: pass count, fail count, average score, average grade, and all individual results
 
-```plantuml
-@startuml K9PromptEvaluator
-skinparam classAttributeIconSize 0
-skinparam linetype ortho
-
-abstract class BaseComponent
-
-abstract class BasePromptEvaluator {
-  + {abstract} evaluate(prompt, input_data, actual_output, expected) : EvaluationResult
-  + {abstract} compare(prompt_a, prompt_b, test_cases) : ComparisonResult
-  + {abstract} run_suite(prompt, test_cases) : SuiteResult
-}
-
-class K9PromptEvaluator {
-  - judge_model : str
-  - pass_threshold : float
-  + evaluate(prompt, input_data, actual_output, expected) : EvaluationResult
-  + compare(prompt_a, prompt_b, test_cases) : ComparisonResult
-  + run_suite(prompt, test_cases) : SuiteResult
-  - _invoke_prompt(prompt, input_data) : str
-  - _judge(prompt, input_data, actual_output, expected) : EvaluationResult
-  - _parse_judge_response(raw) : EvaluationResult
-}
-
-class EvaluationFactory {
-  + {static} create(config) : BasePromptEvaluator
-}
-
-class EvaluationResult {
-  + score : float
-  + grade : str
-  + verdict : str
-  + dimensions : list[DimensionScore]
-  + rationale : str
-  + actual_output : str
-}
-
-class DimensionScore {
-  + name : str
-  + score : float
-  + weight : float
-  + rationale : str
-}
-
-class ComparisonResult {
-  + winner : str
-  + score_a : float
-  + score_b : float
-  + grade_a : str
-  + grade_b : str
-  + is_tie : bool
-}
-
-class SuiteResult {
-  + results : list[EvaluationResult]
-  + pass_count : int
-  + fail_count : int
-  + average_score : float
-  + average_grade : str
-}
-
-class PromptTestCase {
-  + input_data : dict
-  + expected_output : str
-  + description : str
-}
-
-BaseComponent <|-- BasePromptEvaluator
-BasePromptEvaluator <|-- K9PromptEvaluator
-EvaluationFactory ..> K9PromptEvaluator : creates
-
-K9PromptEvaluator --> EvaluationResult : returns
-K9PromptEvaluator --> ComparisonResult : returns
-K9PromptEvaluator --> SuiteResult : returns
-K9PromptEvaluator ..> PromptTestCase : consumes
-
-EvaluationResult *-- DimensionScore
-SuiteResult *-- EvaluationResult
-@enduml
-```
+[![K9PromptEvaluator Class Diagram](../assets/images/blogs/k9-prompt-evaluator-class-diagram.png)](../assets/images/blogs/k9-prompt-evaluator-class-diagram.png)
 
 ---
 
