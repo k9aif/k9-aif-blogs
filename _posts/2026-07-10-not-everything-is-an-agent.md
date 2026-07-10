@@ -25,7 +25,7 @@ K9X Studio now applies a classification gate when you import a BPMN file or a pr
 
 Two signals are unambiguous:
 
-**BPMN task type** is a direct signal. A `ServiceTask` calls an external service — that is an API Adapter. A `BusinessRuleTask` invokes a rules engine — that is a Rules Adapter. A `ScriptTask` runs deterministic code — that is a Workflow Adapter. A `SendTask` or `ReceiveTask` fires or waits on an integration message — that is a Process Adapter. Only a plain `Task` or a `UserTask` requires a name-based heuristic.
+**BPMN task type** is a direct signal. A `ServiceTask` calls an external service — that is an API Adapter. A `BusinessRuleTask` invokes a rules engine — that is a Rules Adapter. A `ScriptTask` runs deterministic code — that is a Workflow Adapter. A `SendTask` or `ReceiveTask` fires or waits on a message bus — that is a Messaging Adapter. Only a plain `Task` or a `UserTask` requires a name-based heuristic.
 
 **Governance zone** from a structured spec is equally direct. GREEN-zone steps — flagged deterministic in the spec's agent register — become Integration Adapters. AMBER and RED steps, where reasoning and uncertainty handling are required, become agents (`K9ValidationLoopAgent` or `K9CriticActorAgent`).
 
@@ -60,18 +60,21 @@ One orchestrator is deterministic. One is agentic. The split is explicit and int
 
 Integration Adapters are not placeholder nodes. They are a first-class component type in K9X Studio.
 
-Six adapter types are available in the palette:
+Seven adapter types are available in the palette:
 
-| Type | Maps to |
-|---|---|
-| API Adapter | REST / SOAP / GraphQL endpoint |
-| Rules Adapter | Drools, ODM, Corticon, any decision engine |
-| Workflow Adapter | Script execution, deterministic flow step |
-| Process Flow Adapter | MuleSoft, TIBCO, AppConnect, ESB |
-| BPM Adapter | Camunda, Appian, Pega, Step Functions |
-| Data Adapter | Database, S3, warehouse, repository |
+| Type | Maps to | Can chain to |
+|---|---|---|
+| Messaging Adapter | Kafka, RabbitMQ, SQS/SNS, Azure Service Bus | Workflow Adapter, Process Flow Adapter |
+| API Adapter | REST / SOAP / GraphQL endpoint | — |
+| Rules Adapter | Drools, ODM, Corticon, any decision engine | — |
+| Workflow Adapter | Airflow, Step Functions, IBM BAW | — |
+| Process Flow Adapter | MuleSoft, TIBCO, AppConnect, ESB | — |
+| BPM Adapter | Camunda, Appian, Pega | — |
+| Data Adapter | Database, S3, warehouse, repository | — |
 
-Adapters wire to Orchestrators. Orchestrators connect to either Squads or Adapters. The Router connects to Orchestrators. That topology is enforced on the canvas — an Adapter cannot be wired as a source, only as a target.
+Most adapters are leaf nodes — the Orchestrator calls them and the chain ends. The Messaging Adapter is the exception. An event on Kafka or SQS can trigger a downstream workflow or integration flow, so the canvas allows: `Orchestrator → Messaging Adapter → Workflow Adapter` or `→ Process Flow Adapter`.
+
+An Orchestrator can also call a Workflow Adapter directly for a synchronous trigger — without messaging in between. The SA picks the pattern: synchronous call or event-driven chain.
 
 This makes the deterministic/agentic boundary visible in the architecture diagram rather than buried in implementation detail.
 
@@ -114,4 +117,4 @@ The architecture decision cannot be deferred to the developer. It belongs at the
 
 ---
 
-*K9X Studio `0.4.0` ships with Integration Adapters, automatic BPMN and spec classification, and ARCHITECTURE.md scaffold generation. `pip install --upgrade k9x` then `k9x studio`.*
+*K9X Studio ships with seven Integration Adapter types (including Messaging Adapter for event-driven chains), automatic BPMN and spec classification, and ARCHITECTURE.md scaffold generation. `pip install --upgrade k9x` then `k9x studio`.*
