@@ -87,6 +87,23 @@ If an architect disagrees — if Subrogation & Recovery actually requires LLM re
 
 ---
 
+## Put on the Architecture Hat
+
+Learning CrewAI, MCP, LangGraph, and agentic frameworks is valuable. Understanding how agents communicate, how tools are registered, how context flows between steps — all of it matters.
+
+But knowing how to build an agent is not the same as knowing when to build one.
+
+That decision requires putting on the architecture hat. Not the developer hat. Not the AI enthusiasm hat. The architecture hat asks different questions:
+
+- What is the nature of this step — deterministic or uncertain?
+- What happens if this step produces a different answer on consecutive runs with the same input?
+- What is the cost — in latency, in tokens, in debugging time — of making this step non-deterministic?
+- Is there an existing system (a rules engine, a payment gateway, a BPM platform) that already does this correctly?
+
+If the honest answer to those questions points to Appian, MuleSoft, TIBCO, or a well-written service call — that is the right answer. Architecture is not about using AI everywhere. It is about using the right pattern in the right place.
+
+---
+
 ## The Rule
 
 Call the LLM when the answer requires reasoning, when the evidence is ambiguous, when the output must be iterated to meet a quality bar.
