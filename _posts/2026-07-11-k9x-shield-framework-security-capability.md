@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "K9X Shield — Security as a Framework Capability"
-date: 2026-07-18
+date: 2026-07-11
 author: Ravi Natarajan
 ---
 
@@ -48,7 +48,7 @@ Both layers ship as Architecture Building Blocks. Both are configuration-driven.
 
 Covers the Zero Trust Execution Layer: execution context, trust decisions, policy enforcement, and how `BaseOrchestrator` and `BaseAgent` enforce the layer at every execution boundary.
 
-[**Part 2 — K9X Shield: Security as an Architectural Capability**](/2026/07/17/k9x-shield-chain-of-vulnerability-tests.html)
+[**Part 2 — K9X Shield: Security as an Architectural Capability**](/2026/07/11/k9x-shield-chain-of-vulnerability-tests.html)
 
 Covers the Chain of Vulnerability Tests: `VulnerabilityChain`, `BaseVulnerabilityCheck`, the three-state result model (PASS / FLAG / BLOCK), the six OOB handlers, dual-gate ingress and egress, and `ShieldGovernance`.
 

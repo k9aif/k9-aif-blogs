@@ -213,6 +213,6 @@ And that shift changes how we design AI systems.
 
 ---
 
-*This is Part 1 of the K9X Shield series. Part 1 covers the Zero Trust Execution Layer — controlling who does what and whether an action should execute. [Continue to Part 2 → K9X Shield: Security as an Architectural Capability](/2026/07/17/k9x-shield-chain-of-vulnerability-tests.html), which covers payload-level inspection — controlling what enters the processing pipeline.*
+*This is Part 1 of the K9X Shield series. Part 1 covers the Zero Trust Execution Layer — controlling who does what and whether an action should execute. [Continue to Part 2 → K9X Shield: Security as an Architectural Capability](/2026/07/11/k9x-shield-chain-of-vulnerability-tests.html), which covers payload-level inspection — controlling what enters the processing pipeline.*
 
-*For a complete overview of what ships in the framework: [K9X Shield — Security as a Framework Capability, Not a Post](/2026/07/18/k9x-shield-framework-security-capability.html)*
+*For a complete overview of what ships in the framework: [K9X Shield — Security as a Framework Capability, Not a Post](/2026/07/11/k9x-shield-framework-security-capability.html)*
