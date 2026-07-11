@@ -1,5 +1,5 @@
 ---
-title: "Zero Trust for Agentic Systems — From Access Control to Execution Control"
+title: "K9X Shield — Part 1: Zero Trust for Agentic Systems"
 date: 2026-04-26
 author: Ravi Natarajan
 ---
@@ -111,18 +111,40 @@ This keeps the pattern extensible while allowing concrete SBB implementations to
 
 The Zero Trust Execution Layer is not a standalone component.
 
-It is implemented as a native capability within the K9-AIF framework and integrated directly into core architectural layers:
+It is implemented as a native capability within the K9-AIF framework and integrated directly into the core execution pipeline.
 
-- **BaseRouter** → enforcement before routing  
-- **BaseOrchestrator** → enforcement before execution  
+When enabled through `config.yaml`, Zero Trust enforcement is applied automatically at every agent execution boundary.
 
-Built using K9-AIF’s Architecture Building Blocks (ABB), the Zero Trust layer is:
+The framework integrates this capability into its core Architecture Building Blocks (ABB):
 
-- reusable  
-- extensible  
-- configuration-driven  
+- **BaseRouter** → evaluates requests before routing
+- **BaseOrchestrator** → coordinates execution across workflows
+- **BaseAgent** → enforces configurable pre- and post-execution verification around every agent invocation
 
-This allows Zero Trust to be applied consistently across all agentic workflows without requiring application-specific logic.
+Built using K9-AIF’s Architecture Building Blocks (ABB), the Zero Trust Execution Layer is:
+
+- reusable
+- extensible
+- configuration-driven
+- consistently enforced across every agent execution boundary
+
+Applications do not implement Zero Trust themselves. They simply enable it through configuration. The framework applies the appropriate security controls before and after every agent executes.
+
+Two configuration keys are all that is required. In `config.yaml`, the `security.zero_trust` block switches enforcement on. In the agent’s YAML, the `governance` flags determine which hooks fire:
+
+```yaml
+# config.yaml — enable Zero Trust enforcement
+enable_zero_trust: true    # read by BaseOrchestrator at startup
+```
+
+```yaml
+# agent.yaml — pre/post governance hooks
+governance:
+  pre_process: true    # Zero Trust evaluation fires before the agent reaches the LLM
+  post_process: true   # policy obligations (masking, audit) applied after the response
+```
+
+`enable_zero_trust: true` activates enforcement on the orchestrator. `pre_process: true` means every execution context is evaluated and risk-scored before the LLM is called. `post_process: true` means any obligations produced by the TrustDecision — redaction, audit logging, escalation — are applied before the result leaves the agent. Both governance flags default to `false`; you opt agents in individually.
 
 > Zero Trust is not a gate. It is a layer.
 
@@ -186,6 +208,11 @@ And that shift changes how we design AI systems.
 ## References
 
 - K9-AIF Framework: https://github.com/k9aif/k9-aif-framework
+- PyPI: https://pypi.org/project/k9-aif/
 - Blog: https://blog.k9x.ai
 
 ---
+
+*This is Part 1 of the K9X Shield series. Part 1 covers the Zero Trust Execution Layer — controlling who does what and whether an action should execute. [Continue to Part 2 → K9X Shield: Security as an Architectural Capability](/2026/07/17/k9x-shield-chain-of-vulnerability-tests.html), which covers payload-level inspection — controlling what enters the processing pipeline.*
+
+*For a complete overview of what ships in the framework: [K9X Shield — Security as a Framework Capability, Not a Post](/2026/07/18/k9x-shield-framework-security-capability.html)*
