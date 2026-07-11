@@ -1,0 +1,38 @@
+@startuml k9x-shield-linkedin
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica Neue"
+skinparam defaultFontSize 13
+skinparam padding 10
+skinparam dpi 150
+
+skinparam rectangle {
+  RoundCorner 12
+  BorderThickness 1
+}
+
+skinparam arrow {
+  Color #64748B
+  FontColor #475569
+  FontSize 11
+  Thickness 2
+}
+
+title <size:20><b>K9X Shield — Two Complementary Capabilities</b></size>
+
+rectangle "<b>K9-AIF Framework  </b>" as fw #EFF6FF {
+
+  rectangle "<b>BaseRouter</b>\nenable_zero_trust: true" as BR #F1F5F9
+  rectangle "<b>BaseOrchestrator</b>\nenable_zero_trust: true" as BO #F1F5F9
+  rectangle "<b>BaseAgent</b>\nsecurity.shield.enabled: true" as BA #F1F5F9
+
+  rectangle "<b>Zero Trust Execution Layer</b>\n\n<i>Should this action execute?</i>\n\nExecution context · Risk score\nTrust decision · Policy enforcement" as ZT #DCFCE7
+  rectangle "<b>Chain of Vulnerability Tests</b>\n\n<i>Is this payload safe to process?</i>\n\nIngress · Egress · Six OOB handlers\nPASS / FLAG / BLOCK" as CVT #FEE2E2
+
+}
+
+BR -down-> ZT : enforced at routing
+BO -down-> ZT : enforced before any squad runs
+BA -down-> CVT : dual-gate: before LLM · before tool execution
+
+@enduml

@@ -42,6 +42,8 @@ k9_aif_abb/k9_security/
 
 Both layers are Architecture Building Blocks. Both are configuration-driven. Both integrate through `BaseAgent`'s existing governance hooks.
 
+[![K9X Shield — Two Complementary Capabilities](../assets/images/blogs/k9x-shield-linkedin.png)](../assets/images/blogs/k9x-shield-linkedin.png)
+
 ---
 
 ## The Series
