@@ -11,8 +11,6 @@ They fail because nothing governs what the model is allowed to execute — or wh
 
 Most AI frameworks provide coordination, planning, and orchestration. Security is often left to the solution team. That is the wrong architectural boundary. By the time a solution team is wiring in security controls, they are no longer building an application — they are rebuilding framework capabilities.
 
-K9-AIF takes a different position.
-
 Security is not a solution-layer concern. It is a first-class architectural capability of the framework itself.
 
 ---
@@ -31,9 +29,9 @@ The K9X Shield series covers both.
 
 ---
 
-## What Ships in K9-AIF Today
+## Where This Lives in the Framework
 
-The `k9_security` package in `k9_aif_abb` contains two independent security layers:
+K9-AIF implements both capabilities inside `k9_security`, a dedicated package within `k9_aif_abb`:
 
 ```
 k9_aif_abb/k9_security/
@@ -42,7 +40,7 @@ k9_aif_abb/k9_security/
     └── checks/          ← six OOB vulnerability handlers
 ```
 
-Both layers ship as Architecture Building Blocks. Both are configuration-driven. Both integrate through `BaseAgent`'s existing governance hooks — no new wiring required.
+Both layers are Architecture Building Blocks. Both are configuration-driven. Both integrate through `BaseAgent`'s existing governance hooks.
 
 ---
 
@@ -58,18 +56,8 @@ Covers the Chain of Vulnerability Tests: `VulnerabilityChain`, `BaseVulnerabilit
 
 ---
 
-## Install Today
-
-```bash
-pip install k9-aif
-```
-
-Both capabilities are available in K9-AIF 1.8.1.
-
----
-
 ## References
 
 - K9-AIF Framework: https://github.com/k9aif/k9-aif-framework
-- PyPI: https://pypi.org/project/k9-aif/
+- PyPI (k9-aif 1.8.1): https://pypi.org/project/k9-aif/
 - Blog: https://blog.k9x.ai
