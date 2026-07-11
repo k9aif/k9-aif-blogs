@@ -5,17 +5,21 @@ date: 2026-07-11
 author: Ravi Natarajan
 ---
 
-Agentic AI systems do not fail because the model is wrong. They fail because the architecture around the model has no opinion about what the model is allowed to do — or what it is allowed to process.
+Agentic AI systems rarely fail because of a lack of model capability.
 
-Most frameworks ship coordination and orchestration. Security is left to the team building the solution. That is the wrong place for it. By the time a solution team is wiring in security checks, they are already writing framework code. They are reinventing what the framework should have provided.
+They fail because nothing governs what the model is allowed to execute — or what it is allowed to process.
 
-K9-AIF takes a different position: security is a first-class architectural capability, not a solution-layer concern.
+Most AI frameworks provide coordination, planning, and orchestration. Security is often left to the solution team. That is the wrong architectural boundary. By the time a solution team is wiring in security controls, they are no longer building an application — they are rebuilding framework capabilities.
+
+K9-AIF takes a different position.
+
+Security is not a solution-layer concern. It is a first-class architectural capability of the framework itself.
 
 ---
 
 ## Two Complementary Capabilities
 
-Securing an agentic AI system requires answering two distinct questions. They are not the same question. Neither answer substitutes for the other.
+Two complementary capabilities.
 
 **Should this action execute?**
 Every agent action carries context — who is initiating it, what data it touches, where it is going. The answer to this question requires evaluating that context against a risk model and producing a decision: allow, deny, allow with obligations, or require approval. This is execution control.
