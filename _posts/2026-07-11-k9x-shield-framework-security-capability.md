@@ -46,6 +46,27 @@ Both layers are Architecture Building Blocks. Both are configuration-driven. Bot
 
 ---
 
+## Enterprise-Level Enforcement
+
+Both capabilities are configuration-driven. That raises a practical question for organizations running multiple K9-AIF solutions: how do you ensure a solution team cannot silently disable a security control?
+
+K9-AIF addresses this through `_policy.locked` in the ABB `config.yaml`. Any key listed there is immutable at the enterprise level — SBB configuration cannot override it, and any override attempt is rejected at config load time with an audit warning.
+
+```yaml
+# ABB config.yaml — enterprise policy
+_policy:
+  locked:
+    - enable_zero_trust
+    - security.shield.enabled
+    - governance.enforce
+```
+
+An SBB that sets `enable_zero_trust: false` in its own `config.yaml` will have that override silently rejected. The ABB value holds. The framework logs the attempted override. Every Router, Orchestrator, and Agent receives the enforced value — not what the SBB requested.
+
+Security controls set at the framework level cannot be disabled at the solution level.
+
+---
+
 ## The Series
 
 [**Part 1 — Zero Trust for Agentic Systems**](/zero-trust-execution-layer-agentic-systems/)
