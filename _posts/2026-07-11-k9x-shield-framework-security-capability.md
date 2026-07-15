@@ -71,13 +71,17 @@ Security controls set at the framework level cannot be disabled at the solution 
 
 ## The Series
 
-[**Part 1 — Zero Trust for Agentic Systems**](/zero-trust-execution-layer-agentic-systems/)
+**Part 1 — Zero Trust for Agentic Systems**
 
 Covers the Zero Trust Execution Layer: execution context, trust decisions, policy enforcement, and how `BaseOrchestrator` and `BaseAgent` enforce the layer at every execution boundary.
 
-[**Part 2 — K9X Shield: Security as an Architectural Capability**](/k9x-shield-chain-of-vulnerability-tests/)
+[Read Part 1 →](/zero-trust-execution-layer-agentic-systems/)
+
+**Part 2 — K9X Shield: Security as an Architectural Capability**
 
 Covers the Chain of Vulnerability Tests: `VulnerabilityChain`, `BaseVulnerabilityCheck`, the three-state result model (PASS / FLAG / BLOCK), the six OOB handlers, dual-gate ingress and egress, and `ShieldGovernance`.
+
+[Read Part 2 →](/k9x-shield-chain-of-vulnerability-tests/)
 
 ---
 
