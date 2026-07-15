@@ -25,6 +25,8 @@ Every agent action carries context — who is initiating it, what data it touche
 **Is this payload safe to process?**
 An authorized agent can still receive a malicious payload. Threat actors embed instructions in documents, search results, and web content. The agent fetches that content and, without architectural safeguards, follows whatever instructions it contains. Stopping that requires inspecting the payload itself — not the execution context. This is payload inspection.
 
+This threat does not stop at the network perimeter. Organizations running LLMs on-premise or in private clouds are equally exposed — the attack arrives as a document, not as a network intrusion. The perimeter is intact. The payload walks through the front door.
+
 The K9X Shield series covers both.
 
 ---
