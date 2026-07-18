@@ -39,7 +39,7 @@ K9-AIF implements both capabilities inside `k9_security`, a dedicated package wi
 k9_aif_abb/k9_security/
 ├── zero_trust/          ← execution control
 └── vulnerability/       ← payload inspection
-    └── checks/          ← six OOB vulnerability handlers
+    └── checks/          ← twelve OOB vulnerability handlers
 ```
 
 Both layers are Architecture Building Blocks. Both are configuration-driven. Both integrate through `BaseAgent`'s existing governance hooks.
@@ -79,7 +79,7 @@ Covers the Zero Trust Execution Layer: execution context, trust decisions, polic
 
 **Part 2 — K9X Shield: Security as an Architectural Capability**
 
-Covers the Chain of Vulnerability Tests: `VulnerabilityChain`, `BaseVulnerabilityCheck`, the three-state result model (PASS / FLAG / BLOCK), the six OOB handlers, dual-gate ingress and egress, and `ShieldGovernance`.
+Covers the Chain of Vulnerability Tests: `VulnerabilityChain`, `BaseVulnerabilityCheck`, the three-state result model (PASS / FLAG / BLOCK), the twelve OOB handlers, dual-gate ingress and egress, and `ShieldGovernance`.
 
 [Read Part 2 →](/k9x-shield-chain-of-vulnerability-tests/)
 
@@ -88,5 +88,5 @@ Covers the Chain of Vulnerability Tests: `VulnerabilityChain`, `BaseVulnerabilit
 ## References
 
 - K9-AIF Framework: https://github.com/k9aif/k9-aif-framework
-- PyPI (k9-aif 1.8.1): https://pypi.org/project/k9-aif/
+- PyPI (k9-aif 1.8.2): https://pypi.org/project/k9-aif/
 - Blog: https://blog.k9x.ai

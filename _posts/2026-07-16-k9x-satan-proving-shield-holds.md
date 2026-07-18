@@ -27,11 +27,25 @@ Attack → Router (ingress gate)       → BLOCKED  ✓
 
 A block at any gate ends the attack. Anything that reaches the agent layer is not a partial pass — it is a finding, full stop.
 
-SATAN itself is a Solution Building Block. Every check it exercises, every attack it fires, extends a K9-AIF ABB — `BaseVulnerabilityCheck`, `BaseAttack`, `BaseGovernance`. Nothing about SATAN is special-cased. It is proof that the same contracts a solution team would use are the ones being tested.
+SATAN is not a Solution Building Block — it is not a governed application built on K9-AIF. It is an adversarial test tool built using the framework's own ABB classes to attack and validate the framework itself. That distinction matters: a red team that shares its logic with what it's attacking cannot produce an independent verdict. Every check SATAN exercises, every attack it fires, extends a K9-AIF ABB — `BaseVulnerabilityCheck`, `BaseAttack`, `BaseGovernance` — but SATAN's own attack logic never becomes part of Shield. It is proof that the same contracts a solution team would use are the ones being tested, fired at them from the outside.
 
 [![K9X SATAN — a live attack blocked at the Router](../assets/images/blogs/k9x-satan-screenshot.png)](../assets/images/blogs/k9x-satan-screenshot.png)
 
 That screenshot is not staged. It's `satan.k9x.ai`, live, firing a policy document with an injected "executive directive" override at a real pipeline. `FieldAnomalyCheck` catches the authority-override pattern at the Router, before the payload ever reaches an agent. The chain execution log underneath shows exactly which of the four ingress checks ran, in order, and which one stopped it.
+
+---
+
+## Twelve Framework Checks, One Local
+
+SATAN's two gates run 13 checks total — and as of this review, 12 of them are framework OOB (`k9_aif_abb.k9_security.vulnerability.checks`), not SATAN-specific code:
+
+`InputSizeCheck`, `PromptInjectionCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ToolArgumentCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck` shipped with the framework from the start. `ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, and `RequestFrequencyCheck` did not — SATAN built all five locally first, because the framework had no equivalent for Shadow AI/tool-identity abuse, memory poisoning, system-prompt leakage, output sanitization, or request-rate limiting.
+
+Once proven — attacked, contained, verified — those five turned out to be framework-generic in their actual logic, nothing insurance-claim-specific about any of them. So they were harvested upstream into the framework itself: SATAN's job was never to keep its own private security engine, it was to find the gap and prove the fix. `target/router.py` and `target/orchestrator.py` now import all five from the framework instead of from SATAN's own `target/`.
+
+Only one check stays local: `FieldAnomalyCheck`, the one catching the authority-override pattern in the screenshot above. Its red-flag terms — `EXEC-OVERRIDE`, `Priority: CRITICAL`, `COO auth codes` — are tuned specifically to this project's own insurance-claim test corpus. Promoting it as-is would misrepresent a worked example as a general framework capability. That's the same discipline in reverse: not every SATAN-local check deserves to become framework-OOB, only the ones that are actually general-purpose once you look at what they check for, not just why SATAN happened to build them.
+
+The direction only ever runs one way — proven-in-SATAN → generalized-into-framework, never framework internals shaped around what SATAN needs. That's what keeps the red team a red team.
 
 ---
 
@@ -90,6 +104,6 @@ You're reading it.
 
 - K9-AIF Framework: https://github.com/k9aif/k9-aif-framework
 - K9X SATAN: https://satan.k9x.ai
-- PyPI (k9-aif 1.8.1): https://pypi.org/project/k9-aif/
-- PyPI (k9x-satan 0.1.0): https://pypi.org/project/k9x-satan/
+- PyPI (k9-aif 1.8.2): https://pypi.org/project/k9-aif/
+- PyPI (k9x-satan 0.1.6): https://pypi.org/project/k9x-satan/
 - Blog: https://blog.k9x.ai
