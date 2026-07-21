@@ -37,17 +37,29 @@ That screenshot is not staged. It's `satan.k9x.ai`, live, firing a policy docume
 
 ## Thirteen Framework Checks, One Local
 
-SATAN's two gates run 14 checks total — and as of this review, 13 of them are framework OOB (`k9_aif_abb.k9_security.vulnerability.checks`), not SATAN-specific code:
+SATAN's two gates run 14 checks total — 13 framework OOB, 1 SATAN-local. Seven shipped with the framework from the start. Five were built in SATAN first, attacked, and harvested upstream once proven framework-generic. One, `PIIRequestCheck`, went straight into the framework after a live "compliance audit" attack — soliciting SSN, DOB, and account numbers with no literal PII in the payload — slipped past both gates. Only `FieldAnomalyCheck` remains SATAN-local: its red-flag terms (`EXEC-OVERRIDE`, `Priority: CRITICAL`, `COO auth codes`) are tuned to this project's own insurance-claim corpus, and promoting it as-is would misrepresent a worked example as a general capability.
 
-`InputSizeCheck`, `PromptInjectionCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ToolArgumentCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck` shipped with the framework from the start. `ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, and `RequestFrequencyCheck` did not — SATAN built all five locally first, because the framework had no equivalent for Shadow AI/tool-identity abuse, memory poisoning, system-prompt leakage, output sanitization, or request-rate limiting.
+| # | Check | Gate | Owner | Threat Class |
+|---|-------|------|-------|--------------|
+| 1 | `RequestFrequencyCheck` | Ingress | Framework OOB | Unbounded Consumption — OWASP LLM10 |
+| 2 | `InputSizeCheck` | Ingress | Framework OOB | Token-flood / oversized payload — OWASP LLM10 |
+| 3 | `PromptInjectionCheck` | Ingress | Framework OOB | Indirect Prompt Injection — Zscaler #1 · OWASP LLM01 |
+| 4 | `FieldAnomalyCheck` | Ingress | SATAN-local | Authority-override social engineering |
+| 5 | `MemoryPoisoningCheck` | Ingress | Framework OOB | Memory Poisoning — Zscaler #3 · OWASP LLM04 |
+| 6 | `ToolArgumentCheck` | Ingress + Egress | Framework OOB | Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05 |
+| 7 | `ToolAuthorizationCheck` | Ingress + Egress | Framework OOB | Shadow AI — unapproved tool — Zscaler #4 |
+| 8 | `PIIRequestCheck` | Ingress | Framework OOB | Solicited PII disclosure, no literal PII in payload — OWASP LLM02 |
+| 9 | `SemanticDriftCheck` | Egress | Framework OOB | Goal Hijacking & Privilege Escalation — Zscaler #2 · OWASP LLM06 |
+| 10 | `ExecutionGuardCheck` | Egress | Framework OOB | Destructive execution — Zscaler #2 · OWASP LLM06 |
+| 11 | `PIIBoundaryCheck` | Egress | Framework OOB | Sensitive Info Disclosure — OWASP LLM02 |
+| 12 | `HardcodedCredentialCheck` | Egress | Framework OOB | Supply chain / secret leakage — OWASP LLM03 |
+| 13 | `SystemPromptLeakageCheck` | Egress | Framework OOB | System Prompt Leakage — OWASP LLM07 |
+| 14 | `OutputSanitizationCheck` | Egress | Framework OOB | Improper Output Handling — OWASP LLM05 |
+| — | `GuardianGovernance` | Agent pre/post | SATAN-local | Semantic evasion of all 14 above (cross-cutting, optional) |
 
-Once proven — attacked, contained, verified — those five turned out to be framework-generic in their actual logic, nothing insurance-claim-specific about any of them. So they were harvested upstream into the framework itself: SATAN's job was never to keep its own private security engine, it was to find the gap and prove the fix. `target/router.py` and `target/orchestrator.py` now import all five from the framework instead of from SATAN's own `target/`.
+`ToolArgumentCheck`/`ToolAuthorizationCheck` run at both gates deliberately — ingress catches caller-supplied fields before Squad/Agent runs; egress catches a fresh tool call an agent generates mid-execution, which doesn't exist yet at ingress time. Same defense-in-depth principle as Guardian: additive, never a replacement.
 
-A sixth check, `PIIRequestCheck`, arrived differently: not harvested, but added straight to the framework after a live "compliance audit" attack — soliciting SSN, DOB, and account numbers with no literal PII in the payload — slipped past both gates. `FieldAnomalyCheck` is now the only SATAN-local check left.
-
-Only one check stays local: `FieldAnomalyCheck`, the one catching the authority-override pattern in the screenshot above. Its red-flag terms — `EXEC-OVERRIDE`, `Priority: CRITICAL`, `COO auth codes` — are tuned specifically to this project's own insurance-claim test corpus. Promoting it as-is would misrepresent a worked example as a general framework capability. That's the same discipline in reverse: not every SATAN-local check deserves to become framework-OOB, only the ones that are actually general-purpose once you look at what they check for, not just why SATAN happened to build them.
-
-The direction only ever runs one way — proven-in-SATAN → generalized-into-framework, never framework internals shaped around what SATAN needs. That's what keeps the red team a red team.
+Full inventory, kept current: [k9x.ai/k9x-security](https://k9x.ai/k9x-security). The direction only ever runs one way — proven-in-SATAN → generalized-into-framework, never framework internals shaped around what SATAN needs. That's what keeps the red team a red team.
 
 ---
 
@@ -106,6 +118,7 @@ You're reading it.
 
 - K9-AIF Framework: https://github.com/k9aif/k9-aif-framework
 - K9X SATAN: https://satan.k9x.ai
+- K9X Security — full check inventory: https://k9x.ai/k9x-security
 - PyPI (k9-aif 1.8.2): https://pypi.org/project/k9-aif/
 - PyPI (k9x-satan 0.1.6): https://pypi.org/project/k9x-satan/
 - Blog: https://blog.k9x.ai
