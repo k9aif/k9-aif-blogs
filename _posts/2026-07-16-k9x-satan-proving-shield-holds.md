@@ -29,7 +29,7 @@ A block at any gate ends the attack. Anything that reaches the agent layer is no
 
 SATAN is not a Solution Building Block — it is not a governed application built on K9-AIF. It is an adversarial test tool built using the framework's own ABB classes to attack and validate the framework itself. That distinction matters: a red team that shares its logic with what it's attacking cannot produce an independent verdict. Every check SATAN exercises, every attack it fires, extends a K9-AIF ABB — `BaseVulnerabilityCheck`, `BaseAttack`, `BaseGovernance` — but SATAN's own attack logic never becomes part of Shield. It is proof that the same contracts a solution team would use are the ones being tested, fired at them from the outside.
 
-[![K9X SATAN — a live attack blocked at the Router](../assets/images/blogs/k9x-satan-screenshot.png)](../assets/images/blogs/k9x-satan-screenshot.png)
+<a href="../assets/images/blogs/k9x-satan-screenshot.png" target="_blank" rel="noopener"><img src="../assets/images/blogs/k9x-satan-screenshot.png" alt="K9X SATAN — a live attack blocked at the Router"></a>
 
 That screenshot is not staged. It's `satan.k9x.ai`, live, firing a policy document with an injected "executive directive" override at a real pipeline. `FieldAnomalyCheck` catches the authority-override pattern at the Router, before the payload ever reaches an agent. The chain execution log underneath shows exactly which of the four ingress checks ran, in order, and which one stopped it.
 
@@ -94,7 +94,7 @@ Or just visit it: [satan.k9x.ai](https://satan.k9x.ai) — upload a document, fi
 
 The class diagram from Part 2 still holds — SATAN doesn't add new ABBs, it exercises the ones already there.
 
-[![k9x_Shield — Chain of Vulnerability Tests](../assets/images/blogs/k9x_shield_class_small.png)](../assets/images/blogs/k9x_shield_class_small.png)
+<a href="../assets/images/blogs/k9x_shield_class_small.png" target="_blank" rel="noopener"><img src="../assets/images/blogs/k9x_shield_class_small.png" alt="k9x_Shield — Chain of Vulnerability Tests"></a>
 
 ---
 
