@@ -35,13 +35,15 @@ That screenshot is not staged. It's `satan.k9x.ai`, live, firing a policy docume
 
 ---
 
-## Twelve Framework Checks, One Local
+## Thirteen Framework Checks, One Local
 
-SATAN's two gates run 13 checks total — and as of this review, 12 of them are framework OOB (`k9_aif_abb.k9_security.vulnerability.checks`), not SATAN-specific code:
+SATAN's two gates run 14 checks total — and as of this review, 13 of them are framework OOB (`k9_aif_abb.k9_security.vulnerability.checks`), not SATAN-specific code:
 
 `InputSizeCheck`, `PromptInjectionCheck`, `SemanticDriftCheck`, `PIIBoundaryCheck`, `ToolArgumentCheck`, `ExecutionGuardCheck`, `HardcodedCredentialCheck` shipped with the framework from the start. `ToolAuthorizationCheck`, `MemoryPoisoningCheck`, `SystemPromptLeakageCheck`, `OutputSanitizationCheck`, and `RequestFrequencyCheck` did not — SATAN built all five locally first, because the framework had no equivalent for Shadow AI/tool-identity abuse, memory poisoning, system-prompt leakage, output sanitization, or request-rate limiting.
 
 Once proven — attacked, contained, verified — those five turned out to be framework-generic in their actual logic, nothing insurance-claim-specific about any of them. So they were harvested upstream into the framework itself: SATAN's job was never to keep its own private security engine, it was to find the gap and prove the fix. `target/router.py` and `target/orchestrator.py` now import all five from the framework instead of from SATAN's own `target/`.
+
+A sixth framework check arrived a different way. `PIIRequestCheck` wasn't harvested from a SATAN-local prototype — a live attack (a "compliance audit" document soliciting full SSN, date of birth, and account numbers, with no literal PII sitting in the payload itself) reached the agent layer uncaught, and the fix went straight into the framework at ingress. Only `FieldAnomalyCheck` remains SATAN-local today.
 
 Only one check stays local: `FieldAnomalyCheck`, the one catching the authority-override pattern in the screenshot above. Its red-flag terms — `EXEC-OVERRIDE`, `Priority: CRITICAL`, `COO auth codes` — are tuned specifically to this project's own insurance-claim test corpus. Promoting it as-is would misrepresent a worked example as a general framework capability. That's the same discipline in reverse: not every SATAN-local check deserves to become framework-OOB, only the ones that are actually general-purpose once you look at what they check for, not just why SATAN happened to build them.
 
