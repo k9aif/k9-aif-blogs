@@ -15,9 +15,9 @@ That question turned out to have a real, verifiable answer, and a boundary I was
 
 ## What "blend it in" actually has to mean
 
-K9-AIF's whole architecture rests on a small number of guarantees: every agent boundary is governed, every action is checked against policy before it executes, every routing decision is auditable. `k9_adapters/crewai/` already does this for CrewAI: a `CrewAIOrchestratorAdapter` wraps a Crew, and `K9XLiteLLMBridgeAdapter` routes every one of that Crew's model calls through `llm_invoke`, so a CrewAI agent is just as provider-agnostic and just as governed as a native one.
+K9-AIF's whole architecture rests on a small number of guarantees: every agent boundary is governed, every action is checked against policy before it executes, every routing decision is auditable, and every model call routes through `llm_invoke` so the same agent runs against Ollama, OpenAI, or Watsonx without touching its code. The framework already has an adapter proving that holds for an external agent framework, not just native agents.
 
-I already knew this pattern well, having built the CrewAI adapter myself. So the plan was straightforward: inherit the right framework base classes, the same way I had for CrewAI, and build an equivalent adapter for the Claude Agent SDK: `BaseOrchestrator`, `BaseAdapter`, a payload mapper, the whole shape.
+I'd built that adapter myself, for CrewAI, so I already knew the pattern cold. The plan was straightforward: inherit the right framework base classes and build the equivalent for the Claude Agent SDK: `BaseOrchestrator`, `BaseAdapter`, a payload mapper, the whole shape.
 
 But here, I would not be able to use the framework's Intelligent Model Router the same way. The parallel held for about half the adapter.
 
@@ -72,7 +72,7 @@ Neither is more "correct." They're different tradeoffs for different needs, and 
 
 ## Where this lives
 
-`k9_adapters/claude_agent_sdk/`: `ClaudeAgentSDKOrchestratorAdapter`, `ClaudeAgentSDKPayloadMapper`, `K9ClaudeAgentSDKAdapter`, built parallel to `k9_adapters/crewai/`. `claude-agent-sdk==0.2.128` pinned in `requirements.txt`. The package's own `CLAUDE.md` records the verified facts above, including the exact `_internal/query.py` check for subagent routing, so the next person working in this folder doesn't have to re-derive any of it from scratch.
+`k9_adapters/claude_agent_sdk/`: `ClaudeAgentSDKOrchestratorAdapter`, `ClaudeAgentSDKPayloadMapper`, `K9ClaudeAgentSDKAdapter`. `claude-agent-sdk==0.2.128` pinned in `requirements.txt`. The package's own `CLAUDE.md` records the verified facts above, including the exact `_internal/query.py` check for subagent routing, so the next person working in this folder doesn't have to re-derive any of it from scratch.
 
 The goal was never to make the model reason the way K9-AIF wants. It's to make sure that whatever it decides to do next has to clear a gate first, and to be straight about the one place that gate doesn't reach.
 
