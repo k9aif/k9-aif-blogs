@@ -25,17 +25,21 @@ But here, I would not be able to use the framework's Intelligent Model Router th
 
 ## The half that holds: action governance
 
-The Claude Agent SDK exposes real seams for controlling what an agent is allowed to *do*, and they're stronger than I expected:
+The Claude Agent SDK gives you three real levers over what an agent is allowed to *do*, and they're stronger than I expected:
 
-- **`allowed_tools`** on `ClaudeAgentOptions`: the adapter builds this itself, from its own internal tool registry. The SDK never receives a tool it wasn't handed by the adapter.
-- **`can_use_tool`**: a dedicated callback, fired before every tool call executes. The adapter routes it straight into `apply_post_governance()`, the same call every other K9-AIF component makes, which resolves to k9x_Shield's egress chain (`ToolArgumentCheck`, `ExecutionGuardCheck`, `SemanticDriftCheck`) when Shield is configured.
-- **Subagents**: the Agent SDK can spawn its own subagents mid-session via `ClaudeAgentOptions.agents`. Each subagent gets its own confined `tools` list, validated against the adapter's own registry at construction time. Ask for a tool the adapter never registered, and construction raises `ValueError`, not a warning, not a silent narrowing.
+- **What tools it can see at all.** The adapter decides the full list up front, from its own internal registry. The SDK never gets handed a tool the adapter didn't put there itself.
+- **What tool it can actually use, in the moment.** Before every single tool call runs, the SDK stops and asks the adapter for permission. The adapter checks that request against K9-AIF's own security layer, k9x_Shield, before answering yes or no.
+- **What a spawned sub-agent is allowed to touch.** The Agent SDK can spin up its own helper agents mid-task. Each one only gets the tools the adapter explicitly hands it. Ask for anything outside that list, and the whole thing refuses to even start, rather than quietly leaving something out.
 
-That last point is the one worth being precise about, because it's easy to assert and hard to actually prove. Does a spawned subagent's tool call go through the same `can_use_tool` gate as the top-level agent, or does it get its own, separate, possibly weaker check? I didn't want to answer that from the docs. I went into the installed package's own source (`_internal/query.py`) and checked the control-request handler directly. Every `can_use_tool` request, top-level agent or subagent, hits the identical callback. `ToolPermissionContext.agent_id` is how you'd tell them apart, not a separate path that lets one bypass the gate the other has to pass through.
+That last point is the one worth being careful about, because it's easy to claim and hard to actually prove. Does a helper agent's tool request get checked the same way the main agent's does, or does it get a separate, possibly weaker check? I didn't want to answer that from the docs alone, so I read the SDK's own source code directly. Every permission request, from the main agent or a helper, goes through the exact same check. There's no separate, weaker door.
 
-That's the difference between a governance claim and a governance guarantee. One is a sentence in a README. The other is a fact you can point to a line number for.
+That's the difference between a governance claim and a governance guarantee. One is a sentence in a README. The other is a fact you can point to a line of code for.
+
+Here's the shape of it:
 
 <a href="../assets/images/blogs/claude_agent_sdk_block_diagram.png" target="_blank" rel="noopener"><img src="../assets/images/blogs/claude_agent_sdk_block_diagram.png" alt="Claude Agent SDK adapter: simple block view showing pre-check and post-check around the agent loop"></a>
+
+Read left to right: a request comes in from a K9-AIF caller (1) and gets checked before anything else happens. Only once it clears that check does Claude's own agent loop even start (2). Claude reasons and decides which tools to call, but every one of those calls comes straight back through the same check before it's allowed to run (4). The model call itself (3) is the one box in the middle nothing here touches. Once the loop finishes, the result goes through one last check before it's handed back (5). Five steps. The SDK owns exactly one of them.
 
 ---
 
@@ -43,26 +47,26 @@ That's the difference between a governance claim and a governance guarantee. One
 
 Here's where the parallel with CrewAI actually breaks, and no amount of adapter cleverness closes it.
 
-`K9XLiteLLMBridgeAdapter` works because CrewAI hands you an injectable seam: `Agent(llm=...)` accepts anything implementing `BaseLLM.call()`, so the bridge substitutes itself in and every model call flows through `llm_invoke → K9ModelRouter → LLMFactory` like any native K9-AIF agent's would. Provider-agnostic, governed, audited.
+CrewAI lets you swap in your own model client. That's the trick K9-AIF's CrewAI adapter uses: it substitutes itself in as that client, so every model call gets routed through K9-AIF's own model router instead of going straight to whichever LLM CrewAI would have picked by default.
 
-The Claude Agent SDK has no equivalent seam. I checked four separate ways before I was willing to say so plainly instead of hedging it:
+The Claude Agent SDK has no equivalent swap-in point, and I didn't want to just assume that, so I checked it four separate ways:
 
-1. Not one of `ClaudeAgentOptions`'s ~40 fields is an injectable model client. `model` and `fallback_model` are plain strings: configuration, not a substitution point.
-2. `query()`'s `transport` parameter looked like it might be one, until I actually read `Transport`'s abstract methods (`connect`, `write`, `read_messages`, `close`). It's raw process/network I/O with the bundled `claude` CLI: a JSON-RPC-shaped control protocol, not a place to intercept "the model is about to answer."
-3. Nothing in the installed package's own source references a base-URL override.
-4. Anthropic's own docs are direct about it: alternate backends are Bedrock, Vertex, Azure Foundry (all still Claude, just different hosting), and third-party redirection of inference beyond that isn't a supported path for Agent SDK integrations.
+- I read every option the SDK lets you configure. None of them is "plug in your own model." You can pick which Claude model to use, but you can't hand it a different brain.
+- I checked the one setting that looked like it might be a loophole, a low-level connection option. It turned out to control *how* the SDK talks to the Claude process, not *what* answers the questions.
+- I searched the SDK's own code for any hidden way to redirect it elsewhere. There isn't one.
+- I checked Anthropic's own documentation, which says plainly that redirecting inference like this isn't a supported way to use the SDK.
 
-So the honest statement is: the Claude Agent SDK's own reasoning loop cannot be routed through `llm_invoke`. Not yet, and not because the adapter is incomplete. It's structural, a property of what the product is: Anthropic's own harness, authenticating and reasoning end to end inside a subprocess K9-AIF doesn't own.
+So the honest statement is simple: the Claude Agent SDK's own reasoning can't be routed through K9-AIF's model router. Not because the adapter is incomplete, but because that's how the product is built. It's Anthropic's own harness, thinking end to end inside a piece of Claude's own software that K9-AIF doesn't own.
 
-I'll admit the tempting move here was to build something that looked like it solved this anyway: some `hooks`-based approximation that logs the inference and calls it "governed." That would have been the wrong artifact. A fabricated seam is worse than an honest gap, because it teaches the next person reading the code to trust something that isn't real.
+The tempting move here would have been to build something that *looked* like it solved this anyway, logging the model's output somewhere and calling it "governed." That would have been the wrong move. A fake safeguard is worse than an honest limitation, because it teaches the next person to trust something that isn't actually there.
 
 ---
 
 ## Naming the boundary instead of hiding it
 
-So the adapter is explicit about a conformance tier: **action-governed, not fully-governed.** Every tool call, every subagent spawn, ingress, egress, Zero Trust: real. Model inference: outside the framework's reach, permanently, documented as exactly that in the adapter's own `CLAUDE.md` rather than left as a surprise for whoever reads the code next.
+So the adapter says plainly what it is: governed on actions, not on thinking. Every tool call, every helper agent it spawns, every check before and after: real. What the model reasons about, moment to moment: outside the framework's reach, permanently. That's written down in the adapter's own documentation, not left as a surprise for whoever reads the code next.
 
-If a solution genuinely needs Claude with governance on *both* axes (actions and inference), the answer isn't this adapter. It's the plain Anthropic Client SDK (`anthropic.messages.create()`) wrapped as a `BaseLLM` adapter: you write the tool-use loop yourself, in K9-AIF's own agent code, and in exchange every model call routes through `llm_invoke` like anything else. That path trades away the Agent SDK's autonomous loop for full governance. This adapter trades the other way: keep Claude's own loop, contain everything it's allowed to act on.
+If a solution genuinely needs both, action governance and inference governance together, the answer isn't this adapter. It's a much simpler approach: call Claude's plain API directly, write the tool-use loop yourself in K9-AIF's own agent code, and let every model call route through K9-AIF's model router like anything else. That trades away Claude's autonomous reasoning loop in exchange for full governance. This adapter trades the other way: keep Claude's own loop, and contain everything it's allowed to act on.
 
 Neither is more "correct." They're different tradeoffs for different needs, and the framework should let you pick, not blur the line between them.
 
