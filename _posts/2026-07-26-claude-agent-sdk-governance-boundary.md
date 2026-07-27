@@ -5,6 +5,8 @@ date: 2026-07-26
 author: Ravi Natarajan
 ---
 
+<a href="../assets/images/blogs/k9_claude_agent_sdk_boundary.png" target="_blank" rel="noopener"><img src="../assets/images/blogs/k9_claude_agent_sdk_boundary.png" alt="K9-AIF governance boundary: Shield ingress and egress gates around the Claude Agent SDK, model inference explicitly marked as outside the boundary"></a>
+
 I'd been reading Anthropic's [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) alongside the Claude Agent SDK docs, mostly just to understand how Anthropic itself thinks about agent design. Somewhere in there I noticed the obvious thing that's easy to skip past: the Agent SDK only works with Claude models. Not "Claude by default." Claude, full stop.
 
 That's a reasonable design choice for Anthropic's own SDK. But it's exactly the kind of detail that matters if you're building on K9-AIF, where every other integration point (native agents, CrewAI crews) is provider-agnostic by construction. So the question I actually sat with was narrower than "should we use the Claude Agent SDK": it was, for an organization standardizing on Claude, migrating or modernizing onto it, how would K9-AIF blend this SDK in without quietly giving up what the framework is for?
