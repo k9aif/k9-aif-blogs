@@ -45,9 +45,9 @@ Read left to right: a request comes in from a K9-AIF caller (1) and gets checked
 
 ## The half that doesn't: inference governance
 
-Here's where the parallel with CrewAI actually breaks, and no amount of adapter cleverness closes it.
+Here's where it actually breaks, and no amount of adapter cleverness closes it.
 
-CrewAI lets you swap in your own model client. That's the trick K9-AIF's CrewAI adapter uses: it substitutes itself in as that client, so every model call gets routed through K9-AIF's own model router instead of going straight to whichever LLM CrewAI would have picked by default.
+A native K9-AIF agent works because there's a point where the framework can swap in its own model client wherever a model call happens: it substitutes itself in, so the call gets routed through K9-AIF's own model router instead of going straight to whichever LLM the code would otherwise reach.
 
 The Claude Agent SDK has no equivalent swap-in point, and I didn't want to just assume that, so I checked it four separate ways:
 
