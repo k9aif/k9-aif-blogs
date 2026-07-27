@@ -74,6 +74,26 @@ Neither is more "correct." They're different tradeoffs for different needs, and 
 
 ---
 
+## What this actually buys an organization
+
+This isn't just an architecture exercise. It's the difference between two real paths an organization standardizing on Claude actually faces.
+
+Without an adapter like this, adopting the Agent SDK's autonomous loop means one of two things. Either every tool call it makes runs on trust, with whatever guardrails a team manages to bolt on by hand for this one integration. Or the organization holds back from the Agent SDK entirely, and loses the real productivity gain of letting Claude plan and carry out multi-step work on its own.
+
+With this adapter, neither tradeoff is necessary, and none of it depends on trusting the model to behave. A Zero Trust check runs before the session even starts. Every action the agent attempts afterward, including anything a spawned helper agent tries, passes through the same security checks every other agent in the framework already answers to. Nothing gets waved through just because it arrived from a different SDK. That's governance end to end on the one axis that's actually about what the system does: every action, checked, every time, not sampled or reviewed after the fact.
+
+None of those checks disappear once the moment passes, either. They're events the same way every other K9-AIF decision is an event: written to the framework's own logging and reporting layer, not just printed to a console and lost. An audit trail an organization actually has to produce, for a regulator or an internal review, comes out of that logging, not out of someone's memory of what the agent probably did.
+
+That matters most exactly where "the model decided" isn't an acceptable answer: financial approvals, claims decisions, anything touching regulated data. An organization gets to use Claude's own reasoning for the parts of a process that genuinely benefit from it, without quietly widening what "agent" means to include unaudited, unbounded actions.
+
+And because this follows the same adapter shape the framework already uses elsewhere, the next agent framework an organization needs to adopt gets the same treatment: contained by default, governed the same way, logged and reportable the same way. That's the actual value here, not this one integration by itself, but a repeatable answer to a question every organization building agentic systems eventually has to ask again.
+
+K9X Studio support for building and wiring these agents visually, the same way it already does for native K9-AIF squads, is next.
+
+Beyond that, I've been turning over a bigger question too: what it would look like for the K9X ecosystem as a whole, not just this one adapter, to sit efficiently alongside the rest of Claude's own product suite. No firm answer yet, just a thread worth pulling.
+
+---
+
 ## Where this lives
 
 `k9_adapters/claude_agent_sdk/`: `ClaudeAgentSDKOrchestratorAdapter`, `ClaudeAgentSDKPayloadMapper`, `K9ClaudeAgentSDKAdapter`. `claude-agent-sdk==0.2.128` pinned in `requirements.txt`. The package's own `CLAUDE.md` records the verified facts above, including the exact `_internal/query.py` check for subagent routing, so the next person working in this folder doesn't have to re-derive any of it from scratch.
