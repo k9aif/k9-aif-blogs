@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Not Everything Is an Agent"
+title: "Not Every Agent Needs an LLM"
 date: 2026-07-10
 author: Ravi Natarajan
 ---
@@ -9,7 +9,7 @@ author: Ravi Natarajan
 
 I have watched teams receive a process document — a BPMN diagram, a requirements spec, a swim-lane export — and immediately start wrapping every step in an agent. Intake agent. Payment agent. Rules agent. Analytics agent. The entire process becomes agentic by default. Nobody stops to ask why.
 
-Here is what that costs: higher latency from LLM calls that should never have been made, unpredictable outputs from steps that had deterministic answers, higher operational cost, and test suites that cannot be written because the behavior is non-deterministic by construction.
+Here is what that costs: higher latency from LLM calls that should never have been made, unpredictable outputs from steps that had deterministic answers, and test suites that cannot be written because the behavior is non-deterministic by construction. Every one of those unnecessary calls is also a cost paid in compute: a per-request charge if it's a hosted API, GPU and infrastructure spend if you're running the model privately. Rented or owned, someone pays for resources that didn't need to be spent, for an answer the system already knew.
 
 The right question before any step gets an agent is: does this step require reasoning under uncertainty, or does it execute a known sequence with a predictable answer?
 
@@ -77,6 +77,8 @@ Most adapters are leaf nodes — the Orchestrator calls them and the chain ends.
 An Orchestrator can also call a Workflow Adapter directly for a synchronous trigger — without messaging in between. The SA picks the pattern: synchronous call or event-driven chain.
 
 This makes the deterministic/agentic boundary visible in the architecture diagram rather than buried in implementation detail.
+
+Calling K9-AIF an "agentic AI integration framework" doesn't mean every component in it runs on an LLM. An Integration Adapter that doesn't reason isn't a lesser citizen of the architecture. It's a governed microservice, running under the exact same `BaseAgent` contract, the same pre/post governance hooks, the same audit trail as the agent next to it that does call a model. The framework doesn't ask whether a step is agentic. It asks whether the step requires reasoning under uncertainty. Most don't.
 
 ---
 
