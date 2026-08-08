@@ -82,7 +82,7 @@ What K9-AIF adds is what happens when that same pattern has to survive contact w
 
 ---
 
-Full routing mechanics, config reference, and the extension points for replacing the intent step or wrapping the orchestrator: [Routing in K9-AIF: Deterministic and Non-Deterministic Paths](https://blog.k9x.ai/routing-in-k9-aif/). Anthropic's own pattern writeup: [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents).
+Full routing mechanics, config reference, and the extension points for replacing the intent step or wrapping the orchestrator: [Routing in K9-AIF: Deterministic and Non-Deterministic Paths](https://blog.k9x.ai/Routing-in-k9-aif/). Anthropic's own pattern writeup: [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents).
 
 ```bash
 pip install k9-aif==1.10.0
@@ -102,7 +102,7 @@ Working example with all three routing outcomes, both override patterns, runs wi
 
 **Related posts on this blog:**
 
-- [Routing in K9-AIF: Deterministic and Non-Deterministic Paths](https://blog.k9x.ai/routing-in-k9-aif/)
+- [Routing in K9-AIF: Deterministic and Non-Deterministic Paths](https://blog.k9x.ai/Routing-in-k9-aif/)
 - [Not Every Agent Needs an LLM](https://blog.k9x.ai/not-every-agent-needs-an-llm/)
 - [How K9-AIF Enforces Governance](https://blog.k9x.ai/how-k9-aif-enforces-governance/)
 - [Agent Squads in K9-AIF](https://blog.k9x.ai/agent-squads-in-k9-aif/)
