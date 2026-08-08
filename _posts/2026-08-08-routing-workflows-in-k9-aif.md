@@ -32,23 +32,14 @@ It's a clean, useful shape. It's also, deliberately, a pattern description, not 
 K9-AIF's Router is the single entry point for every request, always. It never sits behind some other classification step of its own. From there, exactly three things can happen:
 
 1. **Deterministic.** The request type is already known, listed in a simple config table, not buried in code. Straight to the right place. No LLM involved, no delay.
-2. **Resolved by asking an LLM, only when needed.** The request type genuinely isn't recognized. Before anything expensive happens, a cheap rule-based check runs first, essentially a lookup list. Only if that also comes up empty does the system actually ask an LLM to classify the request.
+2. **Resolved by asking an LLM, only when needed.** The request type genuinely isn't recognized. Before anything expensive happens, a lightweight rule-based check runs first, essentially a lookup list. Only if that also comes up empty does the system actually ask an LLM to classify the request.
 3. **Clarification required.** Even the LLM's answer isn't confident enough to act on. Instead of guessing and risking a wrong answer, the system asks the user to clarify. Nothing gets silently dropped, and nothing gets forced through on a bad guess.
 
-Here's the flow, for anyone who wants to see the actual shape of it:
+Underneath all three, the Router and everything downstream of it are decoupled, not wired together with direct calls. They communicate by publishing events onto a Kafka message bus, and whatever's listening picks them up on its own time. Here's the actual shape of it:
 
-```
-Request → Router (single entry point)
-    ├── request type already known ─────────────────► handled directly
-    └── request type unknown ────────► classification step
-                                            │
-                              (a separate process picks this up)
-                                  → cheap rule check first, then LLM if needed
-                                      ├── resolved   ──► handled
-                                      └── still unclear ──► ask for clarification
-```
+<a href="../assets/images/blogs/k9-aif-routing-flow.png" target="_blank" rel="noopener"><img src="../assets/images/blogs/k9-aif-routing-flow.png" alt="K9-AIF routing flow: Router publishes to a Kafka message bus, IntentOrchestrator consumes intent.in, resolves via rule-based check or LLM classification, publishes to responses.out if still unclear"></a>
 
-(For anyone curious about the exact code: this is `K9EventRouter` publishing to a queue, picked up independently by `IntentOrchestrator`, which runs `K9IntentAgent`. None of those names matter for the argument here, they're just proof this is real, tested code, not a simplified retelling for the blog.)
+(For anyone curious about the exact code: this is `K9EventRouter` publishing to the `intent.in` topic, picked up independently by `IntentOrchestrator`, which runs `K9IntentAgent`. None of those names matter for the argument here, they're just proof this is real, tested code, not a simplified retelling for the blog.)
 
 K9-AIF also ships a separate piece called the Intelligent Model Router, for choosing which LLM answers a call once something's already running. That's a different part of the framework and not what this post is about.
 
@@ -56,11 +47,11 @@ That's not a reinterpretation of Anthropic's Routing pattern. It's the same shap
 
 ## Where K9-AIF adds to the pattern
 
-**Deterministic first, enforced by the architecture, not left as a choice.** Worth being precise here: Anthropic's own writeup is neutral on this — it says classification "can be handled accurately, either by an LLM or a more traditional classification model/algorithm," and leaves picking between them to whoever builds the system. K9-AIF doesn't leave it open. The cheap check always runs first, the LLM only gets called as a last resort, in that order, every time, because the framework enforces the order rather than trusting each team to choose well on their own. This is the same argument I made in [Not Every Agent Needs an LLM](https://blog.k9x.ai/not-every-agent-needs-an-llm/): most routing decisions in a real system are already knowable, and every unnecessary categorization call is compute spent proving something that was never actually in question.
+**Deterministic first, enforced by the architecture, not left as a choice.** Worth being precise here: Anthropic's own writeup is neutral on this — it says classification "can be handled accurately, either by an LLM or a more traditional classification model/algorithm," and leaves picking between them to whoever builds the system. K9-AIF doesn't leave it open. The lightweight check always runs first, the LLM only gets called as a last resort, in that order, every time, because the framework enforces the order rather than trusting each team to choose well on their own. This is the same argument I made in [Not Every Agent Needs an LLM](https://blog.k9x.ai/not-every-agent-needs-an-llm/): most routing decisions in a real system are already knowable, and every unnecessary categorization call is compute spent proving something that was never actually in question.
 
 **Governed and auditable, not just described.** Anthropic's pattern is silent on what happens to a routing decision afterward, and it should be, that's outside a pattern description's job. K9-AIF's Router isn't silent about it: every routing decision runs through the [same governance chain as everything else in the framework](https://blog.k9x.ai/how-k9-aif-enforces-governance/), inspectable rather than assumed.
 
-**Decoupled, not a direct call.** The pattern's diagram draws a straight line from the categorization step to each destination. The real implementation isn't a direct call at all — the Router hands off the request and moves on; a completely separate process picks it up on its own time. If that separate process goes down, the Router keeps running, but those unresolved requests just wait until it's back. Nothing crashes. Nothing gets decided either, until it's back. That's the honest tradeoff, not hidden, not free.
+**Decoupled, not a direct call.** The pattern's diagram draws a straight line from the categorization step to each destination. The real implementation isn't a direct call at all — the Router publishes to Kafka and moves on; the `IntentOrchestrator` consumes it as a completely separate process, on its own time. If that separate process goes down, the Router keeps running, but those unresolved requests just sit in the queue until it's back. Nothing crashes. Nothing gets decided either, until it's back. That's the honest tradeoff, not hidden, not free.
 
 **A third outcome, not two.** The pattern's implicit choices are categorize, then forward. K9-AIF adds a real third path: confidence too low to act on becomes an explicit request for clarification, not a forced guess and not a silent failure.
 

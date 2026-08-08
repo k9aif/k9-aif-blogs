@@ -1,0 +1,47 @@
+@startuml k9-aif-routing-flow
+skinparam monochrome false
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBackgroundColor #FAFAF8
+skinparam rectangleBorderColor #BBBBAA
+skinparam queueBackgroundColor #F0ECE4
+skinparam queueBorderColor #999977
+skinparam cloudBackgroundColor #FFFFFF
+skinparam cloudBorderColor #888866
+skinparam ArrowColor #555544
+skinparam FontName Inter
+skinparam FontSize 13
+skinparam Padding 8
+skinparam Shadowing false
+skinparam roundcorner 8
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+title K9-AIF Routing Flow\n<size:11><color:#666055>Event-driven, decoupled through a Kafka message bus</color></size>
+
+rectangle "Request" as req
+rectangle "Router\n(single entry point)" as router
+rectangle "Handled directly\n(no LLM, no delay)" as direct
+
+cloud "Kafka Message Bus" {
+  queue "intent.in" as intentin
+  queue "responses.out" as respout
+}
+
+rectangle "IntentOrchestrator\n(separate process,\nconsumes intent.in\non its own time)" as orch
+rectangle "Rule-based check\n(intent_map)" as rulecheck
+rectangle "LLM classification\n(only if still unknown)" as llm
+rectangle "Handled" as resolved
+rectangle "Ask for clarification" as clarify
+
+req --> router
+router --> direct : request type\nalready known
+router --> intentin : request type\nunknown\n(publish)
+intentin --> orch : consume
+orch --> rulecheck
+rulecheck --> resolved : matched
+rulecheck --> llm : no match
+llm --> resolved : confident
+llm --> respout : not confident\n(publish)
+respout --> clarify : consume
+
+@enduml
