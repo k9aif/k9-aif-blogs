@@ -7,13 +7,13 @@ author: Ravi Natarajan
 
 I'd been going through Anthropic's own workflow patterns material again, the same [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) writeup behind an [earlier post here](https://blog.k9x.ai/claude-agent-sdk-governance-boundary/) on the Claude Agent SDK: Chaining, Routing, Parallelization, Orchestrator-workers, Evaluator-optimizer, mostly to see how Anthropic itself draws the boundaries between these shapes. The "Routing Workflows" diagram stopped me. Its description: use an initial call to categorize the user's query or task, forward it to a dedicated pipeline for handling that category, and the chosen path can be a workflow, a prompt, a set of tools, whatever the category needs. User input only ever goes to one path.
 
-I'd seen that shape before. Not in a diagram, in `k9_aif_abb/k9_core/router/`.
+I'd seen that shape before. Not in a diagram, in K9-AIF, a framework I've built for running AI systems where every decision, not just every model call, stays traceable and governed. One of its core pieces is a Router: the one place every incoming request has to pass through before anything else happens.
 
-The question I actually wanted answered wasn't "does K9-AIF do routing." I already knew it did, there's a whole OOB `K9EventRouter` and `IntentOrchestrator` pair for exactly this. The real question was narrower: if I implemented Anthropic's Routing pattern exactly as described, using K9-AIF, what would I get that the pattern itself doesn't specify? Where does the framework add something on top of the shape, rather than just relabeling it?
+The question I actually wanted answered wasn't "does K9-AIF do routing." It already does, that piece is built and tested. The real question was narrower: if I implemented Anthropic's Routing pattern exactly as described, using K9-AIF, what would I get that the pattern description itself doesn't specify? Where does the framework add something on top of the shape, rather than just relabeling it?
 
 > **Claude says:** Routing workflows solve a common problem in AI applications: different types of user requests need different handling approaches. Instead of using a one-size-fits-all prompt, you can categorize incoming requests and route them to specialized processing pipelines.
 >
-> **K9-AIF Framework provides this:** `K9EventRouter`, the single entry point for every request in a K9-AIF solution. It makes the same categorize-then-route decision, except categorization isn't a blanket LLM call by default, a deterministic routing table is checked first, `IntentOrchestrator`'s LLM-backed classification only runs when the request type is genuinely unknown, and a structured clarification response replaces a forced wrong guess when confidence isn't there. All of it under the same governance and audit trail as everything else in the framework.
+> **K9-AIF Framework provides this:** a Router that every request passes through first. It makes the same categorize-then-route decision, except categorizing isn't a blanket "ask an LLM" step by default, a simple table gets checked first, an LLM only gets involved when the request type is genuinely unknown, and if even that isn't confident enough, the system asks for clarification instead of guessing. All of it tracked and auditable, the same as everything else in the framework.
 
 ---
 
@@ -29,38 +29,42 @@ It's a clean, useful shape. It's also, deliberately, a pattern description, not 
 
 ## K9-AIF's Router, the same shape with three concrete outcomes
 
-`K9EventRouter` is the single entry point for every event in a K9-AIF solution, always. It never sits behind a pre-classification step of its own. From there, exactly three outcomes:
+K9-AIF's Router is the single entry point for every request, always. It never sits behind some other classification step of its own. From there, exactly three things can happen:
+
+1. **Deterministic.** The request type is already known, listed in a simple config table, not buried in code. Straight to the right place. No LLM involved, no delay.
+2. **Resolved by asking an LLM, only when needed.** The request type genuinely isn't recognized. Before anything expensive happens, a cheap rule-based check runs first, essentially a lookup list. Only if that also comes up empty does the system actually ask an LLM to classify the request.
+3. **Clarification required.** Even the LLM's answer isn't confident enough to act on. Instead of guessing and risking a wrong answer, the system asks the user to clarify. Nothing gets silently dropped, and nothing gets forced through on a bad guess.
+
+Here's the flow, for anyone who wants to see the actual shape of it:
 
 ```
-Event → K9EventRouter (single entry point)
-    ├── event_type in routing table ──────────────────► domain topic
-    └── event_type unknown ──────────► intent.in
+Request → Router (single entry point)
+    ├── request type already known ─────────────────► handled directly
+    └── request type unknown ────────► classification step
                                             │
-                              IntentOrchestrator (consumes intent.in)
-                                  → IntentSquad → K9IntentAgent
-                                      ├── intent resolved ──► domain topic
-                                      └── intent unclear  ──► responses.out
+                              (a separate process picks this up)
+                                  → cheap rule check first, then LLM if needed
+                                      ├── resolved   ──► handled
+                                      └── still unclear ──► ask for clarification
 ```
 
-1. **Deterministic.** `event_type` is already in the routing table (configured in YAML, not code). Straight to the domain topic. No LLM, no categorization latency at all.
-2. **Non-deterministic, resolved.** `event_type` is unknown. The Router publishes to `intent.in`; the `IntentOrchestrator` picks it up independently and runs a [Squad](https://blog.k9x.ai/agent-squads-in-k9-aif/), `IntentSquad`, wrapping `K9IntentAgent`, which itself checks a rule-based `intent_map` before ever reaching for an LLM.
-3. **Clarification required.** Confidence comes back below threshold. The `IntentOrchestrator` publishes a structured "please clarify" response. Nothing gets silently dropped, and nothing gets a wrong guess forced through.
+(For anyone curious about the exact code: this is `K9EventRouter` publishing to a queue, picked up independently by `IntentOrchestrator`, which runs `K9IntentAgent`. None of those names matter for the argument here, they're just proof this is real, tested code, not a simplified retelling for the blog.)
 
-*(Worth a quick disambiguation: this is the **Event Router**, `K9EventRouter`, deciding which orchestrator handles a request. It's a different component from the [Model Router](https://blog.k9x.ai/k9-model-router-in-k9-aif/), which decides which LLM handles a given inference call once an agent is already running. Same word, two different jobs, both deterministic-first for the same underlying reason.)*
+K9-AIF also ships a separate piece called the Intelligent Model Router, for choosing which LLM answers a call once something's already running. That's a different part of the framework and not what this post is about.
 
-That's not a reinterpretation of Anthropic's Routing pattern. It's the same shape, Anthropic's "initial call" is the categorization step, Anthropic's "dedicated pipeline" is the domain topic and its orchestrator. What's different is what got added to make it something you can run in production.
+That's not a reinterpretation of Anthropic's Routing pattern. It's the same shape — Anthropic's "initial call" is the categorization step, Anthropic's "dedicated pipeline" is wherever the request ends up. What's different is what got added to make it something you can actually run in production.
 
 ## Where K9-AIF adds to the pattern
 
-**Deterministic first, enforced by the architecture, not left as a choice.** Worth being precise here: Anthropic's own writeup is neutral on this, it says classification "can be handled accurately, either by an LLM or a more traditional classification model/algorithm," and leaves picking between them to whoever builds the system. K9-AIF doesn't leave it open. The Router checks a deterministic table first, `K9IntentAgent` checks a rule-based `intent_map` second, and an LLM only gets called as the last resort, in that order, every time, because the framework enforces the order rather than trusting each team to choose well on their own. This is the same argument I made in [Not Every Agent Needs an LLM](https://blog.k9x.ai/not-every-agent-needs-an-llm/): most routing decisions in a real system are already knowable, and every unnecessary categorization call is compute spent proving something that was never actually in question.
+**Deterministic first, enforced by the architecture, not left as a choice.** Worth being precise here: Anthropic's own writeup is neutral on this — it says classification "can be handled accurately, either by an LLM or a more traditional classification model/algorithm," and leaves picking between them to whoever builds the system. K9-AIF doesn't leave it open. The cheap check always runs first, the LLM only gets called as a last resort, in that order, every time, because the framework enforces the order rather than trusting each team to choose well on their own. This is the same argument I made in [Not Every Agent Needs an LLM](https://blog.k9x.ai/not-every-agent-needs-an-llm/): most routing decisions in a real system are already knowable, and every unnecessary categorization call is compute spent proving something that was never actually in question.
 
 **Governed and auditable, not just described.** Anthropic's pattern is silent on what happens to a routing decision afterward, and it should be, that's outside a pattern description's job. K9-AIF's Router isn't silent about it: every routing decision runs through the [same governance chain as everything else in the framework](https://blog.k9x.ai/how-k9-aif-enforces-governance/), inspectable rather than assumed.
 
-**Decoupled topology, not a direct call.** The diagram draws a straight line from the categorization step to each destination pipeline. The real implementation is asynchronous: the Router publishes to `intent.in` and moves on, the `IntentOrchestrator` picks it up as a separate, Kafka-decoupled process the Router doesn't even know exists. If the classifier goes down, the Router keeps running, but `intent.in` just backs up until it recovers. Nothing crashes. Nothing gets decided either, until it's back. That's the honest tradeoff, not hidden, not free.
+**Decoupled, not a direct call.** The pattern's diagram draws a straight line from the categorization step to each destination. The real implementation isn't a direct call at all — the Router hands off the request and moves on; a completely separate process picks it up on its own time. If that separate process goes down, the Router keeps running, but those unresolved requests just wait until it's back. Nothing crashes. Nothing gets decided either, until it's back. That's the honest tradeoff, not hidden, not free.
 
-**A third outcome, not two.** The pattern's implicit choices are categorize, then forward. K9-AIF adds a real third path: confidence too low to act on becomes an explicit clarification response, not a forced guess and not a silent failure.
+**A third outcome, not two.** The pattern's implicit choices are categorize, then forward. K9-AIF adds a real third path: confidence too low to act on becomes an explicit request for clarification, not a forced guess and not a silent failure.
 
-**Config-driven, not a new code path per category.** The routing table and the intent map are both YAML, this is the actual `config.yaml` from the working example, not a paraphrase:
+**Config-driven, not a new code path per category.** Adding a new request category is a configuration change, not new code. As proof this isn't hand-waved, here's the real configuration from a working example:
 
 ```yaml
 routing:
@@ -79,31 +83,21 @@ routing:
     doc_uploaded:     document
 ```
 
-Adding a category is a config change. No Python required for the common case.
-
 ## Complementary, not competitive
 
 Anthropic defined a pattern that's genuinely useful at the level it's aimed at: anyone structuring calls to Claude directly benefits from thinking in terms of Chaining, Routing, Parallelization, Orchestrator-workers, Evaluator-optimizer. That's not a claim K9-AIF has any reason to argue with.
 
-What K9-AIF adds is what happens when that same pattern has to survive contact with a production enterprise system: governance that doesn't depend on remembering to add it, an audit trail that isn't optional, a topology that doesn't fall over when one downstream service is slow, and a third outcome for the case the two-outcome version of the pattern doesn't name. Someone building directly against Claude gets the pattern. Someone building on K9-AIF gets it already hardened.
+What K9-AIF adds is what happens when that same pattern has to survive contact with a production enterprise system: governance that doesn't depend on remembering to add it, an audit trail that isn't optional, a system that doesn't fall over when one downstream piece is slow, and a third outcome for the case the two-outcome version of the pattern doesn't name. Someone building directly against Claude gets the pattern. Someone building on K9-AIF gets it already hardened.
 
 ---
 
-## Author's note: how would you actually use this framework for Claude?
-
-Two different questions here, worth keeping apart. Can the Claude Agent SDK's own reasoning be routed through `K9ModelRouter`? No, [that boundary is explicit](https://blog.k9x.ai/claude-agent-sdk-governance-boundary/): Anthropic's SDK gives no swap-in point for its own model call, verified against the SDK's own source, not just its docs. Can `K9IntentAgent`'s classification call, the one LLM touchpoint in this post's whole routing flow, be routed to Claude through `K9ModelRouter`? Not yet, but for a different reason. `K9IntentAgent` never touches the SDK at all, it's a native K9-AIF agent calling `llm_invoke()` → `K9ModelRouter` → `LLMFactory` like any other model call. Today, `LLMFactory` just has nothing to point at Claude with. That's not a boundary like the SDK's, it's an adapter that hasn't been built yet.
-
-That's exactly the plain-API path the SDK post names as the answer for anyone who needs real inference governance with Claude, not the SDK adapter, a direct API call through K9-AIF's own model router. It's also exactly what `SKILLS.md` Skill 13 documents the recipe for: a `ClaudeLLM(BaseLLM)` adapter, registered in `LLMFactory`, credentials from `ANTHROPIC_API_KEY`. I checked before writing this: it doesn't exist in the framework yet. Only `ollama_llm.py`, `openai_llm.py`, `watsonx_llm.py`, and `mock_llm.py` do. So the honest answer isn't "just flip a config flag", it's that this is a contained, well-scoped addition following a pattern already proven three times over, not a change to anything this post describes.
-
----
-
-Full routing mechanics, config reference, and the SBB extension points for replacing the intent agent or wrapping the orchestrator: [Routing in K9-AIF: Deterministic and Non-Deterministic Paths](https://blog.k9x.ai/routing-in-k9-aif/). Anthropic's own pattern writeup: [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents).
+Full routing mechanics, config reference, and the extension points for replacing the intent step or wrapping the orchestrator: [Routing in K9-AIF: Deterministic and Non-Deterministic Paths](https://blog.k9x.ai/routing-in-k9-aif/). Anthropic's own pattern writeup: [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents).
 
 ```bash
 pip install k9-aif==1.10.0
 ```
 
-Working example with all three routing outcomes, both SBB override patterns, runs without Kafka or a live LLM: `examples/k9routing/` in the repository.
+Working example with all three routing outcomes, both override patterns, runs without Kafka or a live LLM: `examples/k9routing/` in the repository.
 
 ---
 
@@ -123,7 +117,3 @@ Working example with all three routing outcomes, both SBB override patterns, run
 - [Agent Squads in K9-AIF](https://blog.k9x.ai/agent-squads-in-k9-aif/)
 - [K9 Model Router in K9-AIF](https://blog.k9x.ai/k9-model-router-in-k9-aif/)
 - [Claude Agent SDK in K9-AIF: Govern What It Does, Not How It Thinks](https://blog.k9x.ai/claude-agent-sdk-governance-boundary/)
-
----
-
-<small><em>Wrote this blog, refined it using Claude Code in VS Code. It knows the framework and patterns well, thanks to the CLAUDE.md files at both the main and component levels giving it enough context to work with.</em></small>
