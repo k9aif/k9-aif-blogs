@@ -30,10 +30,12 @@ cloud "Kafka Message Bus" {
   queue "continuum.sbb.published" as topic
 }
 
+node "Source Code Repository\n(GitHub / Bitbucket / etc.)" as sourcecode
+
 package "K9X Enterprise Repository" {
   rectangle "pending_capture queue\n(waiting on real content)" as pending
   rectangle "Solutions Architect\nenters the real artifact" as sa2
-  rectangle "Artifacts\n(real content, not pointers)" as artifacts
+  rectangle "Artifacts\ncontent + git_ref\n(real content, not pointers)" as artifacts
   rectangle "Standards Information Base\nTOGAF / DoDAF / MODAF / NAF" as sib
   rectangle "Governance Log\ncompliance assessments,\ntime-boxed dispensations" as govlog
 }
@@ -43,7 +45,8 @@ solcont --> archcont : implements
 solcont --> topic : publish event\n(id, name, git_ref)
 topic --> pending : consume
 pending --> sa2 : notify
-sa2 --> artifacts : enter real content
+sourcecode --> sa2 : pulls content from\nthe real commit
+sa2 --> artifacts : enter real content\n+ git_ref citation
 artifacts --> sib
 artifacts --> govlog
 
