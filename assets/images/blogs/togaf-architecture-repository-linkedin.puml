@@ -1,0 +1,33 @@
+@startuml togaf-architecture-repository-linkedin
+skinparam monochrome false
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBackgroundColor #FAFAF8
+skinparam rectangleBorderColor #BBBBAA
+skinparam ArrowColor #555544
+skinparam FontName Inter
+skinparam FontSize 14
+skinparam Padding 10
+skinparam Shadowing false
+skinparam roundcorner 10
+skinparam defaultTextAlignment center
+
+title TOGAF Architecture Repository\n<size:12><color:#666055>Six structural components — two just went live in K9X Enterprise Repository</color></size>
+
+rectangle "Architecture\nMetamodel" as m
+rectangle "Architecture\nCapability" as c
+rectangle "Architecture\nLandscape" as l
+rectangle "Reference\nLibrary" as r
+rectangle "Standards\nInformation Base\n\n✓ now live" as sib #E8F5E9;line:2E7D32;text:2E7D32
+rectangle "Governance Log\n(time-boxed\ndispensations)\n\n✓ now live" as gov #E8F5E9;line:2E7D32;text:2E7D32
+
+m -[hidden]right- c
+c -[hidden]right- l
+
+r -[hidden]right- sib
+sib -[hidden]right- gov
+
+m -[hidden]down- r
+c -[hidden]down- sib
+l -[hidden]down- gov
+
+@enduml
