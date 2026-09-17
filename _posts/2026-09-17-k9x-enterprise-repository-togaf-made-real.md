@@ -53,3 +53,5 @@ I don't think there's another agentic-AI catalog built this way. Not because the
 So here's the question worth sitting with, whether you're building agentic systems or reviewing someone else's: when you strip the demo away and read the actual schema, does the vocabulary hold up? Or does it only work as long as nobody who actually knows the standard looks too closely?
 
 Fifteen months in, K9X Enterprise Repository is the answer I wanted to be able to give when someone does look closely.
+
+It's live now: [repo.k9x.ai](https://repo.k9x.ai).
