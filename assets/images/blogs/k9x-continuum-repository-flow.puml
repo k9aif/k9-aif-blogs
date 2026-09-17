@@ -1,0 +1,50 @@
+@startuml k9x-continuum-repository-flow
+skinparam monochrome false
+skinparam backgroundColor #FFFFFF
+skinparam rectangleBackgroundColor #FAFAF8
+skinparam rectangleBorderColor #BBBBAA
+skinparam queueBackgroundColor #F0ECE4
+skinparam queueBorderColor #999977
+skinparam cloudBackgroundColor #FFFFFF
+skinparam cloudBorderColor #888866
+skinparam packageBackgroundColor #FFFFFF
+skinparam packageBorderColor #888866
+skinparam ArrowColor #555544
+skinparam FontName Inter
+skinparam FontSize 13
+skinparam Padding 8
+skinparam Shadowing false
+skinparam roundcorner 8
+skinparam linetype ortho
+skinparam defaultTextAlignment center
+
+title K9X Continuum and Enterprise Repository\n<size:11><color:#666055>The Enterprise Continuum (the lens) and the Architecture Repository (the store), decoupled through Kafka</color></size>
+
+package "K9X Continuum" {
+  rectangle "Architecture Continuum\nABB registry\nFoundation -> CommonSystems\n-> Industry -> OrgSpecific" as archcont
+  rectangle "Solutions Continuum\nSBB registry\nsubmit -> review -> publish -> promote" as solcont
+  rectangle "Solutions Architect\npublishes an SBB" as sa1
+}
+
+cloud "Kafka Message Bus" {
+  queue "continuum.sbb.published" as topic
+}
+
+package "K9X Enterprise Repository" {
+  rectangle "pending_capture queue\n(waiting on real content)" as pending
+  rectangle "Solutions Architect\nenters the real artifact" as sa2
+  rectangle "Artifacts\n(real content, not pointers)" as artifacts
+  rectangle "Standards Information Base\nTOGAF / DoDAF / MODAF / NAF" as sib
+  rectangle "Governance Log\ncompliance assessments,\ntime-boxed dispensations" as govlog
+}
+
+sa1 --> solcont : publish
+solcont --> archcont : implements
+solcont --> topic : publish event\n(id, name, git_ref)
+topic --> pending : consume
+pending --> sa2 : notify
+sa2 --> artifacts : enter real content
+artifacts --> sib
+artifacts --> govlog
+
+@enduml
