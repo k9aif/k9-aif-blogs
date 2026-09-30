@@ -74,7 +74,7 @@ Governance defines policy; **Zero Trust enforces it at execution time**. `BaseOr
 3. sensitive-data protection and masking;
 4. risk scoring.
 
-The result is a trust decision: allow, deny, or allow with obligations such as masking. A denial stops the request before the wrapped framework is ever called. Zero Trust is opt-in per orchestrator (`enable_zero_trust: true`).
+The result is a trust decision: allow, deny, or allow with obligations such as masking. A denial stops the request before the wrapped framework is ever called. Zero Trust is opt-in per orchestrator (`enable_zero_trust: true`). More in [The Zero Trust Execution Layer for Agentic Systems](/zero-trust-execution-layer-agentic-systems/).
 
 ### Wiring it once
 
@@ -120,7 +120,7 @@ Every Shield verdict, Guardian verdict and Zero Trust decision is also emitted t
 
 **How:** `K9CrewAIAdapter` (the facade) hands the payload to `CrewAIOrchestratorAdapter`, which extends `BaseOrchestrator` and `BaseAdapter`. The crew is governed through inheritance, exactly like a native K9-AIF orchestrator; there's no special case in the governance pipeline.
 
-![K9-AIF + CrewAI integration](/assets/images/blogs/k9-aif-crewai-integration-flow.png)
+![K9-AIF + CrewAI integration](../assets/images/blogs/k9-aif-crewai-integration-flow.png)
 
 **The request path:**
 
@@ -156,7 +156,7 @@ class ClaimsOrchestrator(BaseOrchestrator):
 
 **How:** `K9LangGraphAdapter` and `LangGraphOrchestratorAdapter` follow the identical facade, orchestrator adapter and payload mapper shape as CrewAI. The graph sits at the Orchestrator layer for the same reason a crew does: a compiled graph orchestrates its own nodes. Only the wrapped construct differs.
 
-![K9-AIF + LangGraph integration](/assets/images/blogs/k9-aif-langgraph-integration-flow.png)
+![K9-AIF + LangGraph integration](../assets/images/blogs/k9-aif-langgraph-integration-flow.png)
 
 **The request path:**
 
@@ -186,7 +186,7 @@ Because the governance object is the same one used for CrewAI, the policy is ide
 
 **How:** `ClaudeAgentSDKOrchestratorAdapter` extends the same `BaseOrchestrator` and `BaseAdapter` contracts, and acts as the **sole capability broker**. Tools reach the SDK only through the adapter's own registry (`ToolCapability` entries), and the SDK's `can_use_tool` callback, the single path by which any tool call is allowed or denied, is wired straight into K9-AIF governance.
 
-![Claude Agent SDK adapter request/response flow](/assets/images/blogs/claude_agent_sdk_block_diagram.png)
+![Claude Agent SDK adapter request/response flow](../assets/images/blogs/claude_agent_sdk_block_diagram.png)
 
 This adapter governs at four points, not two:
 
@@ -240,6 +240,7 @@ To bring a fourth framework in, `SKILLS.md` Skill 16 in the framework repository
 - K9-AIF framework: [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework) (`pip install k9-aif`); adapters in `k9_aif_abb/k9_adapters/`, examples in `examples/weather_assist` and `examples/weatherAssistLang`
 - [From Agents to Architecture: Integrating CrewAI into K9-AIF](/crewai-application-and-k9-aif/)
 - [K9X Shield: Chain of Vulnerability Tests](/k9x-shield-chain-of-vulnerability-tests/)
+- [The Zero Trust Execution Layer for Agentic Systems](/zero-trust-execution-layer-agentic-systems/)
 - [Claude Agent SDK in K9-AIF: Govern What It Does, Not How It Thinks](/claude-agent-sdk-governance-boundary/)
 - OWASP Top 10 for LLM Applications (2025): [owasp.org](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - Zscaler ThreatLabz: [zscaler.com/threatlabz](https://www.zscaler.com/threatlabz)
