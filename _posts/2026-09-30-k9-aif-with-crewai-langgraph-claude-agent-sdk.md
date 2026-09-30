@@ -74,7 +74,7 @@ Governance defines policy; **Zero Trust enforces it at execution time**. `BaseOr
 3. sensitive-data protection and masking;
 4. risk scoring.
 
-The result is a trust decision: allow, deny, or allow with obligations such as masking. A denial stops the request before the wrapped framework is ever called. Zero Trust is opt-in per orchestrator (`enable_zero_trust: true`). More in [The Zero Trust Execution Layer for Agentic Systems](/zero-trust-execution-layer-agentic-systems/).
+The result is a trust decision: allow, deny, or allow with obligations such as masking. A denial stops the request before the wrapped framework is ever called. Zero Trust is opt-in per orchestrator (`enable_zero_trust: true`). More in [K9X Shield, Part 1: Zero Trust for Agentic Systems](/zero-trust-execution-layer-agentic-systems/).
 
 ### Wiring it once
 
@@ -240,7 +240,7 @@ To bring a fourth framework in, `SKILLS.md` Skill 16 in the framework repository
 - K9-AIF framework: [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework) (`pip install k9-aif`); adapters in `k9_aif_abb/k9_adapters/`, examples in `examples/weather_assist` and `examples/weatherAssistLang`
 - [From Agents to Architecture: Integrating CrewAI into K9-AIF](/crewai-application-and-k9-aif/)
 - [K9X Shield: Chain of Vulnerability Tests](/k9x-shield-chain-of-vulnerability-tests/)
-- [The Zero Trust Execution Layer for Agentic Systems](/zero-trust-execution-layer-agentic-systems/)
+- [K9X Shield, Part 1: Zero Trust for Agentic Systems](/zero-trust-execution-layer-agentic-systems/)
 - [Claude Agent SDK in K9-AIF: Govern What It Does, Not How It Thinks](/claude-agent-sdk-governance-boundary/)
 - OWASP Top 10 for LLM Applications (2025): [owasp.org](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 - Zscaler ThreatLabz: [zscaler.com/threatlabz](https://www.zscaler.com/threatlabz)
