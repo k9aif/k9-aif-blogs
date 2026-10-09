@@ -7,7 +7,7 @@ categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, K9X Inspector, K9X Sentinel, k9x Shield, Granite Guardian, conformance, governance]
 ---
 
-A framework can promise governance. A solution built on it still has to be checked. Someone hardcodes an address, an orchestrator imports an agent it should only name, a security setting is switched off "for now". None of that shows up until it matters.
+A framework can promise governance. A solution built on it still has to be checked. Someone hardcodes an address, an orchestrator imports agent classes when it should know only its squads, a security setting is switched off "for now". None of that shows up until it matters.
 
 This post is about the two K9X components that close that gap: **K9X Inspector**, which checks that a solution built on K9-AIF follows the framework's rules, and **K9X Sentinel**, which keeps the framework's defences current as new attacks appear. Together with k9x Shield they answer three questions about any K9-AIF solution:
 
