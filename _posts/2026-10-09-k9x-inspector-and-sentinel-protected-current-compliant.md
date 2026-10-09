@@ -92,6 +92,10 @@ This is the first item from the ACME Health Insurance guidelines:
 >
 > *Fix:* Read the address from an environment variable with a localhost default.
 
+The same examples, inspected again on the released k9-aif 1.15.0, now read differently: ACME Health Insurance went from **non-compliant at 68%** to **compliant at 93%**, ACME Support Center from 75% to 93%, and EOC to compliant with warnings at 89%. Here is EOC's guidelines document in the Inspector's Generated Docs tab. Its second item is the `OutboundLinkCheck` recommendation from the loop described below:
+
+![K9X Inspector, Generated Docs tab: EOC's conformance guidelines with where the solution stands, and a remediation plan giving the rule, why, where and how to fix each item](../assets/images/blogs/k9x-inspector-guidelines-eoc.png)
+
 A developer can work through it top to bottom without knowing the framework's rules in advance. That is the point: the rules carry the framework's design knowledge, and the guidelines hand it to whoever is fixing the code.
 
 The rules ship with the framework itself, so the same check also runs from the command line or in CI:
