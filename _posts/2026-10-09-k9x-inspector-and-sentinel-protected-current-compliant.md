@@ -19,9 +19,9 @@ This post is about the two K9X components that close that gap: **K9X Inspector**
 
 ## From scripts to components
 
-I started with simple scripts. `k9_generator.sh` generated a K9-AIF application from a template. A set of small shell hooks checked the rules I cared about whenever code changed: no `NoopGovernance` in an example, no model call that skips `llm_invoke()`. They worked, and they taught me which rules actually catch real mistakes.
+Last year I started with simple scripts. One generated the scaffold code for a K9-AIF application from a template. Others inspected a solution against the rules I cared about: no `NoopGovernance` in an example, no model call that skips `llm_invoke()`. They worked, and they taught me which rules actually catch real mistakes.
 
-As the framework and the ecosystem grew, I wanted every component to be the same kind of thing: **UI based, open source, and able to run locally or in a Podman container.** So the generator became K9X Studio, and the rule checks became K9X Inspector. Every component's repository has an `ubuntu/` folder with a standard `build-run.sh` that builds and runs it in a container on your own machine. The hosted sites at `*.k9x.ai` are demonstrations of exactly that.
+As the framework and the ecosystem grew, I wanted every component to be the same kind of thing: **UI based, open source, and able to run locally or in a Podman container.** So the scaffold scripts became K9X Studio ([studio.k9x.ai](https://studio.k9x.ai)), and the inspect scripts became K9X Inspector ([inspector.k9x.ai](https://inspector.k9x.ai)), which keeps evolving as the framework does. Every component's repository has an `ubuntu/` folder with a standard `build-run.sh` that builds and runs it in a container on your own machine. The hosted sites at `*.k9x.ai` are demonstrations of exactly that.
 
 ## The first test: the framework's own examples
 
