@@ -2,23 +2,18 @@
 
 title The Rules Get Stricter Over Time
 
-rectangle "<b>1. K9X Sentinel</b>  (automatic, daily)\n\nFinds a threat the framework\ndoes not fully cover\n\n<i>Example: ThreatLabz 2026, a chatbot invents</i>\n<i>a debt and hands over a payment link</i>" as S
-
-rectangle "<b>2. Human review</b>  (K9X HIL)\n\nApproved as a real gap.\nA private advisory opens\n(with a definition-of-done\nchecklist: next)" as R
-
-rectangle "<b>3. K9-AIF Framework</b>\n\nNew or stronger control,\nlisted in the capability catalog\n(a framework test enforces it)\n\n<i>k9-aif 1.14: OutboundLinkCheck</i>" as F
-
-rectangle "<b>4. K9X Inspector</b>\n\nRule added or updated so every\nsolution is checked for it\n\n<i>egress rule: run OutboundLinkCheck</i>" as I
-
-rectangle "<b>5. Verify fix</b>  (K9X HIL, next)\n\nSign-off only when every checklist\nitem is done, the Inspector rule included.\nWho, when and evidence are recorded:\nan audit trail" as V
-
-rectangle "<b>6. Release</b>\n\nNew k9-aif version: every solution's\nbar goes up, and the Inspector shows\nwhere each one now falls short" as SOL
+rectangle "<b>1. K9X Sentinel</b>\nfinds a new threat" as S
+rectangle "<b>2. Human review</b>\nreal gap? (K9X HIL)" as R
+rectangle "<b>3. Framework</b>\nnew control + catalog" as F
+rectangle "<b>6. Release</b>\nbar goes up for all" as SOL
+rectangle "<b>5. Fix sign-off</b>\naudited (K9X HIL, next)" as V
+rectangle "<b>4. K9X Inspector</b>\nrule added" as I
 
 S -right-> R
 R -right-> F
 F -down-> I
 I -left-> V
 V -left-> SOL
-SOL .up.> S : the next threat
+SOL -up-> S : next threat
 
 @enduml
