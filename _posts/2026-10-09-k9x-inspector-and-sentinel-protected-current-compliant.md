@@ -69,11 +69,17 @@ K9X Inspector applies the framework's 28 conformance rules to a solution:
 - **Governance**: Shield enabled with its checks, Guardian failing closed, production mode, orchestrators screening their own input.
 - **Hygiene**: no secrets in configuration, no committed `.env`, no private IP addresses, valid squad and agent YAML, a current framework version.
 
-It reads the code and the YAML without importing or running anything, so it is safe to point at any repository. Each finding is ranked critical, violation, warning or recommendation, with the file, the line and the fix, and each run comes with a remediation guide. Tracked applications are inspected again on every push (GitHub webhook) or on a schedule.
+It reads the code and the YAML without importing or running anything, so it is safe to point at any repository. Each finding is ranked critical, violation, warning or recommendation, with the file, the line and the fix, and each run produces a compliance report and conformance guidelines (below). Tracked applications are inspected again on every push (GitHub webhook) or on a schedule.
 
-### From findings to a plan a developer can follow
+### Two documents for every inspection: the record and the plan
 
-A list of findings tells you what is wrong. The Inspector also tells you what to do about it. Every run produces, next to the report, a **Conformance Guidelines** document for the solution:
+A list of findings tells you what is wrong. The Inspector also records exactly what was checked, and tells you what to do about it. Every run produces two documents in the Inspector's **Generated Docs** tab, each downloadable as Markdown or JSON (for other tools to read).
+
+The **Compliance Report** is the record: the source and the exact commit inspected, when and with which k9-aif version, the framework version the solution declares against the latest, the verdict, every finding grouped by severity (rule, category, file and line, fix), and the full table of all 28 rules with pass or fail. It is what you keep when someone asks what was checked and when.
+
+![K9X Inspector, Generated Docs tab: EOC's Compliance Report with source and commit, framework version, verdict, findings by severity and the table of all 28 rules](../assets/images/blogs/k9x-inspector-report-eoc.png)
+
+The **Conformance Guidelines** document is the plan:
 
 - **Where the solution stands**: the verdict, the share of rules passing, and the count at each severity.
 - **A remediation plan, in order**: violations first (fix before production), then warnings (next iteration), then recommendations (when the code is next touched).
