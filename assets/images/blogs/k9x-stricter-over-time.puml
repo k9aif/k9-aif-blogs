@@ -1,0 +1,39 @@
+@startuml k9x-stricter-over-time
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica Neue"
+skinparam defaultFontSize 13
+skinparam padding 10
+skinparam dpi 150
+
+skinparam rectangle {
+  RoundCorner 12
+  BorderThickness 1
+}
+
+skinparam arrow {
+  Color #64748B
+  FontColor #475569
+  FontSize 11
+  Thickness 2
+}
+
+title <size:20><b>The Rules Get Stricter Over Time</b></size>
+
+rectangle "<b>1. K9X Sentinel</b>\n\nFinds a threat the framework\ndoes not fully cover\n\n<i>ThreatLabz 2026: a chatbot invents a debt</i>\n<i>and hands over a payment link</i>" as S #FEF3C7
+
+rectangle "<b>2. Human review</b>\n\nK9X HIL\nApprove · reject" as H #FFEDD5
+
+rectangle "<b>3. K9-AIF Framework</b>\n\nNew or stronger control,\nlisted in the capability catalog\n\n<i>k9-aif 1.14: OutboundLinkCheck</i>" as F #EFF6FF
+
+rectangle "<b>4. K9X Inspector</b>\n\nA rule checks that solutions use it\n\n<i>egress rule: run OutboundLinkCheck</i>" as I #E0F2FE
+
+rectangle "<b>5. Every K9-AIF solution</b>\n\nThe bar goes up; the report shows\nwhere each solution now falls short" as SOL #DCFCE7
+
+S -right-> H
+H -right-> F
+F -down-> I
+I -left-> SOL
+SOL .up.> S : <i>the next threat</i>
+
+@enduml

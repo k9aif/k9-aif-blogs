@@ -15,6 +15,8 @@ This post is about the two K9X components that close that gap: **K9X Inspector**
 - **Is it current?** K9X Sentinel, watching new threats every day.
 - **Does it comply?** K9X Inspector, on every push.
 
+![A K9-AIF solution: protected at runtime by Shield and Guardian, kept current by K9X Sentinel, checked for compliance by K9X Inspector](../assets/images/blogs/k9x-protected-current-compliant.png)
+
 ## From scripts to components
 
 I started with simple scripts. `k9_generator.sh` generated a K9-AIF application from a template. A set of small shell hooks checked the rules I cared about whenever code changed: no `NoopGovernance` in an example, no model call that skips `llm_invoke()`. They worked, and they taught me which rules actually catch real mistakes.
@@ -84,6 +86,8 @@ The three pieces form one loop, and it only tightens:
 1. **Sentinel** finds a threat the framework doesn't fully cover, and a person reviews it.
 2. **The framework** closes the gap with a new or stronger control, and lists it in the capability catalog.
 3. **The Inspector** gets a rule that checks solutions actually use it.
+
+![The rules get stricter over time: Sentinel finds a threat, a person reviews it, the framework adds a control, the Inspector checks for it, every solution's bar goes up](../assets/images/blogs/k9x-stricter-over-time.png)
 
 One real example: the 2026 Zscaler ThreatLabz research described a chatbot scam that collects an ID, invents a debt and hands over a payment link. k9-aif 1.14 added `OutboundLinkCheck`, which blocks lookalike domains, brands hidden in subdomains and similar tricks in the links an agent sends out. It went into the capability catalog, and the Inspector's egress rule now tells any solution that doesn't run it to add it. The DAS report shows exactly that recommendation.
 

@@ -1,0 +1,38 @@
+@startuml k9x-protected-current-compliant
+
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica Neue"
+skinparam defaultFontSize 13
+skinparam padding 10
+skinparam dpi 150
+
+skinparam rectangle {
+  RoundCorner 12
+  BorderThickness 1
+}
+
+skinparam arrow {
+  Color #64748B
+  FontColor #475569
+  FontSize 11
+  Thickness 2
+}
+
+title <size:20><b>A K9-AIF Solution: Protected, Current, Compliant</b></size>
+
+rectangle "<b>K9X Sentinel</b>  <i>(current)</i>\n\nEvery morning: ThreatLabz · OWASP GenAI\nMITRE ATLAS · CISA KEV · OSV\nCompared with the capability catalog\nGaps → human review (K9X HIL)" as SEN #FEF3C7
+
+rectangle "<b>K9-AIF Framework</b>  <i>(k9-aif 1.15)</i>\n\nGovernance by construction\nCapability catalog · 28 conformance rules" as FW #EFF6FF
+
+rectangle "<b>Your K9-AIF Solution</b>" as SOL #F8FAFC {
+  rectangle "<b>Protected</b>  <i>(at runtime)</i>\n\nk9x Shield → Granite Guardian\non every agent call\nZero Trust at the orchestrator" as PROT #DCFCE7
+}
+
+rectangle "<b>K9X Inspector</b>  <i>(compliant)</i>\n\nOn every push or on a schedule\nCode + YAML read, never run\nFindings: file · line · fix" as INS #E0F2FE
+
+SEN -down-> FW : new or stronger controls
+FW -down-> PROT : built into every agent
+FW -right-> INS : rules
+INS -down-> SOL : conformance report
+
+@enduml
