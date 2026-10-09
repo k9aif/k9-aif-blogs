@@ -71,6 +71,29 @@ K9X Inspector applies the framework's 28 conformance rules to a solution:
 
 It reads the code and the YAML without importing or running anything, so it is safe to point at any repository. Each finding is ranked critical, violation, warning or recommendation, with the file, the line and the fix, and each run comes with a remediation guide. Tracked applications are inspected again on every push (GitHub webhook) or on a schedule.
 
+### From findings to a plan a developer can follow
+
+A list of findings tells you what is wrong. The Inspector also tells you what to do about it. Every run produces, next to the report, a **Conformance Guidelines** document for the solution:
+
+- **Where the solution stands**: the verdict, the share of rules passing, and the count at each severity.
+- **A remediation plan, in order**: violations first (fix before production), then warnings (next iteration), then recommendations (when the code is next touched).
+- **For every item**: the rule, why the framework has it, every place it is broken (file and line), and how to fix it.
+- **A starting configuration** for Shield, Granite Guardian and Zero Trust to copy into `config.yaml`.
+- **How to keep it compliant**: the framework practices the rules enforce, and the CI command that stops a violation from coming back.
+
+This is the first item from the ACME Health Insurance guidelines:
+
+> **1. No hardcoded private IP addresses** (K9-CFG-001, 2 places)
+>
+> *Why:* Private IP addresses in code or config tie the solution to one network and leak its layout.
+>
+> - `config/config.yaml:8`: private IP address
+> - `config/config.yaml:84`: private IP address
+>
+> *Fix:* Read the address from an environment variable with a localhost default.
+
+A developer can work through it top to bottom without knowing the framework's rules in advance. That is the point: the rules carry the framework's design knowledge, and the guidelines hand it to whoever is fixing the code.
+
 The rules ship with the framework itself, so the same check also runs from the command line or in CI:
 
 ```bash
