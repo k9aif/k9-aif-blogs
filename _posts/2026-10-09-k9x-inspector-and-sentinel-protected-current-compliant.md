@@ -6,7 +6,6 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, K9X Inspector, K9X Sentinel, k9x Shield, Granite Guardian, conformance, governance]
 ---
-
 A framework can promise governance. A solution built on it still has to be checked. Someone hardcodes an address, an orchestrator imports agent classes when it should know only its squads, a security setting is switched off "for now". None of that shows up until it matters.
 
 This post is about the two K9X components that close that gap: **K9X Inspector**, which checks that a solution built on K9-AIF follows the framework's rules, and **K9X Sentinel**, which keeps the framework's defences current as new attacks appear. Together with k9x Shield they answer three questions about any K9-AIF solution:
@@ -38,7 +37,9 @@ The findings were real:
 
 I loved seeing these. Not because the examples were wrong, but because a rule set found them, the same way every time, with the file, the line and the fix. A code review can miss a hardcoded address on line 84. A rule doesn't.
 
-Another out-of-the-box example, EOC (the Enterprise Insurance Operations Center), kept per-squad YAML files next to the one file the framework actually loads, and six of the seven had drifted from it. Turning on Granite Guardian in an example's configuration showed that the setting wasn't yet wired into the framework's governance by construction, so it is now (k9-aif 1.15.0). The DAS reference deployment, which I use as the framework's showcase, was non-compliant too: its orchestrators imported their agent classes. All of it is fixed. Today none of the framework's 12 examples has a violation, and five are fully compliant.
+Another out-of-the-box example, EOC (the Enterprise Insurance Operations Center), kept per-squad YAML files next to the one file the framework actually loads, and six of the seven had drifted from it. Turning on Granite Guardian in an example's configuration showed that the setting wasn't yet wired into the framework's governance by construction, so it is now (k9-aif 1.15.0). The DAS (Defense Acquisition System) reference deployment, the framework's showcase, had a few minor findings too, now fixed. Today none of the framework's 12 examples has a violation, and five are fully compliant.
+
+The Framework latest published release is: [pypi.org/project/k9-aif](https://pypi.org/project/k9-aif/)  k9-aif 1.15.0
 
 ## Protected: k9x Shield, Granite Guardian, Zero Trust
 
