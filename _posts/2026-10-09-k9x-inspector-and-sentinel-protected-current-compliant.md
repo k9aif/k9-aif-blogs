@@ -84,13 +84,18 @@ An organisation can add its own rules by registering them with the framework's r
 
 ## The rules get stricter over time
 
-The three pieces form one loop, and it only tightens:
+The three pieces form one loop, and it only tightens. Some steps are automatic; the important ones are decided by a person:
 
-1. **Sentinel** finds a threat the framework doesn't fully cover, and a person reviews it.
-2. **The framework** closes the gap with a new or stronger control, and lists it in the capability catalog.
-3. **The Inspector** gets a rule that checks solutions actually use it.
+1. **Sentinel** finds a threat the framework doesn't fully cover. This part runs by itself, every morning.
+2. **A person reviews it** in K9X HIL. If it is a real gap, a private security advisory opens.
+3. **The framework** closes the gap with a new or stronger control, and lists it in the capability catalog. A framework test fails if a control is missing from the catalog.
+4. **The Inspector** gets a rule, added or updated, that checks every solution actually uses it.
+5. **A person signs off the fix** in K9X HIL, against a definition-of-done checklist: the control, the catalog entry, the Inspector rule, a regression test and the release.
+6. **A new k9-aif release** raises the bar for every solution built on it.
 
-![The rules get stricter over time: Sentinel finds a threat, a person reviews it, the framework adds a control, the Inspector checks for it, every solution's bar goes up](../assets/images/blogs/k9x-stricter-over-time.png)
+![The rules get stricter over time: Sentinel finds a threat, a person reviews it, the framework adds a control, the Inspector checks for it, a person signs off the fix, a release raises the bar](../assets/images/blogs/k9x-stricter-over-time.png)
+
+Step 5 is the next piece to be built. The point is accountability: the sign-off records who checked each item, when, and the evidence they pointed to (the commit, the catalog entry, the rule, the version). Whoever closes a gap is on record for it, which makes the loop an audit trail as well as a process.
 
 One real example: the 2026 Zscaler ThreatLabz research described a chatbot scam that collects an ID, invents a debt and hands over a payment link. k9-aif 1.14 added `OutboundLinkCheck`, which blocks lookalike domains, brands hidden in subdomains and similar tricks in the links an agent sends out. It went into the capability catalog, and the Inspector's egress rule now tells any solution that doesn't run it to add it. The DAS report shows exactly that recommendation.
 
