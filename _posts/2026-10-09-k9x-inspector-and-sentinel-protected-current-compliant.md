@@ -80,6 +80,8 @@ k9aif inspect path/to/your/solution --fail-on violation
 
 An organisation can add its own rules by registering them with the framework's rule registry.
 
+**Does it work only for K9-AIF?** Yes, and that is deliberate. The rules encode the object-oriented analysis and design discipline the framework is built on: abstract contracts that concrete building blocks extend, each layer knowing only the one below it, one entry point for every model call, governance that cannot be skipped. Those principles are what make a K9-AIF solution strong, and the Inspector holds every solution built on the framework to them. It is not a general linter; it points at any solution built on K9-AIF and shows exactly where it falls short of the framework's design.
+
 ## The rules get stricter over time
 
 The three pieces form one loop, and it only tightens:
@@ -93,6 +95,10 @@ The three pieces form one loop, and it only tightens:
 One real example: the 2026 Zscaler ThreatLabz research described a chatbot scam that collects an ID, invents a debt and hands over a payment link. k9-aif 1.14 added `OutboundLinkCheck`, which blocks lookalike domains, brands hidden in subdomains and similar tricks in the links an agent sends out. It went into the capability catalog, and the Inspector's egress rule now tells any solution that doesn't run it to add it. The DAS report shows exactly that recommendation.
 
 So a solution built on K9-AIF doesn't just pass a fixed checklist once. Each time the framework learns about a new attack, the bar for every solution built on it goes up, and the Inspector shows each team where it now falls short.
+
+## What's next: checks before every commit
+
+Today the Inspector runs on a push or on a schedule, after the code is already in the repository. The next step is hooks: the same rules running before and after git operations on the developer's own machine, so a violation is caught before it is ever committed. They run in git itself, so they work the same way alongside AI coding assistants such as Claude Code and IBM Bob, or with no assistant at all, and each team can turn them on or off.
 
 ## Try it
 
