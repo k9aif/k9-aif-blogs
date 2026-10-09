@@ -19,7 +19,7 @@ This post is about the two K9X components that close that gap: **K9X Inspector**
 
 ## From scripts to components
 
-Last year I started with simple scripts. One generated the scaffold code for a K9-AIF application from a template. Others inspected a solution against the rules I cared about: no `NoopGovernance` in an example, no model call that skips `llm_invoke()`. They worked, and they taught me which rules actually catch real mistakes.
+Last year I started with simple scripts. One generated the scaffold code for a K9-AIF application from a template. Others inspected a solution against the rules I cared about: no example running without governance, and no agent calling a language model directly instead of going through the framework. They worked, and they taught me which rules actually catch real mistakes.
 
 As the framework and the ecosystem grew, I wanted every component to be the same kind of thing: **UI based, open source, and able to run locally or in a Podman container.** So the scaffold scripts became K9X Studio ([studio.k9x.ai](https://studio.k9x.ai)), and the inspect scripts became K9X Inspector ([inspector.k9x.ai](https://inspector.k9x.ai)), which keeps evolving as the framework does. Every component's repository has an `ubuntu/` folder with a standard `build-run.sh` that builds and runs it in a container on your own machine. The hosted sites at `*.k9x.ai` are demonstrations of exactly that.
 
@@ -42,7 +42,7 @@ Fixing them found more. EOC kept per-squad YAML files next to the one file the f
 
 ## Protected: k9x Shield, Granite Guardian, Zero Trust
 
-Since k9-aif 1.15, governance is part of the agent contract. Every agent's `execute()` is wrapped when the class is defined: the request is checked before the agent runs and the reply after it, and an agent with no governance configured refuses to run in production. The application turns it on once, in `config.yaml`:
+Since k9-aif 1.15, governance is part of the agent contract. The framework wraps every agent the moment it is defined: the request is checked before the agent runs and the reply after it, and an agent with no governance configured refuses to run in production. The application turns it on once, in `config.yaml`:
 
 - **k9x Shield**: deterministic checks (prompt injection, personal data, outbound links, tool arguments and more), mapped to the OWASP Top 10 for LLM Applications.
 - **Granite Guardian**: semantic screening after Shield, for the paraphrased attacks a pattern can't catch. If Guardian is unreachable, requests are refused, not passed through.
@@ -64,13 +64,13 @@ K9X Inspector applies the framework's 28 conformance rules to a solution:
 
 - **ABB contracts**: agents extend a framework agent base class.
 - **Three-layer decoupling**: router, orchestrator, squad and agent each know only the layer below.
-- **One model path**: every model call goes through `llm_invoke()`.
+- **One model path**: agents never call a language model directly. Every call goes through the framework's single, consistent entry point (`llm_invoke()`, backed by the model factory and router), so governance, retries and the audit trail apply to every call, whichever model or provider is behind it.
 - **Governance**: Shield enabled with its checks, Guardian failing closed, production mode, orchestrators screening their own input.
 - **Hygiene**: no secrets in configuration, no committed `.env`, no private IP addresses, valid squad and agent YAML, a current framework version.
 
 It reads the code and the YAML without importing or running anything, so it is safe to point at any repository. Each finding is ranked critical, violation, warning or recommendation, with the file, the line and the fix, and each run comes with a remediation guide. Tracked applications are inspected again on every push (GitHub webhook) or on a schedule.
 
-The rules are framework code (`k9_aif_abb.k9_inspect`), so the same check runs in CI:
+The rules ship with the framework itself, so the same check also runs from the command line or in CI:
 
 ```bash
 pip install k9-aif
