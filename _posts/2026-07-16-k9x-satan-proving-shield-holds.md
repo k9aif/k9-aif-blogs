@@ -35,27 +35,29 @@ That screenshot is not staged. It's `satan.k9x.ai`, live, firing a policy docume
 
 ---
 
-## Thirteen Framework Checks, One Local
+## Fifteen Framework Checks, One Local
 
-SATAN's two gates run 14 checks total — 13 framework OOB, 1 SATAN-local. Seven shipped with the framework from the start. Five were built in SATAN first, attacked, and harvested upstream once proven framework-generic. One, `PIIRequestCheck`, went straight into the framework after a live "compliance audit" attack — soliciting SSN, DOB, and account numbers with no literal PII in the payload — slipped past both gates. Only `FieldAnomalyCheck` remains SATAN-local: its red-flag terms (`EXEC-OVERRIDE`, `Priority: CRITICAL`, `COO auth codes`) are tuned to this project's own insurance-claim corpus, and promoting it as-is would misrepresent a worked example as a general capability.
+SATAN's two gates run 16 checks total — 15 framework OOB, 1 SATAN-local. Seven shipped with the framework from the start. Five were built in SATAN first, attacked, and harvested upstream once proven framework-generic. One, `PIIRequestCheck`, went straight into the framework after a live "compliance audit" attack — soliciting SSN, DOB, and account numbers with no literal PII in the payload — slipped past both gates. Two more came from published threat research and SATAN's own runs: `OutboundLinkCheck` (k9-aif 1.14), from Zscaler ThreatLabz's 2026 phishing report, and `PaymentDiversionCheck` (k9-aif 1.16.1), which covers business-language steering — payment redirection, review bypass and concealment — deterministically at ingress. Only `FieldAnomalyCheck` remains SATAN-local: its red-flag terms (`EXEC-OVERRIDE`, `Priority: CRITICAL`, `COO auth codes`) are tuned to this project's own insurance-claim corpus, and promoting it as-is would misrepresent a worked example as a general capability.
 
 | # | Check | Gate | Owner | Threat Class |
 |---|-------|------|-------|--------------|
 | 1 | `RequestFrequencyCheck` | Ingress | Framework OOB | Unbounded Consumption — OWASP LLM10 |
 | 2 | `InputSizeCheck` | Ingress | Framework OOB | Token-flood / oversized payload — OWASP LLM10 |
 | 3 | `PromptInjectionCheck` | Ingress | Framework OOB | Indirect Prompt Injection — Zscaler #1 · OWASP LLM01 |
-| 4 | `FieldAnomalyCheck` | Ingress | SATAN-local | Authority-override social engineering |
-| 5 | `MemoryPoisoningCheck` | Ingress | Framework OOB | Memory Poisoning — Zscaler #3 · OWASP LLM04 |
-| 6 | `ToolArgumentCheck` | Ingress + Egress | Framework OOB | Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05 |
-| 7 | `ToolAuthorizationCheck` | Ingress + Egress | Framework OOB | Shadow AI — unapproved tool — Zscaler #4 |
-| 8 | `PIIRequestCheck` | Ingress | Framework OOB | Solicited PII disclosure, no literal PII in payload — OWASP LLM02 |
-| 9 | `SemanticDriftCheck` | Egress | Framework OOB | Goal Hijacking & Privilege Escalation — Zscaler #2 · OWASP LLM06 |
-| 10 | `ExecutionGuardCheck` | Egress | Framework OOB | Destructive execution — Zscaler #2 · OWASP LLM06 |
-| 11 | `PIIBoundaryCheck` | Egress | Framework OOB | Sensitive Info Disclosure — OWASP LLM02 |
-| 12 | `HardcodedCredentialCheck` | Egress | Framework OOB | Supply chain / secret leakage — OWASP LLM03 |
-| 13 | `SystemPromptLeakageCheck` | Egress | Framework OOB | System Prompt Leakage — OWASP LLM07 |
-| 14 | `OutputSanitizationCheck` | Egress | Framework OOB | Improper Output Handling — OWASP LLM05 |
-| — | `GuardianGovernance` | Agent pre/post | SATAN-local | Semantic evasion of all 14 above (cross-cutting, optional) |
+| 4 | `PaymentDiversionCheck` | Ingress | Framework OOB | Business-language steering: payment redirection, review bypass, concealment — OWASP LLM01 |
+| 5 | `FieldAnomalyCheck` | Ingress | SATAN-local | Authority-override social engineering |
+| 6 | `MemoryPoisoningCheck` | Ingress | Framework OOB | Memory Poisoning — Zscaler #3 · OWASP LLM04 |
+| 7 | `ToolArgumentCheck` | Ingress + Egress | Framework OOB | Tool Abuse — poisoned arguments — Zscaler #4 · OWASP LLM05 |
+| 8 | `ToolAuthorizationCheck` | Ingress + Egress | Framework OOB | Shadow AI — unapproved tool — Zscaler #4 |
+| 9 | `PIIRequestCheck` | Ingress | Framework OOB | Solicited PII disclosure, no literal PII in payload — OWASP LLM02 |
+| 10 | `SemanticDriftCheck` | Egress | Framework OOB | Goal Hijacking & Privilege Escalation — Zscaler #2 · OWASP LLM06 |
+| 11 | `ExecutionGuardCheck` | Egress | Framework OOB | Destructive execution — Zscaler #2 · OWASP LLM06 |
+| 12 | `PIIBoundaryCheck` | Egress | Framework OOB | Sensitive Info Disclosure — OWASP LLM02 |
+| 13 | `HardcodedCredentialCheck` | Egress | Framework OOB | Supply chain / secret leakage — OWASP LLM03 |
+| 14 | `SystemPromptLeakageCheck` | Egress | Framework OOB | System Prompt Leakage — OWASP LLM07 |
+| 15 | `OutputSanitizationCheck` | Egress | Framework OOB | Improper Output Handling — OWASP LLM05 |
+| 16 | `OutboundLinkCheck` | Egress | Framework OOB | Phishing links in agent output — Zscaler ThreatLabz 2026 · OWASP LLM05 |
+| — | `GuardianGovernance` | Router ingress + agent pre/post | Framework OOB | Semantic evasion of the pattern checks above (cross-cutting; a top-bar switch per fire) |
 
 `ToolArgumentCheck`/`ToolAuthorizationCheck` run at both gates deliberately — ingress catches caller-supplied fields before Squad/Agent runs; egress catches a fresh tool call an agent generates mid-execution, which doesn't exist yet at ingress time. Same defense-in-depth principle as Guardian: additive, never a replacement.
 
@@ -75,7 +77,7 @@ The important part: Guardian alone is not sufficient either. It's a second layer
 
 ---
 
-SATAN carries one more piece of the original SATAN's 1995 tradition. The original tool shipped with `repent.pl` — run it, and SATAN became SANTA. K9X SATAN has the same button in the sidebar. Click Repent, and the tool that just proved your Shield holds turns friendly for a moment. It doesn't change what the tool does. It's just a nod to where the name came from.
+SATAN carries one more piece of the original SATAN's 1995 tradition. The original tool shipped with `repent.pl` — run it, and SATAN became SANTA. K9X SATAN has the same button in the sidebar. Click Repent, and the tool that just proved your Shield holds turns friendly for a moment — for you, in your own session; every other visitor still sees SATAN. It doesn't change what the tool does. It's just a nod to where the name came from.
 
 ---
 
@@ -86,7 +88,7 @@ pip install k9x-satan
 k9x-satan
 ```
 
-Or just visit it: [satan.k9x.ai](https://satan.k9x.ai) — upload a document, fire an attack, watch the chain execution log show exactly which check caught it. Then click Repent in the sidebar — SATAN becomes SANTA for a moment, same tool underneath.
+Or just visit it: [satan.k9x.ai](https://satan.k9x.ai) — upload a document, fire an attack, watch the chain execution log show exactly which check caught it. Flip the Granite Guardian switch in the top bar to add the semantic layer to your fires. Then click Repent in the sidebar — SATAN becomes SANTA for your session, same tool underneath.
 
 ---
 
