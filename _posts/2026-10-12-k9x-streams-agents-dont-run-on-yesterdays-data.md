@@ -12,7 +12,7 @@ Most AI agents today reason and act on stale data.
 
 They typically receive a snapshot of the world at the start of their run (or worse, from last night's batch). Between the moment the agent begins thinking and the moment it takes an irreversible action (releasing a payment, approving a claim, shipping an order, updating a record), the real world keeps moving.
 
-Traditional software doesn't have this problem. An application calls an API, the API queries the database, and the action is taken inside that transaction, on data as it is at that moment. Applications built on TIBCO, MuleSoft or Appian have worked this way for decades, and they run reliably in thousands of production systems today.
+Traditional software doesn't have this problem. An application calls an API, the API queries the database, and the action is taken inside that transaction, on data as it is at that moment.
 
 Agents work differently:
 
