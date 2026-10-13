@@ -8,15 +8,13 @@ tags: [K9-AIF, k9x Origin, K9X Streams, Kafka, MCP, k9x Shield, live context, co
 ---
 ## Agents can call APIs. So why streams?
 
-
-
-**Data streams** are critical for AI agents because  =they enable  **real-time, event-driven intelligence** , allowing agents to react instantly to changing environments without the delay and overhead of repetitive database polling= . While database API calls are excellent for retrieving static, historical records, data streams provide a continuous flow of live information necessary for autonomous decision-making.
+Data streams matter to AI agents because they make real-time, event-driven intelligence possible: an agent can react the moment something changes, without the delay and load of polling databases again and again. Database and API calls remain the right way to read a record at the moment you need it. Streams add something they can't: a continuous flow of what is happening across all your systems, which is what autonomous decisions depend on.
 
 An agent built on K9-AIF can call any system of record through MCP, right before it acts, and get the data as it is at that moment. That is how applications have worked for decades: call the API, the API reads the database, act on the result. If the data an agent needs sits in one system with a good API, that is the right design, and you don't need K9X Streams.
 
 Real decisions are rarely that tidy. Take "can I release this payment?". The invoice is in the ERP. The payment may have come from treasury or the bank. The sanctions flag comes from a screening service. A note about the vendor arrives from email or a supplier portal. That is where streams earn their place, for five reasons.
 
-**1. One question instead of many.** Through APIs, the agent needs four connections, four sign-ins, four data formats, and it has to join the answers itself, inside a prompt. With K9X Streams it asks once and gets one view of the entity, already joined from every source that touches it.
+**1. One question instead of many.** Through APIs, the agent needs four connections, four sign-ins, four data formats, and it has to join the answers itself, inside a prompt. With streams feeding k9x Origin, it asks once and gets one view of the entity, already joined from every source that touches it.
 
 **2. "What changed?", not only "what is it now?".** An API returns current state. Live context also returns the sequence: approved at 10:02, a payment posted from another system at 10:04, flagged at 10:05. Often that history is exactly what the reasoning needs.
 
