@@ -1,7 +1,7 @@
 ---
 layout: post
 title: "How K9X Streams Enhances the K9-AIF Framework"
-date: 2026-10-12
+date: 2026-10-13
 author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, streaming]
 tags: [K9-AIF, k9x Origin, K9X Streams, Kafka, MCP, k9x Shield, live context, context fabric]
@@ -26,7 +26,12 @@ Real decisions are rarely that tidy. Take "can I release this payment?". The inv
 
 Event-driven processing itself is not new. More than a decade ago TIBCO built predictive, event-driven processing with BusinessEvents, alongside ActiveMatrix BusinessWorks, and it was well ahead of its time. What is different now is who consumes the events. In an agentic flow, real-time events can be used as they occur, by the agent that is about to act on them.
 
-In K9-AIF 1.18 this has a name: **k9x Origin**. It is built into the framework, like k9x Shield, and it is the one place an agent asks *what is true right now, and where did it come from?* K9X Streams is its reference demo, and you can try it at [streams.k9x.ai](https://streams.k9x.ai).
+In K9-AIF 1.18 this has a name: **k9x Origin**. It is built into the framework, like k9x Shield, and it is the one place an agent asks *what is true right now, and where did it come from?* K9X Streams is its reference demo, and you can try it at [streams.k9x.ai](https://streams.k9x.ai). Here it is in under a minute:
+
+<video controls muted playsinline preload="metadata" poster="../assets/images/blogs/k9x-origin-demo-poster.png" style="width:100%;max-width:960px;border-radius:8px">
+  <source src="../assets/videos/k9x-origin-demo.mp4" type="video/mp4">
+  Your browser can't play this video. <a href="../assets/videos/k9x-origin-demo.mp4">Download it</a>.
+</video>
 
 ![An agent's three paths: knowledge from the retriever, current truth from k9x Origin, actions to the systems of record](../assets/images/blogs/k9x-origin-three-paths.png)
 
