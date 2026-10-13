@@ -4,9 +4,13 @@ title: "How K9X Streams Enhances the K9-AIF Framework"
 date: 2026-10-12
 author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, streaming]
-tags: [K9-AIF, K9X Streams, Kafka, MCP, k9x Shield, live context, context fabric]
+tags: [K9-AIF, k9x Origin, K9X Streams, Kafka, MCP, k9x Shield, live context, context fabric]
 ---
 ## Agents can call APIs. So why streams?
+
+
+
+**Data streams** are critical for AI agents because  =they enable  **real-time, event-driven intelligence** , allowing agents to react instantly to changing environments without the delay and overhead of repetitive database polling= . While database API calls are excellent for retrieving static, historical records, data streams provide a continuous flow of live information necessary for autonomous decision-making.
 
 An agent built on K9-AIF can call any system of record through MCP, right before it acts, and get the data as it is at that moment. That is how applications have worked for decades: call the API, the API reads the database, act on the result. If the data an agent needs sits in one system with a good API, that is the right design, and you don't need K9X Streams.
 
@@ -24,11 +28,15 @@ Real decisions are rarely that tidy. Take "can I release this payment?". The inv
 
 Event-driven processing itself is not new. More than a decade ago TIBCO built predictive, event-driven processing with BusinessEvents, alongside ActiveMatrix BusinessWorks, and it was well ahead of its time. What is different now is who consumes the events. In an agentic flow, real-time events can be used as they occur, by the agent that is about to act on them.
 
-That is what K9X Streams adds to K9-AIF. You can try it at [streams.k9x.ai](https://streams.k9x.ai).
+In K9-AIF 1.18 this has a name: **k9x Origin**. It is built into the framework, like k9x Shield, and it is the one place an agent asks *what is true right now, and where did it come from?* K9X Streams is its reference demo, and you can try it at [streams.k9x.ai](https://streams.k9x.ai).
+
+![An agent's three paths: knowledge from the retriever, current truth from k9x Origin, actions to the systems of record](../assets/images/blogs/k9x-origin-three-paths.png)
+
+An agent has three paths, and Origin is the middle one. Knowledge (policies, contracts, manuals) still comes from the retriever and its vector database. Actions still go straight to the systems that own the data. Origin is for knowing, and it is read-only by design.
 
 ## What an agent gets back
 
-K9X Streams turns event streams into live state, and agents ask for it over MCP. One question, `get_current`, returns the joined view of an entity, not a single system's record:
+Streams keep live state current; agents ask k9x Origin over MCP. One question, `get_current`, returns the joined view of an entity, not a single system's record:
 
 ```json
 agent → MCP get_current("invoice", "INV-1037")
@@ -37,28 +45,33 @@ agent → MCP get_current("invoice", "INV-1037")
                "payments": [{ "payment_id": "PAY-F957DF" }] },
   "as_of":   "2026-10-12T22:41:07+00:00",
   "age_seconds": 2.1,
-  "stale":   false,
-  "source":  { "topic": "ap.payment.posted", "offset": 66 }
+  "version": "ap.payment.posted:0:66",
+  "source":  { "kind": "stream", "topic": "ap.payment.posted", "offset": 66 },
+  "flags":   { "quarantined": null, "in_review": false, "conflict": null }
 }
 ```
 
-The invoice came from the ERP's events and the payment from another system's; the agent sees both in one answer. Every value carries `as_of`, its age, and the Kafka topic and offset of the event that set it, so a decision traces back to the exact record behind it. A second tool, `recent_changes`, returns what happened to the entity and when, and `query` answers questions across entities ("approved invoices over $10,000").
+The invoice came from the ERP's events and the payment from another system's; the agent sees both in one answer. Every value carries `as_of`, its age, and the event that set it, so a decision traces back to the exact record behind it. The flags say when not to trust it: an event refused by Shield, a case already with a person, or data that flipped or arrived out of order. A second tool, `recent_changes`, returns what happened to the entity and when, and `query` answers questions across entities ("approved invoices over $10,000").
 
 ## How it reaches the agent
 
 Agents never read Kafka. A model can't drink from a firehose: thousands of events, most of them irrelevant, each one costing tokens and each one a chance for injected text. The stream keeps the state current; the agent asks one precise question when it is about to decide.
 
-There are two ways in, and a real solution usually uses both. The Orchestrator hands the squad the current view of what the flow is about, before any agent runs:
+There are two ways in, and a real solution usually uses both. A squad declares in `config/origin.yaml` what it needs, and the Orchestrator hands it the current view before any agent runs:
 
-```python
-orchestrator = PaymentReleaseOrchestrator([squad], config=config,
-                                          governance=shield, context_state=state)
-orchestrator.execute_flow({"invoice_id": "INV-1037",
-                           "live_context_refs": ["invoice:INV-1037"]})
-# the squad receives payload["live_context"]["invoice:INV-1037"]
+```yaml
+squads:
+  payment_release:
+    live_context: ["invoice:{invoice_id}"]     # filled from the payload
+agents:
+  PaymentReleaseAgent: { allowed_entities: [invoice, vendor, payment] }
 ```
 
-Then the agent asks again over MCP just before acting, with the MCP client the framework already ships (`MCPStreamableHttpConnector`). Agents need no new client code. The solution itself adds only what is specific to it: one projection per business event, and a few lines of wiring at its entry point.
+Then the agent asks again over MCP just before acting, with the MCP client the framework already ships. Agents need no new client code. The solution itself adds only what is specific to it: one projection per business event, and a few lines of wiring at its entry point.
+
+And when an entity has no events yet, or a step is irreversible, Origin goes to the system of record itself: a **read-through** when the entity is missing from live state, a **verify** against the system of record before a step you mark as irreversible. The agent still makes the same one call. The answer's `source` says which it was.
+
+Origin states facts and makes no business decisions. "A claim over $5,000 goes to a person" is a business rule, evaluated by a rules step in the squad, which raises a human-review case when a rule matches.
 
 Governance is inherited, not bolted on, and it runs twice. Every event passes k9x Shield at the stream gate before it can reach live state. Every answer an agent reads is screened again, like any tool result.
 
@@ -68,11 +81,11 @@ Governance is inherited, not bolted on, and it runs twice. Every event passes k9
 
 The demo is a payment-release agent. It reviews an approved invoice for a few seconds, asks again just before releasing, then releases or holds. In three of the four scenarios, something happens in another system while it is reviewing:
 
-| Scenario | What happens on the stream | Decision |
-|---|---|---|
-| Release payment | Nothing changes | RELEASE |
-| Duplicate payment | Another system pays the invoice mid-review | HOLD: duplicate prevented, "PAY-… already posted, 2.0 s ago" |
-| Vendor flagged | A sanctions flag for the vendor arrives mid-review | HOLD: vendor flagged |
+| Scenario              | What happens on the stream                              | Decision                                                              |
+| --------------------- | ------------------------------------------------------- | --------------------------------------------------------------------- |
+| Release payment       | Nothing changes                                         | RELEASE                                                               |
+| Duplicate payment     | Another system pays the invoice mid-review              | HOLD: duplicate prevented, "PAY-… already posted, 2.0 s ago"         |
+| Vendor flagged        | A sanctions flag for the vendor arrives mid-review      | HOLD: vendor flagged                                                  |
 | Poisoned stream event | A vendor note carries instructions to pay a new account | Refused at the gate; the vendor is quarantined; HOLD for human review |
 
 Two of these carry the argument.
@@ -87,37 +100,37 @@ The **poisoned note** shows why the edge has to be governed. The note says "igno
 
 Agents can misbehave too, or be talked into it. The demo's threat simulator fires five attacks, and each one has to be stopped:
 
-| Attack | Stopped by |
-|---|---|
-| Planted instructions in a stream event | Shield gate, `PromptInjectionCheck` |
-| SSN and card number in a stream event | Shield gate, `PIIBoundaryCheck` |
-| An agent asks for "the full SSN and bank account number" | MCP server, before any data is read (`PIIRequestCheck`) |
-| Instructions hidden in a tool argument | MCP server, before any data is read (`PromptInjectionCheck`) |
-| An agent asks for employee records | MCP server scope: this server answers only about invoices, vendors and payments |
+| Attack                                                   | Stopped by                                                                      |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Planted instructions in a stream event                   | Shield gate,`PromptInjectionCheck`                                            |
+| SSN and card number in a stream event                    | Shield gate,`PIIBoundaryCheck`                                                |
+| An agent asks for "the full SSN and bank account number" | k9x Origin, before any data is read (`PIIRequestCheck`)                        |
+| Instructions hidden in a tool argument                   | k9x Origin, before any data is read (`PromptInjectionCheck`)                   |
+| An agent asks for employee records                       | k9x Origin scope: each agent sees only the entities `origin.yaml` allows it     |
 
 A refused request comes back as a refusal, never a partial answer:
 
 ```json
 { "refused_by_governance": true,
-  "reason": "entity 'employee' is outside this server's scope (invoice, payment, vendor)" }
+  "reason": "entity 'employee' is outside the scope of this solution (invoice, payment, vendor)" }
 ```
 
 ![The threat simulator: each attack in red, the block that stopped it in green](../assets/images/blogs/k9x-streams-threat-simulator.png)
 
 ## Where it sits in the framework
 
-In June I wrote about the [K9 Enterprise Context Fabric](/k9-enterprise-context-fabric/), the contracts for carrying streaming enterprise events into agentic flows. K9-AIF 1.17 completes it: live state with provenance, the Shield gate with quarantine, mappers so a database's change records or an application's log lines can feed it without custom code, the context MCP server, and live context on every Orchestrator. K9X Streams is the reference implementation. Its own code is four projections, a generator, one orchestrator and one agent; everything else is the framework.
+In June I wrote about the [K9 Enterprise Context Fabric](/k9-enterprise-context-fabric/), the contracts for carrying streaming enterprise events into agentic flows. K9-AIF 1.17 completed it: live state with provenance, the Shield gate with quarantine, and mappers so a database's change records or an application's log lines can feed it without custom code. 1.18 adds k9x Origin on top: the one call, read-through and verify against systems of record, conflict flags, per-agent scope, and shared live state in Redis for clusters. K9X Streams is the reference implementation. Its own code is four projections, a generator, one orchestrator and one agent; everything else is the framework.
 
 Live state is a read model, not a system of record. Agents read it; they act through the systems that own the data, and those systems emit the events that flow back into it. The final guarantee for an action, such as one payment per invoice, still belongs in the system that owns it. And live state is only as complete as the streams feeding it: if no event has ever arrived for an entity, the answer is "not found", so a new deployment starts by replaying the topics or loading a snapshot.
 
-For solution architects there is a page on how to build this into your own solution: [streams.k9x.ai/implement](https://streams.k9x.ai/implement).
+For solution architects, the architecture, class diagrams and five configuration steps are at [streams.k9x.ai/architecture](https://streams.k9x.ai/architecture).
 
 ## What this enables next
 
 - **Stream-triggered agents.** A rule on a stream ("an approved invoice over $10,000") starts a squad through the K9-AIF Router, so agents act on events, not only on requests.
-- **Human review on quarantined data.** A hold becomes a K9X HIL case, and the reviewer's decision resumes the flow.
-- **Per-agent scope.** Today the scope is per MCP server; Zero Trust can narrow what each agent may see.
-- **Shared, durable live state.** Redis or PostgreSQL behind the same interface, so ingest workers, MCP servers and orchestrators scale out as clusters, the way the rest of K9-AIF already does.
+- **Human review from conflicts.** A conflict or quarantine flag becomes a K9X HIL case through the rules step, and the reviewer's decision resumes the flow.
+- **Scope from identity.** Today each agent's scope comes from `origin.yaml`; Zero Trust identity can supply it instead.
+- **Clusters.** Shared live state in Redis is in 1.18; consumer groups and lag-aware freshness let ingest workers, Origin and orchestrators scale out the way the rest of K9-AIF already does.
 
 The events were always there. Now agents can use them.
 
