@@ -6,23 +6,28 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, streaming]
 tags: [K9-AIF, K9X Streams, Kafka, MCP, k9x Shield, live context, context fabric]
 ---
+## The core pain point
+
 Most AI agents today reason and act on stale data.
 
-They typically receive a snapshot of the world at the start of their run, or worse, from last night's batch. Between the moment the agent begins thinking and the moment it takes an irreversible action (releasing a payment, approving a claim, shipping an order, updating a record), the real world keeps moving.
+They typically receive a snapshot of the world at the start of their run (or worse, from last night's batch). Between the moment the agent begins thinking and the moment it takes an irreversible action (releasing a payment, approving a claim, shipping an order, updating a record), the real world keeps moving.
+
+That gap creates silent, high-cost failures:
+
+- A payment-release agent pays an invoice that another system already paid two seconds earlier.
+- A claims agent approves a payout after a sanctions flag or fraud signal has already arrived.
+- An inventory agent commits stock that was just reserved or sold by another process.
+- A compliance agent makes a decision on data that is already outdated or has been poisoned.
+
+The agent has no idea the world changed. It has no freshness signal, no provenance, and no easy way to re-check just before it acts.
+
+In short:
+
+> Agents are forced to decide on yesterday's (or even a few minutes ago's) picture of reality, while the systems they interact with are event-driven and continuous. That mismatch is the fundamental problem K9X Streams is built to solve.
 
 None of this is a new idea. More than a decade ago TIBCO built predictive, event-driven processing with BusinessEvents, alongside ActiveMatrix BusinessWorks, and it was well ahead of its time. What is different now is who consumes the events. In an agentic flow, real-time events can be used as they occur, by the agent that is about to act on them.
 
 That is what K9X Streams does for K9-AIF. You can try it at [streams.k9x.ai](https://streams.k9x.ai).
-
-## The silent failure mode
-
-An agent working from a snapshot does not fail loudly. It does exactly what it was asked, correctly, on data that stopped being true a few seconds ago:
-
-- another system paid the invoice while the agent was reviewing it, so the payment goes out twice;
-- the vendor landed on a sanctions list during the review;
-- the stock was sold, the policy changed, the claim was withdrawn.
-
-Nothing in the agent's input says "this is old". Every log line looks fine. The mistake only shows up later, in a reconciliation.
 
 ## What live context gives an agent
 
