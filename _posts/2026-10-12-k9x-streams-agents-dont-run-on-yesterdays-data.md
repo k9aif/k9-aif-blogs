@@ -12,20 +12,15 @@ Most AI agents today reason and act on stale data.
 
 They typically receive a snapshot of the world at the start of their run (or worse, from last night's batch). Between the moment the agent begins thinking and the moment it takes an irreversible action (releasing a payment, approving a claim, shipping an order, updating a record), the real world keeps moving.
 
-That gap creates silent, high-cost failures:
+Traditional software doesn't have this problem. An application calls an API, the API queries the database, and the action is taken inside that transaction, on data as it is at that moment.
 
-- A payment-release agent pays an invoice that another system already paid two seconds earlier.
-- A claims agent approves a payout after a sanctions flag or fraud signal has already arrived.
-- An inventory agent commits stock that was just reserved or sold by another process.
-- A compliance agent makes a decision on data that is already outdated or has been poisoned.
+Agents work differently:
 
-The agent has no idea the world changed. It has no freshness signal, no provenance, and no easy way to re-check just before it acts.
+> Agents are long-running, multi-step, and loosely coupled to the systems of record. Without an explicit, governed, freshness-aware live-context mechanism, they routinely decide on data that is already outdated relative to the event stream that other systems are consuming.
 
-In short:
+That mismatch is the problem K9X Streams is built to solve.
 
-> Agents are forced to decide on yesterday's (or even a few minutes ago's) picture of reality, while the systems they interact with are event-driven and continuous. That mismatch is the fundamental problem K9X Streams is built to solve.
-
-None of this is a new idea. More than a decade ago TIBCO built predictive, event-driven processing with BusinessEvents, alongside ActiveMatrix BusinessWorks, and it was well ahead of its time. What is different now is who consumes the events. In an agentic flow, real-time events can be used as they occur, by the agent that is about to act on them.
+Event-driven processing itself is not new. More than a decade ago TIBCO built predictive, event-driven processing with BusinessEvents, alongside ActiveMatrix BusinessWorks, and it was well ahead of its time. What is different now is who consumes the events. In an agentic flow, real-time events can be used as they occur, by the agent that is about to act on them.
 
 That is what K9X Streams does for K9-AIF. You can try it at [streams.k9x.ai](https://streams.k9x.ai).
 
