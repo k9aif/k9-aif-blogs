@@ -108,7 +108,7 @@ A refused request comes back as a refusal, never a partial answer:
 
 In June I wrote about the [K9 Enterprise Context Fabric](/k9-enterprise-context-fabric/), the contracts for carrying streaming enterprise events into agentic flows. K9-AIF 1.17 completes it: live state with provenance, the Shield gate with quarantine, mappers so a database's change records or an application's log lines can feed it without custom code, the context MCP server, and live context on every Orchestrator. K9X Streams is the reference implementation. Its own code is four projections, a generator, one orchestrator and one agent; everything else is the framework.
 
-Live state is a read model, not a system of record. Agents read it; they act through the systems that own the data, and those systems emit the events that flow back into it. The final guarantee for an action, such as one payment per invoice, still belongs in the system that owns it.
+Live state is a read model, not a system of record. Agents read it; they act through the systems that own the data, and those systems emit the events that flow back into it. The final guarantee for an action, such as one payment per invoice, still belongs in the system that owns it. And live state is only as complete as the streams feeding it: if no event has ever arrived for an entity, the answer is "not found", so a new deployment starts by replaying the topics or loading a snapshot.
 
 For solution architects there is a page on how to build this into your own solution: [streams.k9x.ai/implement](https://streams.k9x.ai/implement).
 
