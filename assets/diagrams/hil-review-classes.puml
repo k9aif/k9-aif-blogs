@@ -1,14 +1,12 @@
 @startuml hil-review-classes
 set separator none
-title Planned 1.25.0 classes and the existing ABBs they use
+title K9-AIF 1.25.0 tool gate classes and the existing ABBs they use
 
-package "New (planned 1.25.0)" {
+package "New in 1.25.0 (k9_core/tools)" {
   class BaseToolDispatcher {
-    +propose(call: ToolCall)
-    +resume(decision: ToolCallDecision)
-  }
-  class GatedToolClient {
-    +call_tool(name, arguments)
+    +propose(call, connector, session)
+    +resume(reply)
+    +expire_stale()
   }
   class ToolRegistry {
     +lookup(tool_name): ToolSpec
@@ -16,7 +14,8 @@ package "New (planned 1.25.0)" {
   class ToolSpec {
     name
     irreversible: bool
-    verify: argument -> record field
+    verify: RecordCheck[]
+    connector
   }
   class ToolCall {
     tool_name
@@ -27,58 +26,58 @@ package "New (planned 1.25.0)" {
     rationale_untrusted
     +digest()
   }
-  class ToolCallApprovalRequest {
-    original_request
-    call: ToolCall
-    mismatches
-  }
   class ToolCallDecision {
     approved: bool
-    call_digest
+    outcome
     approver
-    +parse(reply)
+    +parse(reply, pending)
   }
-  class ToolCallAuditLog {
+  abstract class BaseToolCallAuditLog {
     +record(event)
+    +create_pending(call)
+    +transition(from, to)
   }
+  class SQLiteToolCallAuditLog
+  class ToolCallPendingReview
 }
 
-package "Existing in K9-AIF" {
-  abstract class BaseAgent
-  class MCPClientConnectionFactory
-  class ShieldGovernance {
-    +post_process(payload)
+package "Existing in K9-AIF (extended in 1.25.0)" {
+  abstract class BaseAgent {
+    execute() wrapper:\nopens a gate session,\nre-raises a swallowed review
   }
+  abstract class BaseConnector {
+    call_tool() wrapper:\nroutes to the dispatcher
+  }
+  class BaseOrchestrator {
+    +handle_requires_hil(exc)
+    +resume_tool_call(payload)
+  }
+  class RequiresHIL
+}
+
+package "Existing in K9-AIF (used as they are)" {
+  class ShieldGovernance
   abstract class BaseOrigin {
     +get_current(entity, id)
   }
   abstract class BaseRulesAdapter {
     +evaluate(ruleset, facts)
   }
-  class K9RulesAdapter
-  class RestRulesAdapter
-  class BaseHILOrchestrator {
-    +execute_flow(payload)
-  }
-  abstract class BaseConnector {
-    +call_tool(name, arguments)
-  }
 }
 
-BaseAgent --> GatedToolClient : the only tool client it gets
-MCPClientConnectionFactory ..> GatedToolClient : returns
-GatedToolClient --> BaseToolDispatcher : proposes
+BaseAgent ..> BaseToolDispatcher : builds from config
+BaseConnector --> BaseToolDispatcher : intercepted calls
 BaseToolDispatcher --> ToolCall
 BaseToolDispatcher --> ShieldGovernance : screens
 BaseToolDispatcher --> ToolRegistry
 ToolRegistry --> ToolSpec
 BaseToolDispatcher --> BaseOrigin : looks up records
-BaseToolDispatcher --> BaseRulesAdapter : allow / hil / deny
-BaseRulesAdapter <|-- K9RulesAdapter
-BaseRulesAdapter <|-- RestRulesAdapter
-BaseToolDispatcher --> ToolCallApprovalRequest : builds
-BaseToolDispatcher --> BaseHILOrchestrator : publishes review
-BaseToolDispatcher --> ToolCallDecision : checks digest
-BaseToolDispatcher --> ToolCallAuditLog : records
-BaseToolDispatcher --> BaseConnector : only caller of call_tool
+BaseToolDispatcher --> BaseRulesAdapter : allow / deny / hil
+BaseToolDispatcher --> BaseToolCallAuditLog : records, holds calls
+BaseToolCallAuditLog <|-- SQLiteToolCallAuditLog
+BaseToolDispatcher --> ToolCallDecision : reads the reply
+BaseToolDispatcher ..> ToolCallPendingReview : raises
+RequiresHIL <|-- ToolCallPendingReview
+BaseOrchestrator ..> ToolCallPendingReview : publishes the review
+BaseOrchestrator --> BaseToolDispatcher : resume
 @enduml

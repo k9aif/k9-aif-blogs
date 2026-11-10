@@ -1,17 +1,19 @@
 @startuml hil-review-planned
-title Planned 1.25.0: every tool call passes one gate that checks values against records
+title K9-AIF 1.25.0: every tool call passes one gate that checks values against records
 
-participant "Agent" as A
+participant "Agent\n(unchanged code)" as A
+participant "BaseConnector\ncall_tool()" as C
 participant "BaseToolDispatcher" as D
 participant "k9x Shield" as SE
 participant "ToolRegistry" as R
 participant "k9x Origin" as OR
-participant "BaseRulesAdapter\n(the solution's rules)" as RU
-participant "HIL" as H
+participant "Rules engine\n(the solution's)" as RU
+participant "Orchestrator" as O
 actor "Owner" as V
 participant "MCP server\n(vetted tools)" as T
 
-A -> D : propose release_payment(V, 4,800, X)
+A -> C : call_tool("release_payment", V, 4,800, X)
+C -> D : intercepted: propose(ToolCall)
 D -> SE : screen tool + arguments
 SE --> D : PASS
 D -> R : lookup("release_payment")
@@ -19,16 +21,17 @@ R --> D : irreversible\nverify: account = vendor.bank_account
 D -> OR : get_current("vendor", V)
 OR --> D : bank_account Y\n(from the system of record)
 D -> D : X ≠ Y : mismatch
-D -> RU : evaluate(irreversible, outside content,\nmismatch, requester role)
-RU --> D : hil
+D -> RU : evaluate(irreversible, mismatch, ...)
+RU --> D : any answer: a mismatch\nnever runs without a person
+D -> D : store the exact call (audit log)
+D --> A : ToolCallPendingReview\n(nothing executed)
+A --> O : propagates; if the agent's code\ncatches it, the base class raises it again
+O -> V : hil.requests.<queue>:\nthe exact call, "account X is not V's account Y"
+V --> O : decision (via the Router)
+O -> D : resume_tool_call(decision)
 
-D -> H : review: the request, the exact call,\n"account X is not V's account Y"
-D --> A : pending (nothing executed)
-H -> V : review
-V --> D : decision, tied to this exact call
-
-alt approved, for this exact call, before the deadline
-  D -> T : call_tool(exact arguments)
+alt approved, for this stored call, before the deadline
+  D -> T : call_tool(stored arguments), once
 else anything else
   D -> D : never executed, recorded
 end

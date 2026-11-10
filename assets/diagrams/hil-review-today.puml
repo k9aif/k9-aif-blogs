@@ -1,11 +1,12 @@
 @startuml hil-review-today
-title Today: correct code acting on a value the model extracted
+title Today: correct code and rules acting on a value the model extracted
 
 actor "Requester" as U
 participant "Orchestrator" as O
 participant "Agent\n(BaseAgent)" as A
 participant "k9x Shield\npre-check" as SI
 participant "llm_invoke" as L
+participant "K9RulesAgent\n(the solution's rules)" as RU
 participant "MCP server\n(vetted tools)" as T
 participant "k9x Shield\npost-check" as SE
 
@@ -15,7 +16,8 @@ A -> SI : pre_process(prompt, invoice)
 SI --> A : PASS\n(the instruction in the invoice\nmatches no pattern)
 A -> L : llm_invoke("extract vendor, amount, account")
 L --> A : vendor V, 4,800, account X
-A -> A : amount < 5,000\nso no RequiresHIL (decided in code)
+A -> RU : evaluate(invoice)
+RU --> A : allow\n(amount under 5,000: no rule matched)
 A -> T : call_tool("release_payment", V, 4,800, X)
 T --> A : done
 note right of T
