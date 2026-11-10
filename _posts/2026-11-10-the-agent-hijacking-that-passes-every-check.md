@@ -67,9 +67,9 @@ Each of these is proven by a test that runs against the framework's real agent a
 
 It's off by default in 1.x, so existing applications don't change when they upgrade, and it becomes the default in 2.0.
 
-## What still gets through
+## What could still get through
 
-Some things will, and no framework can stop them all: an approver who approves without reading, a request that looks entirely normal, a record someone already changed. The best any framework can do is avoid as much as possible, then make sure what gets through is seen quickly. That's where the audit and the reports matter: the gate records every call and decision, the framework's monitors report what agents did, and the solution's alerts and regular reviews look for what doesn't fit. Cap the worst case in advance, so that what gets through stays small.
+A few things can: an approver who approves without reading, a request that looks entirely normal, a record someone already changed. The best any framework can do is avoid as much as possible, then make sure what gets through is seen quickly. That's where the audit and the reports matter: the gate records every call and decision, the framework's monitors report what agents did, and the solution's alerts and regular reviews look for what doesn't fit. Cap the worst case in advance, so that what gets through stays small.
 
 ## Class Diagram
 
