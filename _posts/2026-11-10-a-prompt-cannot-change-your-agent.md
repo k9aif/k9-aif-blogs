@@ -138,13 +138,10 @@ Every line is a test in `test_tool_gate_1_25.py`, run against the real base clas
 
 ## What's coming next
 
-| When      | Release              | What it adds                                                                                                                    |
-| --------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| This week | **K9X RulesEngine**  | A ready-to-use rules engine for the gate's rules step, with a working example of this invoice scenario                          |
-| Next      | **K9-AIF 1.25.1**    | The tool gate for tool calls made from the CrewAI, LangGraph and Claude Agent SDK adapters                                      |
-| Next      | **K9X SATAN**        | An attack that tries to get an irreversible call past the gate, proving it holds the way SATAN proves each Shield check        |
-| Later     | **K9-AIF**           | After-the-fact notices to the owner, and a Postgres audit log for multi-host deployments                                        |
-| 2.0       | **K9-AIF**           | The tool gate on by default                                                                                                     |
+- **This week: K9X RulesEngine**, with a working example of this invoice scenario.
+- **Next: K9-AIF 1.25.1**, the tool gate for agents built with CrewAI, LangGraph and the Claude Agent SDK.
+- **Next: a K9X SATAN attack** that tries to get an irreversible call past the gate.
+- **K9-AIF 2.0:** the tool gate on by default.
 
 ## For developers: the classes
 
