@@ -6,7 +6,7 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, k9x Shield, k9x Origin, HIL, human in the loop, tool calls, business rules]
 ---
-> **The short version.** In a well-built K9-AIF solution, a prompt can't hijack the agent. The agent is our code, governed by its base class, and it calls tools that front the system of record. Those systems already do the basics a kid would know: look up the vendor, match the invoice to the order, pay from the vendor record. If the model reads something wrong, the lookup or the match fails. The data is guarded, and has been for decades.
+> **Summary.** In a well-built K9-AIF solution, a prompt can't hijack the agent. The agent is our code, governed by its base class, and it calls tools that front the system of record. Those systems already do the basics a kid would know: look up the vendor, match the invoice to the order, pay from the vendor record. If the model reads something wrong, the lookup or the match fails. The data is guarded, and has been for decades.
 >
 > What's left is **authority**. Some actions are perfectly valid by the data and still need a person to say yes: changing a vendor's bank details, issuing a refund, granting access, deleting records. That matters most where the model, not our code, chooses which action to take, as in planning loops and agents run through other agent frameworks. K9-AIF 1.25.0 makes "irreversible means a person approves" a rule the framework enforces, recorded the same way for every agent, instead of something each agent's code has to remember. The rest of this post shows how, using a payment example.
 
