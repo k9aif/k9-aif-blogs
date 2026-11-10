@@ -20,7 +20,11 @@ Today, human review in K9-AIF starts when an agent or squad raises `RequiresHIL`
 
 ![Today: the honest agent raises RequiresHIL; a hijacked agent goes straight to the tool](../assets/images/blogs/hil-review-today.png)
 
+*The diagram is simplified: an agent never calls a model directly. It calls `llm_invoke`, which goes through `K9ModelRouter` to whichever model the routing policy picks.*
+
 Follow the lower half of the diagram. A supplier invoice carries an instruction worded so that no pattern in the ingress chain matches it. Shield passes it. The model now wants to release a payment to a new account. A well-behaved agent would raise `RequiresHIL` here. A hijacked one simply doesn't. The egress checks then look at the tool call and see an approved tool with well-formed arguments, so they pass it too. The payment goes out, and nobody was ever asked.
+
+Most tool calls in K9-AIF go through MCP, and the MCP server only exposes tools that have already been vetted. That holds here too: `release_payment` is a legitimate, approved tool. Vetting answers "is this tool allowed to exist?" It doesn't answer "should this particular call, with these arguments, happen right now?" The attack doesn't need an unapproved tool. It needs an approved one, called with the attacker's account number.
 
 Nothing in that path is broken. Each check did its job. The gap is that the checks answer **allow or block**, and "ask a human first" was left to the agent's own judgement, which is exactly what the attacker took over.
 
@@ -40,7 +44,7 @@ The change moves the decision from the agent to the framework. Agents stop execu
 
 | Piece | What it does |
 |---|---|
-| `ToolRegistry` | Declares each tool, including `irreversible: true \| false`. A tool that isn't declared is treated as irreversible. The registry is a locked framework setting, so a solution's config can't quietly mark a payment tool as reversible. |
+| `ToolRegistry` | Adds one fact to the MCP tools you have already vetted: `irreversible: true \| false`. A tool that isn't declared is treated as irreversible. The registry is a locked framework setting, so a solution's config can't quietly mark a payment tool as reversible. |
 | `ToolCall` | What the agent proposes: tool name, arguments, originating request and task, agent identity, correlation ID. The agent's explanation travels in a field labelled `rationale_untrusted`. |
 | `BaseToolDispatcher` | The only component that executes a tool. It runs the Shield egress checks, looks the tool up, and for an irreversible tool it pauses the flow instead of executing. |
 | `ToolCallApprovalRequest` | The review the human sees, built by the framework from the intercepted call, never from the agent's description of it. |

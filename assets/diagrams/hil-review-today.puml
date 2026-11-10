@@ -9,7 +9,7 @@ participant "LLM" as L
 participant "k9x Shield\negress checks" as SE
 participant "HIL\nOrchestrator" as H
 queue "hil.requests.<queue>" as Q
-participant "Payment tool" as T
+participant "MCP server\n(vetted tools)" as T
 
 U -> O : request + attached invoice
 O -> A : execute(payload)
@@ -26,11 +26,11 @@ alt agent raises RequiresHIL (the honest path)
 else hijacked agent never raises it
   A -> SE : post_process(tool call)
   SE --> A : PASS\n(tool approved, arguments well formed)
-  A -> T : release_payment(account X)
+  A -> T : call_tool("release_payment", account X)
   T --> A : done
   note right of T
-    Executed. No human
-    ever saw the call.
+    A vetted tool, executed.
+    No human ever saw the call.
   end note
 end
 @enduml

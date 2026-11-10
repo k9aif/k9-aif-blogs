@@ -9,7 +9,7 @@ participant "HIL\nOrchestrator" as H
 queue "hil.requests.<queue>" as Q
 actor "Reviewer" as V
 participant "ToolCallAuditLog" as AU
-participant "Payment tool" as T
+participant "MCP server\n(vetted tools)" as T
 
 A -> D : propose(ToolCall)\nrationale kept as untrusted
 D -> SE : screen tool name + arguments
@@ -28,7 +28,7 @@ D -> D : ToolCallDecision.parse(reply)
 
 alt approved, well formed, before the deadline
   D -> AU : record: approved, decider, time, executing
-  D -> T : release_payment(exact arguments)
+  D -> T : call_tool("release_payment", exact arguments)
   T --> D : done
   D -> AU : record: executed
 else rejected, expired, or malformed
