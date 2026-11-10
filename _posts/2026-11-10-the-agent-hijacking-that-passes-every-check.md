@@ -73,7 +73,7 @@ Some things will, and no framework can stop them all: an approver who approves w
 
 ## What's coming next
 
-- **K9-AIF 1.25.1:** the tool gate for agents built with CrewAI, LangGraph and the Claude Agent SDK. Until then, keep the gate off for those agents: with it on, their tool calls are refused in production.
+- **K9-AIF 1.25.1:** the tool gate in the framework's orchestrator adapters (`CrewAIOrchestratorAdapter`, `LangGraphOrchestratorAdapter`, `ClaudeAgentSDKOrchestratorAdapter`), which bring an existing CrewAI crew, LangGraph graph or Claude Agent SDK agent under K9-AIF governance. Until then, keep the gate off in applications that use these adapters: with it on, their tool calls are refused in production.
 - **A K9X SATAN attack** that tries to get an irreversible call past the gate.
 - **K9-AIF 2.0:** the tool gate on by default.
 
