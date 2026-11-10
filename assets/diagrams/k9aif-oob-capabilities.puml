@@ -1,0 +1,35 @@
+@startuml k9aif-oob-capabilities
+title What K9-AIF provides out of the box
+
+left to right direction
+
+actor "Requester" as U
+
+rectangle "Router" as R {
+  rectangle "Identity\nOIDC: Keycloak, Entra ID, Okta\nAPI keys" as ID
+}
+rectangle "Orchestrator" as O {
+  rectangle "Zero Trust\nrole-based authorization" as ZT
+  rectangle "Human review\nRequiresHIL → hil.requests.<queue>\nresumes exactly once" as HIL
+}
+rectangle "Squad" as S {
+  rectangle "Business rules step\nBaseRulesAdapter: YAML rules\nor a decision service\n(rules owned by the solution)" as RU
+}
+rectangle "Agent" as A {
+  rectangle "k9x Shield\n15 checks before and after\nevery agent" as SH
+  rectangle "llm_invoke →\nK9ModelRouter → model" as LLM
+}
+rectangle "MCP server\nvetted tools" as MCP
+
+U --> R
+R --> O
+O --> S
+S --> A
+A --> MCP : tool calls\n(screened)
+
+note bottom of O
+  Secrets for every layer come from
+  Vault, IBM Secrets Manager, AWS or env,
+  never from config
+end note
+@enduml

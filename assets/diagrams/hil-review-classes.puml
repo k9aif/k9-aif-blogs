@@ -1,0 +1,68 @@
+@startuml hil-review-classes
+set separator none
+title Planned 1.25.0 classes and the existing ABBs they use
+
+package "New (planned 1.25.0)" {
+  class BaseToolDispatcher {
+    +propose(call: ToolCall)
+    +resume(decision)
+  }
+  class ToolRegistry {
+    +lookup(tool_name): ToolSpec
+  }
+  class ToolSpec {
+    name
+    irreversible: bool
+  }
+  class ToolCall {
+    tool_name
+    arguments
+    request_id
+    task_id
+    agent_id
+    correlation_id
+    rationale_untrusted
+  }
+  class ToolCallApprovalRequest
+  class ToolCallDecision {
+    +parse(reply)
+  }
+  class ToolCallAuditLog {
+    +record(event)
+  }
+}
+
+package "Existing in K9-AIF" {
+  abstract class BaseAgent
+  class ShieldGovernance {
+    +post_process(payload)
+  }
+  abstract class BaseRulesAdapter {
+    +evaluate(ruleset, facts)
+  }
+  class K9RulesAdapter
+  class RestRulesAdapter
+  class RoleBasedAuthorizationGuard
+  class BaseHILOrchestrator {
+    +execute_flow(payload)
+  }
+  abstract class BaseConnector {
+    +call_tool(name, arguments)
+  }
+}
+
+BaseAgent ..> BaseToolDispatcher : proposes calls
+BaseToolDispatcher --> ToolCall
+BaseToolDispatcher --> ShieldGovernance : screens
+BaseToolDispatcher --> ToolRegistry : irreversible?
+ToolRegistry --> ToolSpec
+BaseToolDispatcher --> BaseRulesAdapter : allow / hil / deny
+BaseRulesAdapter <|-- K9RulesAdapter
+BaseRulesAdapter <|-- RestRulesAdapter
+BaseToolDispatcher --> RoleBasedAuthorizationGuard : requester's authority
+BaseToolDispatcher --> ToolCallApprovalRequest : builds
+BaseToolDispatcher --> BaseHILOrchestrator : publishes review
+BaseToolDispatcher --> ToolCallDecision : reads reply
+BaseToolDispatcher --> ToolCallAuditLog : records
+BaseToolDispatcher --> BaseConnector : only caller of call_tool
+@enduml

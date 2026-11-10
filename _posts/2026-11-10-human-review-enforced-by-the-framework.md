@@ -10,18 +10,20 @@ tags: [K9-AIF, k9x Shield, HIL, human in the loop, tool calls, business rules, k
 
 ## What K9-AIF already does, out of the box
 
-Every request in K9-AIF takes one path: Router → Orchestrator → Squad → Agent. Along that path the framework already provides:
+Every request in K9-AIF takes one path: Router → Orchestrator → Squad → Agent. Each layer already comes with its own protections:
 
-| Capability | What ships today |
-|---|---|
-| Governance on every agent | Every `BaseAgent` is checked before and after it runs. The agent doesn't opt in, and overriding `execute()` doesn't skip it. |
-| k9x Shield | 15 deterministic checks on the prompt, attached documents, outputs and tool calls: prompt injection, PII, memory poisoning, tool authorization, tool arguments, payment diversion and more, mapped to the OWASP LLM Top 10. SATAN fires an attack at each one to prove it holds. |
-| One path to the model | Agents never call a model directly: `llm_invoke` goes through `K9ModelRouter` to whichever model the routing policy picks. |
-| Governed tools | Tools are served from MCP servers that expose only vetted tools. Tool calls and tool results are screened by Shield. |
-| Identity | Callers are authenticated at the Router through OIDC adapters for Keycloak, Entra ID and Okta, or API keys. Zero Trust's `RoleBasedAuthorizationGuard` maps actions to roles. |
-| Secrets | Read from HashiCorp Vault, IBM Secrets Manager, AWS or the environment, never from config. |
-| Business rules | `BaseRulesAdapter` connects the solution's own rules: `K9RulesAdapter` for rules in YAML, `RestRulesAdapter` for a decision service such as IBM ODM or Drools. The rules belong to the solution; the framework supplies the adapters. |
-| Human review | An agent, squad or rules step raises `RequiresHIL`; the Orchestrator publishes it to `hil.requests.<queue>` and the flow waits, for hours if needed, then resumes exactly once on the decision. |
+![What K9-AIF provides out of the box, layer by layer](../assets/images/blogs/k9aif-oob-capabilities.png)
+
+| Layer | Capability | Classes that ship today | What it does |
+|---|---|---|---|
+| Router | Identity | `OIDCAuthenticator` (`KeycloakAuthenticator`, `EntraIDAuthenticator`, `OktaAuthenticator`), `ApiKeyAuthenticator` | Authenticates the caller before anything runs |
+| Orchestrator | Zero Trust | `DefaultZeroTrustGuard`, `RoleBasedAuthorizationGuard` | Checks the caller's role is allowed this action, scores risk, masks sensitive data |
+| Orchestrator | Human review | `RequiresHIL`, `BaseHILOrchestrator` | Publishes a review to `hil.requests.<queue>`; the flow waits, for days if needed, and resumes exactly once on the decision |
+| Squad | Business rules | `K9RulesAgent` with `K9RulesAdapter` (YAML) or `RestRulesAdapter` (a decision service such as IBM ODM or Drools) | Applies the solution's own rules. The rules belong to the solution; the framework supplies the adapters |
+| Agent | k9x Shield | `ShieldGovernance` with 15 `BaseVulnerabilityCheck` checks | Screens input, documents, output and tool calls on every agent; the agent can't opt out. SATAN fires an attack at each check to prove it holds |
+| Agent | One path to the model | `llm_invoke`, `K9ModelRouter` | Agents never call a model directly; the router picks the model by policy |
+| Agent → tools | Governed tools | `MCPStreamableHttpConnector`, `@govern_tool_call`, `@govern_tool_result` | Calls vetted tools on an MCP server, with the call and the result screened |
+| All layers | Secrets | `VaultSecretAdapter`, `IbmSecretAdapter`, `AwsSecretAdapter`, `EnvSecretAdapter` | Secrets come from a secret manager, never from config |
 
 <!-- RAVI: your field incident goes here. -->
 
@@ -78,5 +80,20 @@ IBM made [Agent Identity](https://www.ibm.com/new/announcements/ibm-agent-identi
 | A tool nobody declared is treated as irreversible | Reversible tools: they run without review unless a rule says otherwise. |
 | A rules-engine failure means the call doesn't run | The quality of the solution's rules. The framework applies them to every call; it can't write them. |
 | SATAN's `HILBypassAttack` fires the hijack above and is stopped | |
+
+## For developers: the classes
+
+The new classes on the left are planned for 1.25.0. Everything on the right exists today and is used as it is. The dispatcher is the only caller of `call_tool()`.
+
+![Planned 1.25.0 classes and the existing K9-AIF ABBs they use](../assets/images/blogs/hil-review-classes.png)
+
+| Class | Role |
+|---|---|
+| `BaseToolDispatcher` | Receives every proposed call; screens it, looks it up, applies the rules, then runs, refuses or sends it for review |
+| `ToolRegistry` / `ToolSpec` | Declares each tool and whether it is irreversible; locked framework config |
+| `ToolCall` | The proposed call, with the agent's rationale kept in a field labelled untrusted |
+| `ToolCallApprovalRequest` | The review a person sees, built from the intercepted call |
+| `ToolCallDecision` | Reads the reviewer's reply strictly; anything but a valid approval means no |
+| `ToolCallAuditLog` | Records every call, decision, decider and time |
 
 <!-- RAVI: closing thought in your words. -->
