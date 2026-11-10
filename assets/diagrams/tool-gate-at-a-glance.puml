@@ -1,0 +1,32 @@
+@startuml tool-gate-at-a-glance
+title The tool gate at a glance
+
+left to right direction
+
+rectangle "An agent wants to act\n\nfor example:\npay invoice INV-123\nto account X" as A
+
+rectangle "The tool gate\n(K9-AIF 1.25.0)" as G {
+  rectangle "1. Is it safe?\n\nsecurity checks\n(k9x Shield)" as S
+  rectangle "2. Do the values match\nwhat we already know?\n\nthe vendor's account\non record" as R
+  rectangle "3. What does the\nbusiness allow?\n\nthe company's own rules" as B
+}
+
+rectangle "Run it" as RUN
+rectangle "Refuse it" as NO
+rectangle "Ask a person\n\nshows exactly what will happen\nand what doesn't match" as P
+rectangle "Approved: runs once\n\nAnything else:\nnever runs" as OUT
+
+A --> S
+S --> R
+R --> B
+B --> RUN : safe, matches,\nallowed
+B --> NO : not allowed
+B --> P : doesn't match,\nor can't be undone
+P --> OUT
+
+note bottom of G
+  Every step is recorded:
+  what was asked, what was decided,
+  who approved it and when.
+end note
+@enduml

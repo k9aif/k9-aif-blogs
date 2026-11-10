@@ -6,8 +6,6 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, k9x Shield, k9x Origin, HIL, human in the loop, tool calls, business rules]
 ---
-<!-- DRAFT, local only. Describes K9-AIF 1.25.0 (tagged v1.25.0 on GitHub, 2026-11-10). Push after Ravi's review and once 1.25.0 is on PyPI. K9X RulesEngine is mentioned as in the pipeline only. -->
-
 This morning, in a LinkedIn thread about agent identity, I described how I check an agent's work at two gates: once before a tool call goes out, and again on what the agent produces. One of the replies made a fair point. An injected action that fits the task closely enough will pass both gates, so for anything irreversible, the person who owns the request has to confirm it, live.
 
 That's right, and it made me ask a more basic question: in K9-AIF, what does a "hijacked agent" even mean?
@@ -77,13 +75,18 @@ The third row is the one that costs money, and every log entry for it looks legi
 
 A careful solution does that check itself. The question for the framework is whether every solution should have to remember.
 
-<!-- RAVI: your opinion here, in a line or two: the solution should check the number is registered; should the framework guarantee it? -->
 
 ## What K9-AIF 1.25.0 adds: the tool gate
 
 Business rules have been a cornerstone of software development for over 40 years, evolving from deeply buried lines of code into independent, automated enterprise assets. K9-AIF already reaches them through `BaseRulesAdapter`. The tool gate doesn't add a new kind of check. It makes sure the checks a solution already owns run at the place an agent's consequential actions pass: the tool call.
 
 It ships in K9-AIF 1.25.0 and is switched on with one setting, `security.tool_gate.enabled: true`. It's off by default in 1.x, so existing applications don't change when they upgrade, and it becomes the default in 2.0.
+
+In plain terms:
+
+![The tool gate at a glance: is it safe, do the values match what we know, what does the business allow; then run it, refuse it, or ask a person](../assets/images/blogs/tool-gate-at-a-glance.png)
+
+And in detail, for the invoice:
 
 ![K9-AIF 1.25.0: every tool call passes one gate that checks values against records](../assets/images/blogs/hil-review-planned.png)
 
@@ -174,4 +177,3 @@ Held calls live in the gate's audit log, so the agent workers and the Orchestrat
 
 No framework makes an agent safe. You do your level best, keep your defences current, and keep looking back at what happened. After a certain point nothing more can be done, so decide that point in advance. Cap what an agent can do, know who owns the risk that's left, and make sure that when something does get through, it's small, it's visible, and it's someone's decision that it was acceptable.
 
-<!-- RAVI: edit the closing into your own words. -->
