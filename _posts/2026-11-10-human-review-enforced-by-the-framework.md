@@ -8,6 +8,10 @@ tags: [K9-AIF, k9x Shield, HIL, human in the loop, tool calls, business rules, k
 ---
 <!-- DRAFT, local only. Do not push until 1.25.0 ships and the tests named below exist. -->
 
+This morning, in a LinkedIn thread about agent identity, I described how I check an agent's work at two gates: once before a tool call goes out, and again on what the agent produces. One of the replies made a fair point. An injected action that fits the task closely enough will pass both gates, so for anything irreversible, the person who owns the request has to confirm it, live.
+
+That's right. A hijacked agent holding a valid, correctly scoped token, calling a vetted tool, with arguments that look like the job, passes every check that looks at the call itself. So this post isn't about catching every injection. It's about making sure that for anything you can't undo, the person who asked sees exactly what is about to happen and approves *that*, and nothing else runs.
+
 ## What K9-AIF already does, out of the box
 
 Every request in K9-AIF takes one path: Router → Orchestrator → Squad → Agent. Each layer already comes with its own protections:
@@ -24,8 +28,6 @@ Every request in K9-AIF takes one path: Router → Orchestrator → Squad → Ag
 | Agent | One path to the model | `llm_invoke`, `K9ModelRouter` | Agents never call a model directly; the router picks the model by policy |
 | Agent → tools | Governed tools | `MCPStreamableHttpConnector`, `@govern_tool_call`, `@govern_tool_result` | Calls vetted tools on an MCP server, with the call and the result screened |
 | All layers | Secrets | `VaultSecretAdapter`, `IbmSecretAdapter`, `AwsSecretAdapter`, `EnvSecretAdapter` | Secrets come from a secret manager, never from config |
-
-<!-- RAVI: your field incident goes here. -->
 
 That covers a lot. This post is about the one case it doesn't fully cover yet: **an agent that has been hijacked and gets past Shield anyway.**
 
