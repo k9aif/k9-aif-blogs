@@ -61,6 +61,12 @@ Two design choices matter more than the class list.
 
 The existing `RequiresHIL` path stays. An agent can still ask for review on its own judgement, for a fraud score or a low-confidence answer. The new gate sits underneath it for the cases the agent should not get to decide.
 
+## Where agent identity fits
+
+IBM made [Agent Identity](https://www.ibm.com/new/announcements/ibm-agent-identity-is-now-generally-available-building-trust-for-the-agentic-era) generally available on 26 October 2026, working with IBM Verify and HashiCorp Vault. It registers each agent with an owner, a risk classification and its approved tool connections. It issues delegated, on-behalf-of tokens that carry both the user and the agent, and Vault provides short-lived credentials that can be revoked. It can also ask a person to confirm an action, using CIBA. That answers *which agent is this, who is it acting for, and what may it touch*, and K9-AIF should use it rather than rebuild it. The framework already authenticates callers through OIDC adapters (Keycloak, Entra ID, Okta), and Verify would plug in the same way.
+
+The two work at different points. As [IBM documents it](https://www.ibm.com/docs/en/agent-identity?topic=overview), Agent Identity decides when a token is requested, based on what the request says, and leaves the receiving MCP server to enforce the token. The hijacked agent in our scenario is a registered agent with a valid, correctly scoped token, acting for a real user. Whether the account number came from a supplier's invoice is something only the agent runtime knows. So identity answers *is this the right agent?*, and the dispatcher answers *is this the right action, right now?* Together they give the strongest form of the design: the dispatcher decides first, and only then requests a credential scoped to that one call.
+
 ## What it will and won't cover
 
 <!-- Fill from the Step 1 report and the 1.25.0 tests. Every line here must name the test that proves it. -->
