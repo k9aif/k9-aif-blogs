@@ -73,6 +73,8 @@ So there are three different things people call a "hijack":
 
 The third row is the one that costs money, and every log entry for it looks legitimate. Format checks don't help: the account number is perfectly well formed. The only thing that catches it is comparing it with what you already know: is this account registered for this vendor?
 
+A fair objection: any 30-year-old accounts-payable system pays only to the bank details in its vendor master, so the invoice's account would never reach the payment. That's true when the agent goes through that system. The example above is the agent tool that doesn't: one built on a payment API that takes the account as an argument, which is easy to end up with when agent tools are built fast. The fraud that beats even the old systems is different: the record itself gets changed ("we've changed banks, please update our details"). The gate covers that too, because updating a vendor's bank details is declared irreversible, so the change waits for a person instead of running on the agent's say-so.
+
 A careful solution does that check itself. The question for the framework is whether every solution should have to remember.
 
 
