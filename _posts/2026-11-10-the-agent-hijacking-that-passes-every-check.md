@@ -71,9 +71,11 @@ It's off by default in 1.x, so existing applications don't change when they upgr
 
 Some things will, and no framework can stop them all: an approver who approves without reading, a request that looks entirely normal, a record someone already changed. The best any framework can do is avoid as much as possible, then make sure what gets through is seen quickly. That's where the audit and the reports matter: the gate records every call and decision, the framework's monitors report what agents did, and the solution's alerts and regular reviews look for what doesn't fit. Cap the worst case in advance, so that what gets through stays small.
 
-## For developers
+## Class Diagram
 
 ![K9-AIF 1.25.0 tool gate classes and the existing ABBs they use](../assets/images/blogs/hil-review-classes.png)
+
+## Configuration
 
 ```yaml
 security:
