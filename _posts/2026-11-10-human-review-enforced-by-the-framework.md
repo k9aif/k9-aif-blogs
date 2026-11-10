@@ -26,6 +26,8 @@ Follow the lower half of the diagram. A supplier invoice carries an instruction 
 
 Most tool calls in K9-AIF go through MCP, and the MCP server only exposes tools that have already been vetted. That holds here too: `release_payment` is a legitimate, approved tool. Vetting answers "is this tool allowed to exist?" It doesn't answer "should this particular call, with these arguments, happen right now?" The attack doesn't need an unapproved tool. It needs an approved one, called with the attacker's account number.
 
+And it doesn't matter how the call is made. An MCP client, the Claude Agent SDK adapter, a CrewAI or LangGraph tool, or a function wrapped in `@govern_tool_call` all end the same way: the call is allowed or blocked. None of them has a third outcome, "hold this until a person says yes," unless the agent itself asks for one. So whichever path the call takes to the vetted tools on the MCP server, a hijacked agent still gets through.
+
 Nothing in that path is broken. Each check did its job. The gap is that the checks answer **allow or block**, and "ask a human first" was left to the agent's own judgement, which is exactly what the attacker took over.
 
 ## Detection lowers the odds. The gate limits the damage.
