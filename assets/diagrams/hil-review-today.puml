@@ -1,36 +1,28 @@
 @startuml hil-review-today
-title Today: the agent decides whether a human sees the call
+title Today: correct code acting on a value the model extracted
 
 actor "Requester" as U
 participant "Orchestrator" as O
 participant "Agent\n(BaseAgent)" as A
-participant "k9x Shield\ningress checks" as SI
+participant "k9x Shield\npre-check" as SI
 participant "llm_invoke" as L
-participant "k9x Shield\negress checks" as SE
-participant "HIL\nOrchestrator" as H
-queue "hil.requests.<queue>" as Q
 participant "MCP server\n(vetted tools)" as T
+participant "k9x Shield\npost-check" as SE
 
-U -> O : request + attached invoice
+U -> O : "process invoice INV-123"\n+ attached invoice
 O -> A : execute(payload)
-A -> SI : pre_process(prompt, document)
-SI --> A : PASS\n(injection worded so no pattern matches)
-A -> L : llm_invoke(prompt + document)
-L --> A : "release payment to account X"
-
-alt agent raises RequiresHIL (the honest path)
-  A -->> O : raise RequiresHIL(reason, context)
-  O -> H : handle_requires_hil()
-  H -> Q : publish review request
-  H --> O : pending_hil
-else hijacked agent never raises it
-  A -> SE : post_process(tool call)
-  SE --> A : PASS\n(tool approved, arguments well formed)
-  A -> T : call_tool("release_payment", account X)
-  T --> A : done
-  note right of T
-    A vetted tool, executed.
-    No human ever saw the call.
-  end note
-end
+A -> SI : pre_process(prompt, invoice)
+SI --> A : PASS\n(the instruction in the invoice\nmatches no pattern)
+A -> L : llm_invoke("extract vendor, amount, account")
+L --> A : vendor V, 4,800, account X
+A -> A : amount < 5,000\nso no RequiresHIL (decided in code)
+A -> T : call_tool("release_payment", V, 4,800, X)
+T --> A : done
+note right of T
+  Account X came from the invoice.
+  Nothing compared it with
+  vendor V's account on record.
+end note
+A -> SE : post_process(output)
+SE --> A : PASS\n(runs after the payment)
 @enduml

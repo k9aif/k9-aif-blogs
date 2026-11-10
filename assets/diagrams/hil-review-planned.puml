@@ -1,44 +1,35 @@
 @startuml hil-review-planned
-title Planned 1.25.0: the framework decides whether a human sees the call
+title Planned 1.25.0: every tool call passes one gate that checks values against records
 
 participant "Agent" as A
 participant "BaseToolDispatcher" as D
-participant "k9x Shield\negress checks" as SE
-participant "ToolRegistry\n(locked config)" as R
-participant "BaseRulesAdapter\n(the SBB's own rules)" as RU
-participant "HIL\nOrchestrator" as H
-queue "hil.requests.<queue>" as Q
-actor "Reviewer" as V
-participant "ToolCallAuditLog" as AU
+participant "k9x Shield" as SE
+participant "ToolRegistry" as R
+participant "k9x Origin" as OR
+participant "BaseRulesAdapter\n(the solution's rules)" as RU
+participant "HIL" as H
+actor "Owner" as V
 participant "MCP server\n(vetted tools)" as T
 
-A -> D : propose(ToolCall)\nrationale kept as untrusted
-D -> SE : screen tool name + arguments
+A -> D : propose release_payment(V, 4,800, X)
+D -> SE : screen tool + arguments
 SE --> D : PASS
-D -> R : lookup(tool_name)
-R --> D : irreversible\n(unknown tools are irreversible too)
-D -> RU : evaluate(facts)\nirreversible, untrusted_input,\ntool, arguments, requester
-RU --> D : allow | hil | deny\n(no rule decides → hil)
-D -> AU : record: intercepted + decision
+D -> R : lookup("release_payment")
+R --> D : irreversible\nverify: account = vendor.bank_account
+D -> OR : get_current("vendor", V)
+OR --> D : bank_account Y\n(from the system of record)
+D -> D : X ≠ Y : mismatch
+D -> RU : evaluate(irreversible, outside content,\nmismatch, requester role)
+RU --> D : hil
 
-alt allow
+D -> H : review: the request, the exact call,\n"account X is not V's account Y"
+D --> A : pending (nothing executed)
+H -> V : review
+V --> D : decision, tied to this exact call
+
+alt approved, for this exact call, before the deadline
   D -> T : call_tool(exact arguments)
-  D -> AU : record: executed
-else deny
-  D --> A : refused, not executed
-else hil
-  D -> H : ToolCallApprovalRequest\nbuilt from the intercepted call
-  H -> Q : publish
-  D --> A : pending_hil (flow paused,\ntool not executed)
-  ... hours later ...
-  V -> D : decision on hil.replies
-  D -> D : ToolCallDecision.parse(reply)
-  alt approved, well formed, before the deadline
-    D -> AU : record: approved, decider, time, executing
-    D -> T : call_tool(exact arguments)
-    D -> AU : record: executed
-  else rejected, expired, or malformed
-    D -> AU : record: not executed + reason
-  end
+else anything else
+  D -> D : never executed, recorded
 end
 @enduml

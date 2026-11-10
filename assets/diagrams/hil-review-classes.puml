@@ -5,7 +5,10 @@ title Planned 1.25.0 classes and the existing ABBs they use
 package "New (planned 1.25.0)" {
   class BaseToolDispatcher {
     +propose(call: ToolCall)
-    +resume(decision)
+    +resume(decision: ToolCallDecision)
+  }
+  class GatedToolClient {
+    +call_tool(name, arguments)
   }
   class ToolRegistry {
     +lookup(tool_name): ToolSpec
@@ -13,18 +16,26 @@ package "New (planned 1.25.0)" {
   class ToolSpec {
     name
     irreversible: bool
+    verify: argument -> record field
   }
   class ToolCall {
     tool_name
     arguments
     request_id
-    task_id
     agent_id
     correlation_id
     rationale_untrusted
+    +digest()
   }
-  class ToolCallApprovalRequest
+  class ToolCallApprovalRequest {
+    original_request
+    call: ToolCall
+    mismatches
+  }
   class ToolCallDecision {
+    approved: bool
+    call_digest
+    approver
     +parse(reply)
   }
   class ToolCallAuditLog {
@@ -34,15 +45,18 @@ package "New (planned 1.25.0)" {
 
 package "Existing in K9-AIF" {
   abstract class BaseAgent
+  class MCPClientConnectionFactory
   class ShieldGovernance {
     +post_process(payload)
+  }
+  abstract class BaseOrigin {
+    +get_current(entity, id)
   }
   abstract class BaseRulesAdapter {
     +evaluate(ruleset, facts)
   }
   class K9RulesAdapter
   class RestRulesAdapter
-  class RoleBasedAuthorizationGuard
   class BaseHILOrchestrator {
     +execute_flow(payload)
   }
@@ -51,18 +65,20 @@ package "Existing in K9-AIF" {
   }
 }
 
-BaseAgent ..> BaseToolDispatcher : proposes calls
+BaseAgent --> GatedToolClient : the only tool client it gets
+MCPClientConnectionFactory ..> GatedToolClient : returns
+GatedToolClient --> BaseToolDispatcher : proposes
 BaseToolDispatcher --> ToolCall
 BaseToolDispatcher --> ShieldGovernance : screens
-BaseToolDispatcher --> ToolRegistry : irreversible?
+BaseToolDispatcher --> ToolRegistry
 ToolRegistry --> ToolSpec
+BaseToolDispatcher --> BaseOrigin : looks up records
 BaseToolDispatcher --> BaseRulesAdapter : allow / hil / deny
 BaseRulesAdapter <|-- K9RulesAdapter
 BaseRulesAdapter <|-- RestRulesAdapter
-BaseToolDispatcher --> RoleBasedAuthorizationGuard : requester's authority
 BaseToolDispatcher --> ToolCallApprovalRequest : builds
 BaseToolDispatcher --> BaseHILOrchestrator : publishes review
-BaseToolDispatcher --> ToolCallDecision : reads reply
+BaseToolDispatcher --> ToolCallDecision : checks digest
 BaseToolDispatcher --> ToolCallAuditLog : records
 BaseToolDispatcher --> BaseConnector : only caller of call_tool
 @enduml
