@@ -3,3 +3,6 @@ description: Architecture-first essays, evaluations, and technical notes from th
 theme: minima
 markdown: kramdown
 permalink: /:title/
+
+exclude:
+  - CLAUDE.md
