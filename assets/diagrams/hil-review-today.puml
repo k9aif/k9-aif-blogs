@@ -5,7 +5,7 @@ actor "Requester" as U
 participant "Orchestrator" as O
 participant "Agent\n(BaseAgent)" as A
 participant "k9x Shield\ningress checks" as SI
-participant "LLM" as L
+participant "llm_invoke" as L
 participant "k9x Shield\negress checks" as SE
 participant "HIL\nOrchestrator" as H
 queue "hil.requests.<queue>" as Q
@@ -15,7 +15,7 @@ U -> O : request + attached invoice
 O -> A : execute(payload)
 A -> SI : pre_process(prompt, document)
 SI --> A : PASS\n(injection worded so no pattern matches)
-A -> L : prompt + document
+A -> L : llm_invoke(prompt + document)
 L --> A : "release payment to account X"
 
 alt agent raises RequiresHIL (the honest path)

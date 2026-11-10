@@ -20,7 +20,7 @@ Today, human review in K9-AIF starts when an agent or squad raises `RequiresHIL`
 
 ![Today: the honest agent raises RequiresHIL; a hijacked agent goes straight to the tool](../assets/images/blogs/hil-review-today.png)
 
-*The diagram is simplified: an agent never calls a model directly. It calls `llm_invoke`, which goes through `K9ModelRouter` to whichever model the routing policy picks.*
+*An agent never calls a model directly: `llm_invoke` goes through `K9ModelRouter` to whichever model the routing policy picks.*
 
 Follow the lower half of the diagram. A supplier invoice carries an instruction worded so that no pattern in the ingress chain matches it. Shield passes it. The model now wants to release a payment to a new account. A well-behaved agent would raise `RequiresHIL` here. A hijacked one simply doesn't. The egress checks then look at the tool call and see an approved tool with well-formed arguments, so they pass it too. The payment goes out, and nobody was ever asked.
 
