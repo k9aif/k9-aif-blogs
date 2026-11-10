@@ -87,6 +87,8 @@ It ships in K9-AIF 1.25.0 and is switched on with one setting, `security.tool_ga
 
 ![K9-AIF 1.25.0: every tool call passes one gate that checks values against records](../assets/images/blogs/hil-review-planned.png)
 
+*K9X RulesEngine, a ready-to-use rules engine for this step, will be released this week.*
+
 1. **One gate for every tool call.** The agent's code doesn't change. Every connector's `call_tool()` is wrapped by its base class, the same way every agent's `execute()` already is, so a call made inside `execute()` goes to the dispatcher before it runs, not after.
 2. **Values checked against records.** The solution declares, per tool, which arguments must match which record: `account` must equal the vendor's bank account. The dispatcher looks the record up itself through k9x Origin. The agent may also call Origin, or not; it makes no difference to the gate.
 3. **The solution's rules decide,** using facts the model didn't supply: whether the tool is irreversible (a tool nobody declared counts as irreversible) and whether a value didn't match its record or couldn't be checked. The answer is allow, deny, or send it to a person. The rules can only make a call stricter: a value that doesn't match its record never runs without a person, and an irreversible call runs on its own only when a named rule explicitly allows it.

@@ -7,7 +7,7 @@ participant "BaseToolDispatcher" as D
 participant "k9x Shield" as SE
 participant "ToolRegistry" as R
 participant "k9x Origin" as OR
-participant "Rules engine\n(the solution's)" as RU
+participant "Rules engine\n(the solution's, e.g.\nK9X RulesEngine)" as RU
 participant "Orchestrator" as O
 actor "Owner" as V
 participant "MCP server\n(vetted tools)" as T
