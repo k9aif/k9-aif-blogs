@@ -5,6 +5,7 @@ participant "Agent" as A
 participant "BaseToolDispatcher" as D
 participant "k9x Shield\negress checks" as SE
 participant "ToolRegistry\n(locked config)" as R
+participant "BaseRulesAdapter\n(the SBB's own rules)" as RU
 participant "HIL\nOrchestrator" as H
 queue "hil.requests.<queue>" as Q
 actor "Reviewer" as V
@@ -16,25 +17,28 @@ D -> SE : screen tool name + arguments
 SE --> D : PASS
 D -> R : lookup(tool_name)
 R --> D : irreversible\n(unknown tools are irreversible too)
-D -> AU : record: intercepted
-D -> H : ToolCallApprovalRequest\nbuilt from the intercepted call
-H -> Q : publish
-D --> A : pending_hil (flow paused,\ntool not executed)
+D -> RU : evaluate(facts)\nirreversible, untrusted_input,\ntool, arguments, requester
+RU --> D : allow | hil | deny\n(no rule decides → hil)
+D -> AU : record: intercepted + decision
 
-... hours later ...
-
-V -> D : decision on hil.replies
-D -> D : ToolCallDecision.parse(reply)
-
-alt approved, well formed, before the deadline
-  D -> AU : record: approved, decider, time, executing
-  D -> T : call_tool("release_payment", exact arguments)
-  T --> D : done
+alt allow
+  D -> T : call_tool(exact arguments)
   D -> AU : record: executed
-else rejected, expired, or malformed
-  D -> AU : record: not executed + reason
-  note right of T
-    Never called.
-  end note
+else deny
+  D --> A : refused, not executed
+else hil
+  D -> H : ToolCallApprovalRequest\nbuilt from the intercepted call
+  H -> Q : publish
+  D --> A : pending_hil (flow paused,\ntool not executed)
+  ... hours later ...
+  V -> D : decision on hil.replies
+  D -> D : ToolCallDecision.parse(reply)
+  alt approved, well formed, before the deadline
+    D -> AU : record: approved, decider, time, executing
+    D -> T : call_tool(exact arguments)
+    D -> AU : record: executed
+  else rejected, expired, or malformed
+    D -> AU : record: not executed + reason
+  end
 end
 @enduml
