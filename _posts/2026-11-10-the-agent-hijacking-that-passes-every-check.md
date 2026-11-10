@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "A Prompt Can't Change Your Agent. It Can Change the Account Number."
+title: "The Agent Hijacking That Passes Every Check"
 date: 2026-11-10
 author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
