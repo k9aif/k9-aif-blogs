@@ -6,7 +6,7 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, k9x Shield, HIL, human in the loop, tool calls, business rules]
 ---
-> **Summary.** In K9-AIF, the model never makes the business decision. It can ask for something, but whether that thing happens is decided by code, rules and people that the model's words can't change. Around that, K9-AIF provides governance on every agent, k9x Shield's prompt-injection detection, business rules through the rules adapters, human review, and identity and Zero Trust checks. It also has a tool gate you can switch on, which checks every tool call before it runs. No framework stops every attack, so what agents do is logged and reported for review.
+> **Summary.** K9-AIF is built so the model doesn't make the business decision. The model can ask for something, but whether it happens is decided outside the model, by code, rules and people. Around that, K9-AIF provides governance on every agent, k9x Shield's prompt-injection detection, business rules through the rules adapters, human review, and identity and Zero Trust checks. It also has a tool gate you can switch on, which checks every MCP tool call before it runs. No framework stops every attack, so what agents do is logged and reported for review.
 
 This morning, in a LinkedIn thread about agent identity, I described how I check an agent's work at two gates: once before a tool call goes out, and again on what the agent produces. One of the replies made a fair point. An injected action that fits the task closely enough will pass both gates, so for anything irreversible, the person who owns the request has to confirm it.
 
