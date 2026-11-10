@@ -61,7 +61,7 @@ package "Existing in K9-AIF (used as they are)" {
     +get_current(entity, id)
   }
   abstract class BaseRulesAdapter {
-    +evaluate(ruleset, facts)
+    +execute(facts)
   }
 }
 

@@ -27,7 +27,7 @@ D -> D : store the exact call (audit log)
 D --> A : ToolCallPendingReview\n(nothing executed)
 A --> O : propagates; if the agent's code\ncatches it, the base class raises it again
 O -> V : hil.requests.<queue>:\nthe exact call, "account X is not V's account Y"
-V --> O : decision (via the Router)
+V --> O : decision (via K9X HIL and the Router)
 O -> D : resume_tool_call(decision)
 
 alt approved, for this stored call, before the deadline
