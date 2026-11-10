@@ -21,6 +21,30 @@ The framework is the source of truth, not this repo and not memory:
 
 @../k9-aif-framework/CAPABILITIES.md
 
+## Diagrams of K9-AIF flows must follow the framework's architecture rules
+
+The framework's CLAUDE.md rules apply to every diagram and code example in a post, not
+only to code. Check each one against this list before using it:
+
+- **Router → Orchestrator → Squad → Agent.** An Orchestrator talks only to Squads, never to
+  an Agent; a Squad runs its agents in its flow. Errors and reviews propagate back
+  Agent → Squad → Orchestrator.
+- **Business rules are a squad step** (`K9RulesAgent` through `BaseRulesAdapter`), not
+  something an agent calls; the rules themselves live in the solution's rules engine, not in YAML.
+- **Only the Router and Orchestrators publish to Kafka.** A HIL review is published by the
+  Orchestrator through `BaseHILOrchestrator`; the reply comes back through the Router.
+- **Agents reach models only through `llm_invoke`** (→ `K9ModelRouter`), and tools only through
+  a connector.
+- **Squads don't call tools; agents do.** Name the agent on the arrow.
+- **Deterministic vs non-deterministic.** Most business flows (look up, match, pay from the
+  record) have no model in them; don't draw an LLM step where the real flow has none.
+- **Deterministic steps are integration adapters the Orchestrator calls** (`BaseApiAdapter`,
+  `BaseRulesAdapter`, `BaseBpmAdapter` for Appian/Pega/Camunda, `BaseDataAdapter`, ...), as
+  K9X Studio generates them. They are not agents. Agents are for steps that need a model, and
+  they reach systems through MCP tools; behind the MCP server is a deterministic service, not an agent.
+- The example itself must survive an experienced practitioner's first objection ("a 30-year-old
+  system already does this"). If it doesn't, change the example, not the wording.
+
 ## Voice
 
 - Before drafting, ask Ravi for (1) a real incident he saw and (2) his own

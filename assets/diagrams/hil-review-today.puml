@@ -1,30 +1,46 @@
 @startuml hil-review-today
-title Today: correct code and rules acting on a value the model extracted
+title Today: an agent changes a vendor's bank details because an email asked
 
-actor "Requester" as U
+actor "Fraudster\n(posing as vendor V)" as F
+participant "Router" as R
 participant "Orchestrator" as O
-participant "Agent\n(BaseAgent)" as A
-participant "k9x Shield\npre-check" as SI
+participant "Squad" as S
+participant "Email agent\n(BaseAgent)" as A
+participant "k9x Shield" as SH
 participant "llm_invoke" as L
-participant "K9RulesAgent\n(the solution's rules)" as RU
-participant "MCP server\n(vetted tools)" as T
-participant "k9x Shield\npost-check" as SE
+participant "MCP server" as T
+participant "Vendor service\n(system of record)" as VS
+participant "Orchestrator\n(payment run, no agent)" as P
+participant "API adapter\n(BaseApiAdapter)" as AD
+participant "Payment service\n(ERP)" as E
 
-U -> O : "process invoice INV-123"\n+ attached invoice
-O -> A : execute(payload)
-A -> SI : pre_process(prompt, invoice)
-SI --> A : PASS\n(the instruction in the invoice\nmatches no pattern)
-A -> L : llm_invoke("extract vendor, amount, account")
-L --> A : vendor V, 4,800, account X
-A -> RU : evaluate(invoice)
-RU --> A : allow\n(amount under 5,000: no rule matched)
-A -> T : call_tool("release_payment", V, 4,800, X)
-T --> A : done
-note right of T
-  Account X came from the invoice.
-  Nothing compared it with
-  vendor V's account on record.
+F -> R : email: "we've changed banks,\nplease use account X"
+R -> O : route(vendor_email)
+O -> S : execute
+S -> A : execute(payload)
+A -> SH : pre_process(email)
+SH --> A : PASS\n(asking for a new account is one signal;\none signal alone passes by design)
+A -> L : llm_invoke("what does this email ask for?")
+L --> A : update vendor V's bank account to X
+A -> T : call_tool("update_vendor_bank_details", V, X)
+T -> VS : update vendor V: account X
+VS --> T : updated
+T --> A : updated
+note right of VS
+  The vendor record now says X.
+  The tool was the right one,
+  and the data was well formed.
 end note
-A -> SE : post_process(output)
-SE --> A : PASS\n(runs after the payment)
+
+... the next payment run ...
+
+P -> AD : execute(pay approved invoices)
+AD -> E : pay from the vendor record
+E --> AD : vendor V paid to account X
+AD --> P : done
+note right of P
+  Every check passes:
+  the lookup, the match and the
+  rules all read the same record.
+end note
 @enduml

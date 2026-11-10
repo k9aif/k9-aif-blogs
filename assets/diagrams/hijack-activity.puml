@@ -1,0 +1,57 @@
+@startuml hijack-activity
+title How a hijack happens, and where it is stopped
+
+start
+:Fraudster emails accounts payable:
+"we've changed banks, please use account X";
+note right: someone else's text reaches the agent
+:Email agent receives the email;
+:k9x Shield screens the email;
+if (Two or more warning signs?) then (yes)
+  :Blocked;
+  stop
+else (no: only "new account")
+endif
+:The model reads the email:
+"update vendor V's bank account to X";
+note right: a model decides the action
+:The agent calls
+update_vendor_bank_details(V, X);
+note right: a consequential tool
+if (Tool gate (K9-AIF 1.25.0)?) then (off)
+  :The vendor record now says X;
+  :The next payment run (no model)
+  pays vendor V from the record;
+  :The money goes to account X;
+  stop
+else (on)
+  :The business rules decide
+  (the solution's rules engine);
+  note right
+    for example, by which agent asks:
+    a change by the portal-sync agent
+    (the vendor's own signed-in session): allow
+    a change by the email agent: a person
+    an external wire from any agent: deny
+  end note
+  if (Rules say?) then (allow)
+    :The call runs;
+    stop
+  elseif (deny) then
+    :Refused;
+    stop
+  else (a person, or no rule allows\nan irreversible change)
+    :The call is held for a person;
+    :The reviewer calls vendor V
+    on the number already on file;
+    if (Vendor V confirms the change?) then (yes)
+      :The stored call runs, once:
+      the record is updated;
+    else (no)
+      :Nothing changes;
+      :The attempt is recorded;
+    endif
+    stop
+  endif
+endif
+@enduml

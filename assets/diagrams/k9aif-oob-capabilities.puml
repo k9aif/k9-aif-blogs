@@ -10,7 +10,7 @@ rectangle "Router" as R {
 }
 rectangle "Orchestrator" as O {
   rectangle "Zero Trust\nrole-based authorization" as ZT
-  rectangle "Human review\nRequiresHIL → hil.requests.<queue>\nresumes exactly once" as HIL
+  rectangle "Human review\nRequiresHIL → hil.requests.<queue>\nresumes once on the decision" as HIL
 }
 rectangle "Squad" as S {
   rectangle "Business rules step\nBaseRulesAdapter: YAML rules\nor a decision service\n(rules owned by the solution)" as RU
@@ -20,12 +20,16 @@ rectangle "Agent" as A {
   rectangle "llm_invoke →\nK9ModelRouter → model" as LLM
 }
 rectangle "MCP server\nvetted tools" as MCP
+rectangle "Integration adapters\ndeterministic, no model:\nAPI, rules, BPM, data" as ADP
+rectangle "Enterprise systems\nERP, rules engine,\nBPM (e.g. Appian), databases" as SYS
 
 U --> R
 R --> O
 O --> S
 S --> A
 A --> MCP : tool calls\n(screened)
+O --> ADP : deterministic steps
+ADP --> SYS
 
 note bottom of O
   Secrets for every layer come from

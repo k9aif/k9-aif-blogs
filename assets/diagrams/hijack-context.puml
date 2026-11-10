@@ -1,0 +1,33 @@
+@startuml hijack-context
+title How a hijack happens: someone else's text chooses the agent's action
+
+left to right direction
+
+actor "Fraudster" as F
+rectangle "Accounts payable\nmailbox" as MB
+rectangle "Email agent\n(BaseAgent)" as A
+rectangle "Model\n(through llm_invoke)" as LLM
+rectangle "k9x Shield" as SH
+rectangle "MCP tool\nupdate_vendor_bank_details" as T
+database "Vendor service\n(system of record)" as VS
+rectangle "Payment run\n(Orchestrator + API adapter,\nno model)" as P
+rectangle "Bank" as B
+rectangle "Fraudster's\naccount X" as X
+
+F --> MB : 1. we've changed banks,\nplease use account X
+MB --> A : 2. new email\n[outside text reaches the agent]
+A --> SH : 3. screen the email
+SH --> A : passes: one warning sign\nalone passes by design
+A --> LLM : 4. what does this ask for?\n[a model decides]
+LLM --> A : update vendor V's\nbank account to X
+A --> T : 5. call the tool\n[a consequential tool]
+T --> VS : 6. vendor V's account\nis now X
+P --> VS : 7. reads vendor V's account
+P --> B : 8. pay vendor V
+B --> X : 9. money arrives
+
+note bottom of T
+  The tool gate (1.25.0) holds line 5
+  for a person: the record never changes.
+end note
+@enduml

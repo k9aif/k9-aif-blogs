@@ -1,32 +1,24 @@
 @startuml tool-gate-at-a-glance
-title The tool gate at a glance
+title Where the tool gate sits
 
 left to right direction
 
-rectangle "An agent wants to act\n\nfor example:\npay invoice INV-123\nto account X" as A
-
-rectangle "The tool gate\n(K9-AIF 1.25.0)" as G {
-  rectangle "1. Is it safe?\n\nsecurity checks\n(k9x Shield)" as S
-  rectangle "2. Do the values match\nwhat we already know?\n\nthe vendor's account\non record" as R
-  rectangle "3. What does the\nbusiness allow?\n\nthe company's own rules" as B
+rectangle "Deterministic flow\n(most business flows)" as DET {
+  rectangle "Orchestrator\n\nour code decides\nwhat to call" as O
+  rectangle "Integration adapter" as AD
 }
 
-rectangle "Run it" as RUN
-rectangle "Refuse it" as NO
-rectangle "Ask a person\n\nshows exactly what will happen\nand what doesn't match" as P
-rectangle "Approved: runs once\n\nAnything else:\nnever runs" as OUT
+rectangle "Model-driven flow\n(reading an email, choosing a tool)" as MOD {
+  rectangle "Agent\n\na model decides\nwhat to call" as A
+  rectangle "TOOL GATE\n(K9-AIF 1.25.0)\n\nthe agent can't skip it\nunknown action = irreversible\nirreversible = a person approves\napproval runs that exact call, once" as G
+  rectangle "MCP tool" as M
+}
 
-A --> S
-S --> R
-R --> B
-B --> RUN : safe, matches,\nallowed
-B --> NO : not allowed
-B --> P : doesn't match,\nor can't be undone
-P --> OUT
+rectangle "The system of record\n\nits own checks, as for decades:\nlook up, match, rules, limits" as SYS
 
-note bottom of G
-  Every step is recorded:
-  what was asked, what was decided,
-  who approved it and when.
-end note
+O --> AD
+AD --> SYS : no gate needed:\nno model to steer
+A --> G
+G --> M : allowed, or\napproved by a person
+M --> SYS
 @enduml

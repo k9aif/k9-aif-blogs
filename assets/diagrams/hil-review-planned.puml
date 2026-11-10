@@ -1,38 +1,44 @@
 @startuml hil-review-planned
-title K9-AIF 1.25.0: every tool call passes one gate that checks values against records
+title K9-AIF 1.25.0: the same change waits for a person
 
-participant "Agent\n(unchanged code)" as A
+actor "Fraudster" as F
+participant "Router" as R
+participant "Orchestrator" as O
+participant "Squad" as S
+participant "Email agent\n(unchanged code)" as A
 participant "BaseConnector\ncall_tool()" as C
 participant "BaseToolDispatcher" as D
-participant "k9x Shield" as SE
-participant "ToolRegistry" as R
-participant "k9x Origin" as OR
 participant "Rules engine\n(the solution's, e.g.\nK9X RulesEngine)" as RU
-participant "Orchestrator" as O
-actor "Owner" as V
-participant "MCP server\n(vetted tools)" as T
+participant "BaseHILOrchestrator\n→ K9X HIL" as H
+actor "Accounts payable\nreviewer" as V
+participant "MCP server" as T
+participant "Vendor service\n(system of record)" as VS
 
-A -> C : call_tool("release_payment", V, 4,800, X)
+F -> R : email: "please use account X"
+R -> O : route(vendor_email)
+O -> S : execute
+S -> A : execute(payload)
+A -> C : call_tool("update_vendor_bank_details", V, X)
 C -> D : intercepted: propose(ToolCall)
-D -> SE : screen tool + arguments
-SE --> D : PASS
-D -> R : lookup("release_payment")
-R --> D : irreversible\nverify: account = vendor.bank_account
-D -> OR : get_current("vendor", V)
-OR --> D : bank_account Y\n(from the system of record)
-D -> D : X ≠ Y : mismatch
-D -> RU : evaluate(irreversible, mismatch, ...)
-RU --> D : any answer: a mismatch\nnever runs without a person
+D -> D : k9x Shield: PASS\nToolRegistry: irreversible
+D -> RU : execute({tool_call: facts})
+RU --> D : no named rule allows it
 D -> D : store the exact call (audit log)
-D --> A : ToolCallPendingReview\n(nothing executed)
-A --> O : propagates; if the agent's code\ncatches it, the base class raises it again
-O -> V : hil.requests.<queue>:\nthe exact call, "account X is not V's account Y"
-V --> O : decision (via K9X HIL and the Router)
+D --> A : ToolCallPendingReview\n(nothing changed)
+A --> S : propagates (if the agent's code\ncatches it, the base class raises it again)
+S --> O : propagates
+O -> H : handle_requires_hil()\n→ hil.requests.<queue>
+H -> V : "change vendor V's bank account to X?"
+V -> V : calls vendor V on the number\nalready on file
+V --> H : decision
+H --> R : hil.replies.<queue>
+R -> O : resumed payload + decision
 O -> D : resume_tool_call(decision)
 
 alt approved, for this stored call, before the deadline
   D -> T : call_tool(stored arguments), once
-else anything else
+  T -> VS : update vendor V
+else rejected, expired or anything else
   D -> D : never executed, recorded
 end
 @enduml
