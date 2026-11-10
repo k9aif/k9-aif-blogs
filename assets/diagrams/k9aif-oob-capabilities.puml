@@ -29,7 +29,7 @@ A --> MCP : tool calls\n(screened)
 
 note bottom of O
   Secrets for every layer come from
-  Vault, IBM Secrets Manager, AWS or env,
+  a secret manager (Vault, AWS and others) or env,
   never from config
 end note
 @enduml

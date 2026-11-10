@@ -23,7 +23,7 @@ Every request in K9-AIF takes one path: Router → Orchestrator → Squad → Ag
 | Router         | Identity                       | `OIDCAuthenticator` (`KeycloakAuthenticator`, `EntraIDAuthenticator`, `OktaAuthenticator`), `ApiKeyAuthenticator` | Authenticates the caller before anything runs                                                                                                                 |
 | Orchestrator   | Zero Trust                     | `DefaultZeroTrustGuard`, `RoleBasedAuthorizationGuard`                                                                  | Checks the caller's role is allowed this action, scores risk, masks sensitive data                                                                            |
 | Orchestrator   | Human review                   | `RequiresHIL`, `BaseHILOrchestrator`                                                                                    | Publishes a review to `hil.requests.<queue>`; the flow waits, without holding a thread, and resumes once on the decision                                  |
-| Squad          | Business rules                 | `K9RulesAgent` with `K9RulesAdapter` (YAML) or `RestRulesAdapter` (a decision service such as IBM ODM or Drools)      | Applies the solution's own rules. The rules belong to the solution; the framework supplies the adapters                                                       |
+| Squad          | Business rules                 | `K9RulesAgent` with `K9RulesAdapter` (YAML) or `RestRulesAdapter` (a decision service such as Drools)      | Applies the solution's own rules. The rules belong to the solution; the framework supplies the adapters                                                       |
 | Agent          | k9x Shield                     | `ShieldGovernance` with 15 `BaseVulnerabilityCheck` checks                                                              | Screens input, documents and output on every agent; in production the agent can't opt out. SATAN fires an attack at each check to prove it holds                            |
 | Agent          | One path to the model          | `llm_invoke`, `K9ModelRouter`                                                                                           | Agents never call a model directly; the router picks the model by policy                                                                                      |
 | Agent → tools | Governed tools                 | `MCPStreamableHttpConnector`, `@govern_tool_call`, `@govern_tool_result`                                              | Calls vetted tools on an MCP server. The call and the result are screened where the decorators are applied; the Claude Agent SDK adapter screens calls through `can_use_tool` and results automatically |
@@ -52,7 +52,7 @@ squads:
 # config/config.yaml: where the rules engine is, not the rules themselves
 rules_agent:
   adapter: rest_rules                  # RestRulesAdapter: any decision service
-  engine_url: ${RULES_ENGINE_URL}      # Drools/KIE, IBM ODM, OpenL Tablets, Corticon, your own
+  engine_url: ${RULES_ENGINE_URL}      # Drools/KIE, OpenL Tablets, Corticon, your own, or K9X RulesEngine (open source, in the pipeline)
   decision_service: payments/approve
   ruleset: invoice_payment
 ```
@@ -87,8 +87,6 @@ It ships in K9-AIF 1.25.0 and is switched on with one setting, `security.tool_ga
 
 ![K9-AIF 1.25.0: every tool call passes one gate that checks values against records](../assets/images/blogs/hil-review-planned.png)
 
-*K9X RulesEngine, an open source rules engine component, is in the pipeline.*
-
 1. **One gate for every tool call.** The agent's code doesn't change. Every connector's `call_tool()` is wrapped by its base class, the same way every agent's `execute()` already is, so a call made inside `execute()` goes to the dispatcher before it runs, not after. Agent code that skips the connector and opens its own network connection or process can't be stopped from inside Python; a new Inspector rule, K9-TOOL-001, flags common raw network and process access at review time, and isolating it at runtime is the deployment's job.
 2. **Values checked against records.** The solution declares, per tool, which arguments must match which record: `account` must equal the vendor's bank account. The dispatcher looks the record up itself through k9x Origin. The agent may also call Origin, or not; it makes no difference to the gate.
 3. **The solution's rules decide,** using facts the model didn't supply: whether the tool is irreversible (a tool nobody declared counts as irreversible) and whether a value didn't match its record or couldn't be checked. The answer is allow, deny, or send it to a person. The rules can only make a call stricter: a value that doesn't match its record never runs without a person, and an irreversible call runs on its own only when a named rule explicitly allows it.
@@ -102,7 +100,7 @@ It doesn't slow the system down much. The dispatcher runs inside each worker, as
 
 ## Where agent identity fits
 
-IBM made [Agent Identity](https://www.ibm.com/new/announcements/ibm-agent-identity-is-now-generally-available-building-trust-for-the-agentic-era) generally available on 26 October 2026, with IBM Verify and HashiCorp Vault. It registers each agent with an owner, a risk class and its approved tool connections, and issues tokens that carry both the user and the agent. That answers *is this the right agent, acting for the right person?* Our invoice agent would pass: it's registered, holds a valid token, and acts for a real clerk. Whether account X belongs to vendor V is a question about the action, not the identity. The two fit together: identity for the right agent, the gate for the right action. Verify speaks OIDC, like the identity providers K9-AIF already supports.
+Agent identity products answer a different question: *is this the right agent, acting for the right person?* They register each agent with an owner and its approved tool connections, and issue short-lived tokens that carry both the user and the agent. Our invoice agent would pass: it's registered, holds a valid token, and acts for a real clerk. Whether account X belongs to vendor V is a question about the action, not the identity. The two fit together: identity for the right agent, the gate for the right action.
 
 ## When something gets through anyway
 
@@ -118,13 +116,13 @@ No framework can do these for you: make an approver read, know that a record was
 
 Every line is a test in `test_tool_gate_1_25.py`, run against the real agent, connector, orchestrator, router and audit log. The rules engine, k9x Origin and the MCP server are test stand-ins, except one test that uses the real `K9RulesAdapter`.
 
-- An agent that never raises `RequiresHIL` still has its irreversible call held, and the tool never runs.
-- Agent code that catches the review and carries on can't hide it, even from one agent up.
-- A value that doesn't match its record never runs without a person, whatever the rules say.
-- A tool nobody declared is treated as irreversible.
-- An approval runs the stored call once; rejected, expired, malformed or late replies never run it.
-- A rules-engine failure holds the call instead of letting it through.
-- The whole round trip works: agent → the Orchestrator publishes the review → the reply comes back through the Router → the stored call runs once.
+- An agent that never raises `RequiresHIL` still has its irreversible call held, and the tool never runs. (`test_irreversible_call_is_held_although_the_agent_never_raises_requires_hil`)
+- Agent code that catches the review and carries on can't hide it, even from one agent up. (`test_agent_code_that_swallows_the_review_cannot_hide_it`, `test_review_raised_in_a_nested_agent_reaches_the_outer_one`)
+- A value that doesn't match its record never runs without a person, whatever the rules say. (`test_rules_cannot_allow_a_value_that_does_not_match_its_record`)
+- A tool nobody declared is treated as irreversible. (`test_undeclared_tool_is_treated_as_irreversible`)
+- An approval runs the stored call once; rejected, expired, malformed or late replies never run it. (`test_approval_runs_the_stored_call_exactly_once`, `test_anything_but_a_valid_approval_never_runs`, `test_a_late_approval_does_not_run`)
+- A rules-engine failure holds the call instead of letting it through. (`test_rules_engine_failure_holds_the_call`)
+- The whole round trip works: agent → the Orchestrator publishes the review → the reply comes back through the Router → the stored call runs once. (`test_round_trip_router_orchestrator_agent_and_back`)
 
 ## What's coming next
 
@@ -148,7 +146,7 @@ The new classes live in `k9_core/tools/`. Three existing base classes were exten
 | `ToolCallPendingReview`                              | A `RequiresHIL`: the existing review path carries it to the Orchestrator                                                                                  |
 | `BaseAgent`, `BaseConnector`, `BaseOrchestrator` | Extended: the agent wrapper opens the gate and re-raises a swallowed review, the connector routes calls to it, and `resume_tool_call()` applies the reply |
 
-Turning it on, in the solution's `config.yaml`:
+Turning it on, in the solution's `config.yaml`. One caution first: in 1.25.0 the gate covers agents built on `BaseAgent`. Tool calls made from agents running in CrewAI, LangGraph or the Claude Agent SDK aren't gated yet, and with the gate on they are refused in production, so keep it off for those solutions until 1.25.1.
 
 ```yaml
 security:
@@ -170,7 +168,7 @@ if resumed is not None:
     return resumed
 ```
 
-Held calls live in the gate's audit log (SQLite by default), so the agent workers and the Orchestrator that resumes them must use the same store.
+Held calls live in the gate's audit log, so the agent workers and the Orchestrator that resumes them must use the same store. The default is a SQLite file, which works for one host or containers sharing a volume; a deployment spread across hosts needs a shared database, and a Postgres audit log is planned.
 
 ## Closing
 
