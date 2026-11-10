@@ -1,0 +1,40 @@
+@startuml hil-review-planned
+title Planned 1.25.0: the framework decides whether a human sees the call
+
+participant "Agent" as A
+participant "BaseToolDispatcher" as D
+participant "k9x Shield\negress checks" as SE
+participant "ToolRegistry\n(locked config)" as R
+participant "HIL\nOrchestrator" as H
+queue "hil.requests.<queue>" as Q
+actor "Reviewer" as V
+participant "ToolCallAuditLog" as AU
+participant "Payment tool" as T
+
+A -> D : propose(ToolCall)\nrationale kept as untrusted
+D -> SE : screen tool name + arguments
+SE --> D : PASS
+D -> R : lookup(tool_name)
+R --> D : irreversible\n(unknown tools are irreversible too)
+D -> AU : record: intercepted
+D -> H : ToolCallApprovalRequest\nbuilt from the intercepted call
+H -> Q : publish
+D --> A : pending_hil (flow paused,\ntool not executed)
+
+... hours later ...
+
+V -> D : decision on hil.replies
+D -> D : ToolCallDecision.parse(reply)
+
+alt approved, well formed, before the deadline
+  D -> AU : record: approved, decider, time, executing
+  D -> T : release_payment(exact arguments)
+  T --> D : done
+  D -> AU : record: executed
+else rejected, expired, or malformed
+  D -> AU : record: not executed + reason
+  note right of T
+    Never called.
+  end note
+end
+@enduml

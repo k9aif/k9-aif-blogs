@@ -1,0 +1,36 @@
+@startuml hil-review-today
+title Today: the agent decides whether a human sees the call
+
+actor "Requester" as U
+participant "Orchestrator" as O
+participant "Agent\n(BaseAgent)" as A
+participant "k9x Shield\ningress checks" as SI
+participant "LLM" as L
+participant "k9x Shield\negress checks" as SE
+participant "HIL\nOrchestrator" as H
+queue "hil.requests.<queue>" as Q
+participant "Payment tool" as T
+
+U -> O : request + attached invoice
+O -> A : execute(payload)
+A -> SI : pre_process(prompt, document)
+SI --> A : PASS\n(injection worded so no pattern matches)
+A -> L : prompt + document
+L --> A : "release payment to account X"
+
+alt agent raises RequiresHIL (the honest path)
+  A -->> O : raise RequiresHIL(reason, context)
+  O -> H : handle_requires_hil()
+  H -> Q : publish review request
+  H --> O : pending_hil
+else hijacked agent never raises it
+  A -> SE : post_process(tool call)
+  SE --> A : PASS\n(tool approved, arguments well formed)
+  A -> T : release_payment(account X)
+  T --> A : done
+  note right of T
+    Executed. No human
+    ever saw the call.
+  end note
+end
+@enduml
