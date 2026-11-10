@@ -89,7 +89,7 @@ It ships in K9-AIF 1.25.0 and is switched on with one setting, `security.tool_ga
 
 *K9X RulesEngine, a ready-to-use rules engine for this step, will be released this week.*
 
-1. **One gate for every tool call.** The agent's code doesn't change. Every connector's `call_tool()` is wrapped by its base class, the same way every agent's `execute()` already is, so a call made inside `execute()` goes to the dispatcher before it runs, not after.
+1. **One gate for every tool call.** The agent's code doesn't change. Every connector's `call_tool()` is wrapped by its base class, the same way every agent's `execute()` already is, so a call made inside `execute()` goes to the dispatcher before it runs, not after. Agent code that skips the connector and opens its own network connection or process is caught at review time by a new Inspector rule, K9-TOOL-001, and stopped at runtime by deployment isolation.
 2. **Values checked against records.** The solution declares, per tool, which arguments must match which record: `account` must equal the vendor's bank account. The dispatcher looks the record up itself through k9x Origin. The agent may also call Origin, or not; it makes no difference to the gate.
 3. **The solution's rules decide,** using facts the model didn't supply: whether the tool is irreversible (a tool nobody declared counts as irreversible) and whether a value didn't match its record or couldn't be checked. The answer is allow, deny, or send it to a person. The rules can only make a call stricter: a value that doesn't match its record never runs without a person, and an irreversible call runs on its own only when a named rule explicitly allows it.
 4. **The person sees the truth.** The review shows the exact call the framework intercepted, and the mismatch: "The agent wants to pay 4,800 to account X. Vendor V's account on record is Y." Only the stored call can run on that approval, never a fresh attempt by the agent.
@@ -102,7 +102,7 @@ It doesn't slow the system down much. The dispatcher runs inside each worker, as
 
 ## Coming this week: K9X RulesEngine
 
-The gate asks the solution's rules engine, whichever one the solution uses. Many teams don't have one, or have one that was never built for decisions made at machine speed on an agent's tool calls. So the next K9X component, coming this week, is **K9X RulesEngine**, with a working example of exactly this invoice scenario.
+The gate asks the solution's rules engine, whichever one the solution uses. Many teams don't have one, or have one that was never built for decisions made at machine speed on an agent's tool calls. So the next open source K9X component, coming this week, is **K9X RulesEngine**, with a working example of exactly this invoice scenario.
 
 - **A deterministic rules engine with its own rule language**: YAML rulesets with a small typed expression language, and decision tables. Rules are parsed, type-checked and compiled; evaluation is bounded and does no I/O. Any error fails closed.
 - **Every decision is permit, forbid or escalate**, with reason codes, the rules that matched, and an optional trace of why. For tool calls, a forbid always wins. An escalate goes to K9X HIL.
@@ -122,19 +122,29 @@ Some things will. A value can match a record the attacker already changed, or an
 - **Look back regularly.** Because every intercepted call and decision is in the audit log, a nightly review can ask: which calls today didn't match their records? Which approvals took two seconds?
 - **Cap the worst case in advance.** A maximum per payment and per day, set in the rules or the system of record, not in the agent.
 
-## What 1.25.0 covers, and what it doesn't
+No framework can do these for you: make an approver read, know that a record was already corrupted, or write good rules. K9-AIF enforces the solution's rules and record checks on every tool call; what they say is the solution's decision. What's left after that is residual risk, and it should be bounded by those caps and owned by a named person.
 
-Every "covered" line is a test in `test_tool_gate_1_25.py` that runs against the real base classes, rules adapter and audit log.
+## What the tests prove
 
-| Covered (tested)                                                                                                     | Not covered                                                                                                                                                                  |
-| -------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| An agent that never raises `RequiresHIL` still has its irreversible call held, and the tool never runs              | Agent code that opens its own network connection or process. The new Inspector rule K9-TOOL-001 flags it at review time; deployment isolation is the runtime answer           |
-| Agent code that catches the review and carries on can't hide it, even one agent up                                   | Tool calls from the CrewAI, LangGraph and Claude Agent SDK adapters' own tool handlers. They aren't gated yet; while the gate is on, those calls are refused in production |
-| A value that doesn't match its record never runs without a person, whatever the rules say                            | A value that matches a record someone already corrupted. The after-the-fact notice is what catches that                                                                      |
-| A tool nobody declared is treated as irreversible                                                                    | An approver who approves without reading                                                                                                                                     |
-| An approval runs the stored call once; rejected, expired, malformed or late replies never run it                     | The quality of the solution's rules and record checks. The framework enforces them; it can't write them                                                                      |
-| A rules-engine failure holds the call instead of letting it through                                                  | Residual risk: bounded by caps the solution sets, and owned by a named person                                                                                                |
-| The whole round trip: agent → Orchestrator publishes the review → reply through the Router → the stored call runs once |                                                                                                                                                                              |
+Every line is a test in `test_tool_gate_1_25.py`, run against the real base classes, rules adapter and audit log.
+
+- An agent that never raises `RequiresHIL` still has its irreversible call held, and the tool never runs.
+- Agent code that catches the review and carries on can't hide it, even from one agent up.
+- A value that doesn't match its record never runs without a person, whatever the rules say.
+- A tool nobody declared is treated as irreversible.
+- An approval runs the stored call once; rejected, expired, malformed or late replies never run it.
+- A rules-engine failure holds the call instead of letting it through.
+- The whole round trip works: agent → the Orchestrator publishes the review → the reply comes back through the Router → the stored call runs once.
+
+## What's coming next
+
+| When      | Release              | What it adds                                                                                                                    |
+| --------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| This week | **K9X RulesEngine**  | A ready-to-use rules engine for the gate's rules step, with a working example of this invoice scenario                          |
+| Next      | **K9-AIF 1.25.1**    | The tool gate for tool calls made from the CrewAI, LangGraph and Claude Agent SDK adapters                                      |
+| Next      | **K9X SATAN**        | An attack that tries to get an irreversible call past the gate, proving it holds the way SATAN proves each Shield check        |
+| Later     | **K9-AIF**           | After-the-fact notices to the owner, and a Postgres audit log for multi-host deployments                                        |
+| 2.0       | **K9-AIF**           | The tool gate on by default                                                                                                     |
 
 ## For developers: the classes
 
@@ -142,15 +152,15 @@ The new classes live in `k9_core/tools/`. Three existing base classes were exten
 
 ![K9-AIF 1.25.0 tool gate classes and the existing ABBs they use](../assets/images/blogs/hil-review-classes.png)
 
-| Class                                                | Role                                                                                                                              |
-| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `BaseToolDispatcher`                               | Screens each call, looks up its record checks, applies the solution's rules, then runs it, refuses it or holds it for review       |
-| `ToolRegistry` / `ToolSpec` / `RecordCheck`      | Per tool: irreversible or not, which arguments must match which record, and where the tool lives so it can run after approval    |
-| `ToolCall`                                         | The intercepted call, with a digest that fingerprints it, and the agent's rationale kept in a field labelled untrusted             |
-| `ToolCallDecision`                                 | Reads the reviewer's reply strictly: only an approval, from a named reviewer, before the deadline, counts                         |
-| `BaseToolCallAuditLog` / `SQLiteToolCallAuditLog` | Append-only events, plus held calls whose state changes only by compare-and-swap, so a call can't run twice                       |
-| `ToolCallPendingReview`                            | A `RequiresHIL`: the existing review path carries it to the Orchestrator                                                          |
-| `BaseAgent`, `BaseConnector`, `BaseOrchestrator`  | Extended: the agent wrapper opens the gate and re-raises a swallowed review, the connector routes calls to it, and `resume_tool_call()` applies the reply |
+| Class                                                  | Role                                                                                                                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BaseToolDispatcher`                                 | Screens each call, looks up its record checks, applies the solution's rules, then runs it, refuses it or holds it for review                                |
+| `ToolRegistry` / `ToolSpec` / `RecordCheck`      | Per tool: irreversible or not, which arguments must match which record, and where the tool lives so it can run after approval                               |
+| `ToolCall`                                           | The intercepted call, with a digest that fingerprints it, and the agent's rationale kept in a field labelled untrusted                                      |
+| `ToolCallDecision`                                   | Reads the reviewer's reply strictly: only an approval, from a named reviewer, before the deadline, counts                                                   |
+| `BaseToolCallAuditLog` / `SQLiteToolCallAuditLog`  | Append-only events, plus held calls whose state changes only by compare-and-swap, so a call can't run twice                                                 |
+| `ToolCallPendingReview`                              | A `RequiresHIL`: the existing review path carries it to the Orchestrator                                                                                  |
+| `BaseAgent`, `BaseConnector`, `BaseOrchestrator` | Extended: the agent wrapper opens the gate and re-raises a swallowed review, the connector routes calls to it, and `resume_tool_call()` applies the reply |
 
 Turning it on, in the solution's `config.yaml`:
 
