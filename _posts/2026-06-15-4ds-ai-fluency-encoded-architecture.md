@@ -4,7 +4,6 @@ title: "The 4Ds of AI Fluency — Encoded Into Architecture"
 date: 2026-06-15
 author: Ravi Natarajan
 ---
-
 I've been working through the AI Fluency course from Rick Dakan and Joseph Feller — developed in collaboration with Anthropic. It's excellent. The core of it is a framework of four competencies for working effectively with AI, called the 4Ds: Delegation, Description, Discernment, and Diligence.
 
 Halfway through the Delegation module, I stopped.
@@ -19,12 +18,12 @@ That's the claim I want to unpack here.
 
 Dakan and Feller frame AI engagement across three modes: Automation (AI executes specific tasks), Augmentation (you and AI collaborate), and Agency (you guide AI to work independently, shaping its knowledge and behavior rather than specific actions). The 4Ds apply across all three, but they matter most at the Agency tier — where the stakes, the complexity, and the surface area for error are highest.
 
-| Competency | What it means |
-|---|---|
-| **Delegation** | Deciding what work AI should do, what you should do, and what you do together |
-| **Description** | Communicating your goals, process, and expectations clearly to AI systems |
-| **Discernment** | Evaluating AI outputs critically before acting on them |
-| **Diligence** | Taking responsibility for AI collaboration — ethically, transparently, safely |
+| Competency            | What it means                                                                  |
+| --------------------- | ------------------------------------------------------------------------------ |
+| **Delegation**  | Deciding what work AI should do, what you should do, and what you do together  |
+| **Description** | Communicating your goals, process, and expectations clearly to AI systems      |
+| **Discernment** | Evaluating AI outputs critically before acting on them                         |
+| **Diligence**   | Taking responsibility for AI collaboration — ethically, transparently, safely |
 
 Most frameworks leave these to the developer. Understand the task. Write a good prompt. Check the output. Use AI responsibly. Good advice. Hard to enforce.
 
@@ -86,9 +85,7 @@ The 4Ds frame Diligence as personal responsibility. In K9-AIF it's architectural
 
 ## What This Means
 
-The 4Ds describe what a skilled human does with AI. Rick Dakan and Joseph Feller built a framework that should be taught widely, because most people working with AI aren't doing these things intentionally.
-
-K9-AIF encodes them into the architecture so the system does them by default — at design time, before anything runs.
+The 4Ds describe what a skilled human does with AI. K9-AIF encodes them into the architecture so the system does them by default — at design time, before anything runs.
 
 That's not a replacement for AI Fluency. You still need Delegation thinking to design the canvas well, Description precision to write good ABBs, Discernment to interpret what `k9aif inspect` flags, and Diligence to set the right governance policies. The competencies still live in the architect.
 
