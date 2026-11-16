@@ -6,9 +6,14 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, OpenAI Agents SDK, k9x Shield, Zero Trust, Model Router, governance, Ollama]
 ---
-My [September post](/k9-aif-with-crewai-langgraph-claude-agent-sdk/) put one governance layer across CrewAI,
-LangGraph and the Claude Agent SDK. This one adds the **OpenAI Agents SDK**, and the result is stronger than the
-Claude case: the OpenAI SDK lets K9-AIF govern the model call as well as the actions.
+The OpenAI Agents SDK makes it easy to build an agent. An enterprise then has to answer harder questions about
+it: who may run it, what it may read and do, which models it may use, and how all of that stays the same across
+every team and every agent framework in the company. **K9-AIF** is an open-source framework built for those
+questions. This post shows the two working together, and what each one contributes.
+
+It's also a sequel. My [September post](/k9-aif-with-crewai-langgraph-claude-agent-sdk/) put one governance layer
+across CrewAI, LangGraph and the Claude Agent SDK. The OpenAI Agents SDK goes further than the Claude case: it lets
+K9-AIF govern the model call as well as the actions.
 
 It isn't a design on paper. It's a small application you can try at **[openai.k9x.ai](https://openai.k9x.ai)**, or
 download and run: give it a US zip code, and an OpenAI agent finds the weather while K9-AIF checks every step it
@@ -17,6 +22,26 @@ takes.
 ![The weather page: an OpenAI agent answers, and K9-AIF lists every check it ran](../assets/images/blogs/k9-aif-openai-weather-page.png)
 
 ---
+
+## K9-AIF in one minute
+
+K9-AIF is an architecture-first framework for governed multi-agent systems (Apache 2.0, `pip install k9-aif`).
+An application is built in four layers: a **Router** admits each request, an **Orchestrator** runs the workflow,
+**Squads** group the steps, and **Agents** do the work. Each layer is an abstract contract that applications extend,
+and the framework's base classes apply governance on every call. An agent gets it without its author writing a
+line of security code.
+
+What that gives an enterprise:
+
+| Concern | How K9-AIF handles it | What the enterprise gets |
+|---|---|---|
+| Unsafe input and output | **k9x Shield** runs deterministic checks (prompt injection, personal data, dangerous tool arguments) at every boundary | One security policy, configured once, applied to every agent |
+| Who may do what | **Zero Trust** checks the caller's identity, role and risk before anything runs | Access rules owned by the organization, not rewritten in each application |
+| Which model thinks | The **K9 Model Router** picks the model for each call, eligibility first | Data reaches only approved models; cost and latency are decided centrally |
+| Irreversible actions | A **tool gate** holds risky tool calls, and **K9X HIL** routes them to a named person | A person accountable for each decision that can't be undone |
+| Many agent frameworks | **Adapters** for CrewAI, LangGraph, the Claude Agent SDK and now the OpenAI Agents SDK | Teams keep their framework; the governance stays the same |
+
+The rest of this post is about that last row, for the OpenAI Agents SDK.
 
 ## What the OpenAI Agents SDK already gives you
 
@@ -80,6 +105,10 @@ Every row has a test in the framework (`tests/test_openai_agents_adapter.py`, 19
 SDK's real Runner with its scripted test model. Hosted OpenAI tools can't be given to an agent at all, since no
 check of ours would see them run.
 
+For an enterprise, the point is where the policy lives: in one configuration, outside the agent. Tighten a Shield
+check or a role rule, and it changes at once for every agent that uses that configuration, whichever framework the
+agent runs on.
+
 ## The difference from the Claude Agent SDK: the model call
 
 The Claude Agent SDK takes the model as a fixed string and calls Claude itself. K9-AIF can govern what a Claude
@@ -96,6 +125,11 @@ The OpenAI SDK accepts a model provider per run, and that seam lets the adapter 
 Eligibility is a hard rule in the router: an agent with tools only gets a model whose catalog entry says it can
 call tools, and a confidential request only reaches a model marked for confidential work. If none qualifies, the
 call fails closed. With the OpenAI SDK, that rule now covers an agent loop K9-AIF didn't write.
+
+That matters when some data may only go to models the organization has approved, an on-premises model for
+confidential work for example, or when the choice between a larger and a cheaper model is made centrally rather
+than by each team. The catalog can list OpenAI's own models alongside local ones; the router applies the same
+rules to all of them.
 
 The example runs with no OpenAI key at all: the SDK calls a local model on Ollama through its OpenAI-compatible
 API, and the router chooses between two local models. Only one of them is marked for tool calling, so it wins
@@ -116,7 +150,8 @@ tools: [lookup_zip, current_weather]
 handoffs: []
 ```
 
-A tool or handoff name that isn't registered fails at start-up, not halfway through a request.
+A tool or handoff name that isn't registered fails at start-up, not halfway through a request. An architect can
+review an agent as one short file, and a change to it is a diff anyone can read.
 
 ## What the run taught me
 
@@ -139,9 +174,10 @@ the OpenAI SDK out.
 ## Ten agents in one Runner is a black box
 
 Handoffs are powerful: inside one run, the model decides which agent works next. Put ten agents in one Runner and
-you can't review the order before it runs, test one step on its own, or say which step failed. Dynatrace's
-walkthrough of the SDK names the same choice: "Allow the LLM to make decisions" or "Orchestrate with code"
-([Dynatrace, August 2025](https://www.dynatrace.com/news/blog/building-agentic-ai-applications-with-openai-agents-sdk/)).
+you can't review the order before it runs, test one step on its own, or say which step failed. The SDK's own
+documentation describes the same choice, orchestrating via the LLM or via code, and notes that orchestrating via
+code "makes tasks more deterministic and predictable, in terms of speed, cost and performance"
+([agent orchestration](https://openai.github.io/openai-agents-python/multi_agent/)).
 
 | Work | Use |
 |---|---|
@@ -154,11 +190,9 @@ of work is what you give up, and a squad keeps it.
 
 ## Observability and governance are different jobs
 
-Dynatrace's article instruments the SDK with OpenTelemetry to "see agent executions, tool usages, and prompt
-flows from initial request to final response"
-([Dynatrace](https://www.dynatrace.com/news/blog/building-agentic-ai-applications-with-openai-agents-sdk/)).
-That tells you what the agents did. K9-AIF decides what they may do, before they do it. The two fit together:
-K9-AIF's `OTelMonitor` emits OpenTelemetry too.
+Tracing, the SDK's own or an OpenTelemetry backend, tells you what the agents did. K9-AIF decides what they may do,
+before they do it. The two fit together: every K9-AIF check is a trace event, and K9-AIF's `OTelMonitor` emits
+OpenTelemetry, so the checks can sit beside the agent traces in the same tool.
 
 ## For developers
 
@@ -209,9 +243,9 @@ cp env-example .env    # point OLLAMA_BASE_URL at your Ollama server
   [models](https://openai.github.io/openai-agents-python/models/),
   [tracing](https://openai.github.io/openai-agents-python/tracing/),
   [handoffs](https://openai.github.io/openai-agents-python/handoffs/),
+  [agent orchestration](https://openai.github.io/openai-agents-python/multi_agent/),
   [human in the loop](https://openai.github.io/openai-agents-python/human_in_the_loop/)
-- K. Muhi and R. Ramanujam, "Building agentic AI applications with OpenAI Agents SDK," Dynatrace, Aug. 2025:
-  [dynatrace.com](https://www.dynatrace.com/news/blog/building-agentic-ai-applications-with-openai-agents-sdk/)
+- K9-AIF framework: [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework) (`pip install k9-aif`)
 - Live demo: [openai.k9x.ai](https://openai.k9x.ai)
 - The example: [github.com/k9aif/examples, k9x_openai_bedrock/openai](https://github.com/k9aif/examples/tree/main/k9x_openai_bedrock/openai)
 - The adapter: [k9-aif-framework, k9_aif_abb/k9_adapters/openai_agents](https://github.com/k9aif/k9-aif-framework/tree/main/k9_aif_abb/k9_adapters/openai_agents)
