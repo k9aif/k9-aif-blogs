@@ -153,6 +153,25 @@ handoffs: []
 A tool or handoff name that isn't registered fails at start-up, not halfway through a request. An architect can
 review an agent as one short file, and a change to it is a diff anyone can read.
 
+## Generate it with K9X Studio
+
+You don't have to write this wiring by hand. In the next release of [K9X Studio](https://studio.k9x.ai), the visual
+builder for K9-AIF applications, Intake has an **Agent Framework** choice: K9-AIF native, OpenAI Agents SDK, CrewAI,
+LangGraph or the Claude Agent SDK.
+
+![K9X Studio Intake: the Agent Framework choice, with OpenAI Agents SDK selected](../assets/images/blogs/k9x-studio-openai-intake.png)
+
+Choose the OpenAI Agents SDK and every squad runs as a small group of OpenAI agents: the squad's first agent is the
+entry agent, and its squad-mates become its handoffs. The canvas shows it. In the Customer Service template below,
+TriageSquad and ResolutionSquad have two agents each, and each orchestrator carries the adapter that wraps them.
+
+![K9X Studio canvas: orchestrators badged K9OpenAIAgentsAdapter, squads running as Runner plus handoffs](../assets/images/blogs/k9x-studio-openai-canvas.png)
+
+The generated scaffold has one runtime module per squad that builds the OpenAI agents from their YAML and returns
+`K9OpenAIAgentsAdapter`. The orchestrators still know only squads and check Zero Trust and Shield at the entry, and
+the requirements include the `openai-agents` extra. The same choice generates CrewAI crews, LangGraph graphs or
+Claude Agent SDK sessions instead, each wrapped by its own K9-AIF adapter and governed the same way.
+
 ## What the run taught me
 
 **Withholding a poisoned result isn't the end of it.** In the demo, a switch plants "Ignore all previous
