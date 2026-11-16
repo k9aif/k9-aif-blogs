@@ -9,7 +9,7 @@ tags: [K9-AIF, OpenAI Agents SDK, k9x Shield, Zero Trust, Model Router, governan
 <!-- DRAFT: describes the OpenAI Agents SDK adapter on k9-aif-framework main (commit 708ff14), planned for the
      k9-aif 1.27.0 release. Checked against openai-agents 0.24.0 on 2026-11-15.
      Before the go: fill the two RAVI placeholders; if 1.27.0 has shipped, change "planned" to shipped;
-     add the openai.k9x.ai link once it is live; set the date to the publish date. -->
+     set the date to the publish date. (openai.k9x.ai live and checked 2026-11-15.) -->
 
 <!-- RAVI: the real incident. For example, a team whose OpenAI agents and other agent stacks each had their own
      guardrails, and what that cost when policy changed or something got through. -->
@@ -18,8 +18,9 @@ My [September post](/k9-aif-with-crewai-langgraph-claude-agent-sdk/) put one gov
 LangGraph and the Claude Agent SDK. This one adds the **OpenAI Agents SDK**, and the result is stronger than the
 Claude case: the OpenAI SDK lets K9-AIF govern the model call as well as the actions.
 
-It isn't a design on paper. It's a small application you can download and run: give it a US zip code, and an
-OpenAI agent finds the weather while K9-AIF checks every step it takes.
+It isn't a design on paper. It's a small application you can try at **[openai.k9x.ai](https://openai.k9x.ai)**, or
+download and run: give it a US zip code, and an OpenAI agent finds the weather while K9-AIF checks every step it
+takes.
 
 ![The weather page: an OpenAI agent answers, and K9-AIF lists every check it ran](../assets/images/blogs/k9-aif-openai-weather-page.png)
 
@@ -192,7 +193,8 @@ result = adapter.execute({"message": "What is the weather in zip code 30301?",
                           "principal_id": "u1", "roles": ["customer"], "action_type": "weather.lookup"})
 ```
 
-To run it yourself, you need Python 3.11 and an Ollama server with `qwen2.5:7b`:
+Try it at [openai.k9x.ai](https://openai.k9x.ai) (demo login on the page). To run it yourself, you need
+Python 3.11 and an Ollama server with `qwen2.5:7b`:
 
 ```bash
 git clone https://github.com/k9aif/examples && cd examples/k9x_openai_bedrock/openai
@@ -220,6 +222,7 @@ cp env-example .env    # point OLLAMA_BASE_URL at your Ollama server
   [human in the loop](https://openai.github.io/openai-agents-python/human_in_the_loop/)
 - K. Muhi and R. Ramanujam, "Building agentic AI applications with OpenAI Agents SDK," Dynatrace, Aug. 2025:
   [dynatrace.com](https://www.dynatrace.com/news/blog/building-agentic-ai-applications-with-openai-agents-sdk/)
+- Live demo: [openai.k9x.ai](https://openai.k9x.ai)
 - The example: [github.com/k9aif/examples, k9x_openai_bedrock/openai](https://github.com/k9aif/examples/tree/main/k9x_openai_bedrock/openai)
 - The adapter: [k9-aif-framework, k9_aif_abb/k9_adapters/openai_agents](https://github.com/k9aif/k9-aif-framework/tree/main/k9_aif_abb/k9_adapters/openai_agents)
 - [K9-AIF with CrewAI, LangGraph and the Claude Agent SDK](/k9-aif-with-crewai-langgraph-claude-agent-sdk/)
