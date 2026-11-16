@@ -6,14 +6,6 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, OpenAI Agents SDK, k9x Shield, Zero Trust, Model Router, governance, Ollama]
 ---
-<!-- DRAFT: describes the OpenAI Agents SDK adapter on k9-aif-framework main (commit 708ff14), planned for the
-     k9-aif 1.27.0 release. Checked against openai-agents 0.24.0 on 2026-11-15.
-     Before the go: fill the two RAVI placeholders; if 1.27.0 has shipped, change "planned" to shipped;
-     set the date to the publish date. (openai.k9x.ai live and checked 2026-11-15.) -->
-
-<!-- RAVI: the real incident. For example, a team whose OpenAI agents and other agent stacks each had their own
-     guardrails, and what that cost when policy changed or something got through. -->
-
 My [September post](/k9-aif-with-crewai-langgraph-claude-agent-sdk/) put one governance layer across CrewAI,
 LangGraph and the Claude Agent SDK. This one adds the **OpenAI Agents SDK**, and the result is stronger than the
 Claude case: the OpenAI SDK lets K9-AIF govern the model call as well as the actions.
@@ -108,8 +100,6 @@ call fails closed. With the OpenAI SDK, that rule now covers an agent loop K9-AI
 The example runs with no OpenAI key at all: the SDK calls a local model on Ollama through its OpenAI-compatible
 API, and the router chooses between two local models. Only one of them is marked for tool calling, so it wins
 every time.
-
-<!-- RAVI: your opinion. Why does choosing every model under one policy matter to the enterprises you work with? -->
 
 ## Agents declared in YAML
 
