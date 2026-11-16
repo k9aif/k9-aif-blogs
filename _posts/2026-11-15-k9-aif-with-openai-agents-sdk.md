@@ -194,6 +194,19 @@ Tracing, the SDK's own or an OpenTelemetry backend, tells you what the agents di
 before they do it. The two fit together: every K9-AIF check is a trace event, and K9-AIF's `OTelMonitor` emits
 OpenTelemetry, so the checks can sit beside the agent traces in the same tool.
 
+## An outside view
+
+I asked Grok a one-line question, "compare openai agent sdk with k9x.ai k9-aif-framework", to see how the pairing
+looks from outside. It was fair to both sides. On the SDK: "Governance and enterprise controls are more DIY." On
+K9-AIF: a "steeper learning curve" and a "smaller community". And it arrived on its own at the design this post
+describes:
+
+> "Use K9-AIF as the architectural and governance layer, and implement specific agents or squads with the OpenAI
+> Agents SDK (or other runtimes) underneath."
+
+The full answer, with what I checked, is in
+[OpenAI Agents SDK and K9-AIF Compared — An Evaluation by Grok](/k9-aif-openai-agents-sdk-comparison-grok/).
+
 ## For developers
 
 ![OpenAI Agents SDK adapter class diagram](../assets/images/blogs/k9-aif-openai-agents-class.png)
