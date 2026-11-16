@@ -155,8 +155,8 @@ review an agent as one short file, and a change to it is a diff anyone can read.
 
 ## Generate it with K9X Studio
 
-You don't have to write this wiring by hand. In the next release of [K9X Studio](https://studio.k9x.ai), the visual
-builder for K9-AIF applications, Intake has an **Agent Framework** choice: K9-AIF native, OpenAI Agents SDK, CrewAI,
+You don't have to write this wiring by hand. In [K9X Studio](https://studio.k9x.ai), the visual builder for K9-AIF
+applications, Intake has an **Agent Framework** choice: K9-AIF native, OpenAI Agents SDK, CrewAI,
 LangGraph or the Claude Agent SDK.
 
 ![K9X Studio Intake: the Agent Framework choice, with OpenAI Agents SDK selected](../assets/images/blogs/k9x-studio-openai-intake.png)
@@ -171,6 +171,10 @@ The generated scaffold has one runtime module per squad that builds the OpenAI a
 `K9OpenAIAgentsAdapter`. The orchestrators still know only squads and check Zero Trust and Shield at the entry, and
 the requirements include the `openai-agents` extra. The same choice generates CrewAI crews, LangGraph graphs or
 Claude Agent SDK sessions instead, each wrapped by its own K9-AIF adapter and governed the same way.
+
+To try it, open the **Multi-agent** tab on [openai.k9x.ai](https://openai.k9x.ai) and download `project_spec.md`.
+Upload it in Studio's Intake: it selects the OpenAI Agents SDK and stages one squad of three OpenAI agents. The tab
+walks through the generated files and a real run of the result.
 
 ## What the run taught me
 
@@ -249,6 +253,8 @@ result = adapter.execute({"message": "What is the weather in zip code 30301?",
                           "principal_id": "u1", "roles": ["customer"], "action_type": "weather.lookup"})
 ```
 
+The adapter ships in k9-aif 1.27.0: `pip install "k9-aif[openai-agents]"`.
+
 Try it at [openai.k9x.ai](https://openai.k9x.ai) (demo login on the page). To run it yourself, you need
 Python 3.11 and an Ollama server with `qwen2.5:7b`:
 
@@ -263,7 +269,6 @@ cp env-example .env    # point OLLAMA_BASE_URL at your Ollama server
 - Hosted OpenAI tools can't be used through the adapter.
 - In `k9` mode, only OpenAI-compatible models with tool calling are eligible.
 - Resuming an OpenAI run after a person approves a held tool call isn't built yet.
-- The adapter is on the framework's main branch; it ships to PyPI in k9-aif 1.27.0 (planned).
 
 ---
 
