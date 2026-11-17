@@ -14,6 +14,12 @@ agent ships, and the attacks keep changing.
 In K9X, security is a loop with seven stages, and each stage has a tool behind it. The last stage feeds the first:
 this week's new attack becomes next release's control.
 
+It's an iterative way of working, the way enterprise architecture has always been done. We design and implement,
+release a **plateau**, and it goes on. A plateau is a stable, intermediate architectural state between the current
+state and the final goal (ArchiMate's term; TOGAF calls it a Transition Architecture). Nobody reaches the target
+architecture in one step, and with AI the target keeps moving, because the attacks keep changing. Each turn of the
+loop ships a plateau that is secure against what is known today, and the next turn raises it.
+
 ![The Secure AI Lifecycle: Design, Develop, Inspect, Attack, Release, Run, Watch](../assets/images/blogs/Agentic-Lifecycle-K9x-way.jpeg)
 
 Each stage answers one question:
@@ -73,8 +79,9 @@ got. Anything that gets through goes back to the architect to fix before release
 
 ## 5. Release
 
-The solution is recorded in the [K9X Enterprise Repository](https://repo.k9x.ai), which points to its
-implementation code. That's where approval lives. See
+Release is where a plateau becomes real. The solution is recorded in the
+[K9X Enterprise Repository](https://repo.k9x.ai), which points to its implementation code. That's where approval
+lives, and where each plateau can be traced back to the architecture it implements. See
 [TOGAF made real](/k9x-enterprise-repository-togaf-made-real/).
 
 Approval also has to hold after the fact. A locally served model can be pinned by its digest (k9-aif 1.18.6, Ollama
@@ -111,7 +118,8 @@ Design starts from, and every application built on K9-AIF gets the control with 
 pip install --upgrade k9-aif
 ```
 
-No team has to rediscover the attack on its own.
+No team has to rediscover the attack on its own. The next plateau starts where the last one ended, one step
+closer to the target, and the loop goes on.
 
 ## Try it
 
