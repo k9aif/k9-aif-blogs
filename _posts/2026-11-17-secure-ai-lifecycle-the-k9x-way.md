@@ -6,7 +6,7 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, K9X, k9x Shield, K9X Studio, K9X Inspector, K9X SATAN, K9X Sentinel, Enterprise Repository, OWASP]
 ---
-<!-- DRAFT: depends on k9-aif 1.27.0 (catalog 38 controls, 6 known gaps; Inspector 32 rules). Fill the two video links before go. -->
+<!-- DRAFT: depends on k9-aif 1.27.0 (catalog 38 controls, 6 known gaps; Inspector 32 rules). Video links filled. -->
 
 Most AI security advice covers one moment. A prompt filter. A red-team exercise the week before launch. Then the
 agent ships, and the attacks keep changing.
@@ -33,6 +33,9 @@ Each stage answers one question:
 | 5. Release | Who approves what goes out, and can it change after approval? | K9X Enterprise Repository |
 | 6. Run | What protects the application while it serves real requests? | k9x Shield, HIL, tracing |
 | 7. Watch | What about the attack that was invented this week? | K9X Sentinel |
+
+All of these tools are part of the [K9X Ecosystem](https://k9x.ai/ecosystem), and the
+[K9X Dashboard](https://dashboard.k9x.ai) shows them running.
 
 ## 1. Design
 
@@ -90,7 +93,7 @@ backend). If the model behind that name is swapped later, the application stops 
 
 As maturity grows, Enterprise Continuum can be added: reusable SBBs are promoted to ABBs for enterprise-wide reuse.
 
-<!-- RAVI: Video on Enterprise Repository & Continuum: replace with the YouTube URL (LinkedIn short link was lnkd.in/erSsRPpT). -->
+Video: [Enterprise Repository & Continuum](https://youtu.be/-6LHSormkGQ).
 
 ## 6. Run
 
@@ -123,5 +126,7 @@ closer to the target, and the loop goes on.
 
 ## Try it
 
-- 3-minute walkthrough: <!-- RAVI: replace with the YouTube URL (LinkedIn short link was lnkd.in/ebfiPphX). -->
+- [3-minute walkthrough](https://youtu.be/uXv8gF3xiXc)
+- [K9X Ecosystem](https://k9x.ai/ecosystem): every tool in this post, and what else is built on K9-AIF
+- [K9X Dashboard](https://dashboard.k9x.ai): the live view of the hosted K9X components
 - [k9x.ai](https://k9x.ai) · `pip install k9-aif` · [github.com/k9aif](https://github.com/k9aif)
