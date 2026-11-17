@@ -6,7 +6,6 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, K9X, k9x Shield, K9X Studio, K9X Inspector, K9X SATAN, K9X Sentinel, Enterprise Repository, OWASP]
 ---
-<!-- DRAFT: depends on k9-aif 1.27.0 (catalog 38 controls, 6 known gaps; Inspector 32 rules). Video links filled. -->
 
 Most AI security advice covers one moment. A prompt filter. A red-team exercise the week before launch. Then the
 agent ships, and the attacks keep changing.
