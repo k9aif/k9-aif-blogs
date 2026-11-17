@@ -4,8 +4,15 @@ title: "K9-AIF and the OpenAI Agents SDK: Governance That Reaches the Model Call
 date: 2026-11-15
 author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
-tags: [K9-AIF, OpenAI Agents SDK, k9x Shield, Zero Trust, Model Router, governance, Ollama]
+tags: [K9-AIF, OpenAI Agents SDK, k9x Shield, Zero Trust, Model Router, governance, Ollama, K9X HIL]
 ---
+<!-- DRAFT (update of the published post): depends on k9-aif 1.28.0 (K9OpenAIAgent), Studio f03dcf9, openai.k9x.ai 8a44ec6. RAVI: retake the Studio canvas screenshot after the Studio rebuild. -->
+
+> **Updated 2026-11-17 (k9-aif 1.28.0).** Several OpenAI agents now run the K9-AIF way by default: each agent is
+> an individual, runnable step, and the squad runs them in a known sequence. Handoffs stay available as an opt-in.
+> New sections: [The K9-AIF way, kept](#the-k9-aif-way-kept-the-squad-decides) and
+> [Human in the loop](#human-in-the-loop-the-sdks-interrupt-k9x-hils-desk).
+
 The OpenAI Agents SDK makes it easy to build an agent. An enterprise then has to answer harder questions about
 it: who may run it, what it may read and do, which models it may use, and how all of that stays the same across
 every team and every agent framework in the company. **K9-AIF** is an open-source framework built for those
@@ -161,20 +168,22 @@ LangGraph or the Claude Agent SDK.
 
 ![K9X Studio Intake: the Agent Framework choice, with OpenAI Agents SDK selected](../assets/images/blogs/k9x-studio-openai-intake.png)
 
-Choose the OpenAI Agents SDK and every squad runs as a small group of OpenAI agents: the squad's first agent is the
-entry agent, and its squad-mates become its handoffs. The canvas shows it. In the Customer Service template below,
-TriageSquad and ResolutionSquad have two agents each, and each orchestrator carries the adapter that wraps them.
+Choose the OpenAI Agents SDK and, by default, every agent becomes an OpenAI agent that its squad runs as one step,
+in the order of the squad's flow (more on that [below](#the-k9-aif-way-kept-the-squad-decides)). Studio generates one
+empty class per agent (`class WeatherAgent(K9OpenAIAgent): pass`), its YAML, and a squad YAML with the flow and
+`synthesis: auto`. If the design spec says `**Agent Routing:** handoffs`, Studio generates a handoff group instead:
+the squad's first agent becomes the entry agent and its squad-mates its handoffs, wrapped by `K9OpenAIAgentsAdapter`.
 
-![K9X Studio canvas: orchestrators badged K9OpenAIAgentsAdapter, squads running as Runner plus handoffs](../assets/images/blogs/k9x-studio-openai-canvas.png)
+<!-- RAVI: retake the canvas screenshot (k9x-studio-openai-canvas.png) after the Studio rebuild: the squads now read "Squad of OpenAI agents". -->
 
-The generated scaffold has one runtime module per squad that builds the OpenAI agents from their YAML and returns
-`K9OpenAIAgentsAdapter`. The orchestrators still know only squads and check Zero Trust and Shield at the entry, and
-the requirements include the `openai-agents` extra. The same choice generates CrewAI crews, LangGraph graphs or
-Claude Agent SDK sessions instead, each wrapped by its own K9-AIF adapter and governed the same way.
+Either way, the orchestrators still know only squads and check Zero Trust and Shield at the entry, and the
+requirements include the `openai-agents` extra. The same choice generates CrewAI crews, LangGraph graphs or Claude
+Agent SDK sessions instead, each wrapped by its own K9-AIF adapter and governed the same way.
 
-To try it, open the **Multi-agent** tab on [openai.k9x.ai](https://openai.k9x.ai) and download `project_spec.md`.
-Upload it in Studio's Intake: it selects the OpenAI Agents SDK and stages one squad of three OpenAI agents. The tab
-walks through the generated files and a real run of the result.
+To try it, open the **Multi-agent** tab on [openai.k9x.ai](https://openai.k9x.ai) and download `design_spec.md`,
+the design specification a development team would get. Upload it in Studio's Intake: it selects the OpenAI Agents
+SDK with sequence routing and stages one squad of three OpenAI agents. The live demo itself runs one agent; the
+multi-agent version is an exercise, and the tab walks through the generated files and a real run of the result.
 
 ## What the run taught me
 
@@ -204,12 +213,110 @@ code "makes tasks more deterministic and predictable, in terms of speed, cost an
 
 | Work | Use |
 |---|---|
-| A known process: intake, check, decide, act, notify | A K9 squad: the flow is declared, each agent is governed, a failure stops at a named step |
+| A known process: intake, check, decide, act, notify | A K9 squad, with OpenAI agents as its steps if you like: the flow is declared, each agent is governed, a failure stops at a named step |
 | One step that needs the model to delegate | The OpenAI adapter with handoffs, capped at three agents by default |
 | Both | The Router sends each `event_type` to its own orchestrator |
 
 Governance isn't the black box: every call is still checked, and every check is a K9-AIF trace event. The order
 of work is what you give up, and a squad keeps it.
+
+## The K9-AIF way, kept: the squad decides
+
+Personally, I don't let a model decide which agent runs next. In K9-AIF a squad stays small, five agents at most,
+runs them in the order the architecture sets, and a synthesis step can combine their results. That is the K9-AIF
+way, and k9-aif 1.28.0 keeps it for OpenAI agents too.
+
+`K9OpenAIAgent` makes each OpenAI agent an individual, runnable K9-AIF agent. The squad runs them in the order of
+its `flow:`, with its `synthesis:` setting, exactly as it runs any other agents. The OpenAI Agents SDK runs one
+agent's turn at a time, and is never asked what runs next:
+
+```python
+# squad_agents/weather_agent.py: the whole class
+class WeatherAgent(K9OpenAIAgent):
+    pass
+```
+
+```yaml
+# squads/yaml/weather_desk_intelligence_squad.yaml
+WeatherDeskIntelligenceSquad:
+  agents: [FrontDeskAgent, WeatherAgent, AttireAdvisorAgent]
+  synthesis: auto
+  flow:
+    - agent: FrontDeskAgent        # what does the visitor need?
+    - agent: WeatherAgent          # current_weather tool
+    - agent: AttireAdvisorAgent    # the final answer
+```
+
+Each step reads the request plus what earlier steps produced, or the squad's governed digest once those results
+grow large. Each step is governed like any K9-AIF agent: Shield on its input and output by construction, the same
+K9 guardrails on every tool call and result, and the K9 Model Router choosing its model. An agent YAML that lists
+`handoffs:` for a squad step is refused at start-up.
+
+The tests run the SDK's real `Runner` with its scripted model and check what the model was actually offered
+(`tests/test_openai_agent_squad.py`): no handoff to any agent, the flow's order, the same path for the same input,
+earlier results or the digest in each step's input, and governance at every step. Then I ran it for real: the
+Multi-agent exercise on [openai.k9x.ai](https://openai.k9x.ai), generated by Studio and run against a local model.
+All three agents ran, in order, every step and the tool call were screened, and no `transfer_to_` tool appeared
+anywhere in the run.
+
+The contrast was the useful part. An earlier version of the same exercise generated a handoff group. There, the
+front desk handed the question to WeatherAgent, which answered the jacket question itself, so **AttireAdvisorAgent
+never ran**. Nothing failed; the model just chose a shorter path. With the squad, every step the design names
+runs, every time.
+
+Handoffs are still there. The OpenAI SDK's [guide](https://openai.github.io/openai-agents-python/multi_agent/)
+presents both ways, and some work really is open-ended: a front desk taking free-form questions, where picking the
+specialist is the job. For that, the design spec says `**Agent Routing:** handoffs`, and the handoff group stays
+governed: Zero Trust on every agent's turn, Shield on every call and reply, and a cap on how many agents a run can
+reach. Dropping handoffs wouldn't remove the pattern from anyone's toolbox, only the governance around it. Making
+them the default would make the unpredictable path the easy one. So the decision is written in the design spec,
+where an architect reviews it.
+
+| | K9-AIF squad (default) | Handoffs (opt-in) |
+|---|---|---|
+| Who picks the next agent | The squad's flow | The model, from the agents' descriptions |
+| Same input, same path | Yes | Not guaranteed |
+| Synthesis | The squad's `synthesis:` | None |
+| Zero Trust | At the orchestrator | Also on every agent's turn |
+| Design spec | `Agent Routing: sequence` (or nothing) | `Agent Routing: handoffs` |
+
+## Human in the loop: the SDK's interrupt, K9X HIL's desk
+
+The OpenAI Agents SDK does human-in-the-loop as interrupt and resume, not as a blocking wait
+([human in the loop](https://openai.github.io/openai-agents-python/human_in_the_loop/)). A tool marked
+`needs_approval` pauses the run; the paused calls are in `result.interruptions`; `result.to_state()` gives the run
+state, `state.to_string()` saves it, and later `RunState.from_string(agent, saved)` restores it, `state.approve()`
+or `state.reject()` records the decision, and `Runner.run(agent, state)` continues where it stopped. The SDK is
+headless: it has no task queue, no screen, no sign-in, no roles, no deadlines and no audit trail. That is left to
+whoever uses it.
+
+K9X HIL is that part, out of the box. It is Kafka-native case management: Project, Application, Queue (a Kafka
+topic), Task; a web UI with sign-in; the role a task needs before anyone may decide it (worker, manager, admin);
+a deadline per queue with the action when it passes; and the decider and their role recorded and sent back with
+the decision. So the two fit: the SDK knows how to pause and resume, and K9X HIL knows how to put the decision in
+front of the right person.
+
+![The OpenAI Agents SDK's pause and resume, connected to K9X HIL through the orchestrator and Kafka](../assets/images/blogs/openai_hil_k9x.png)
+
+The connection follows K9-AIF's rules for HIL. The agent never publishes anything: it saves the run state and
+raises `RequiresHIL`, which propagates through the squad to the orchestrator. The orchestrator publishes
+`hil.requests.<queue>` through `BaseHILOrchestrator`, stores the resume payload, and returns `pending_hil` at once,
+because a review can take hours. K9X HIL turns the request into a task; a reviewer with the right role signs in,
+claims it and decides. The reply comes back on `hil.replies.*` to the Router, which resumes the flow exactly once,
+and the paused step restores the run state, applies the decision and lets the Runner continue. The tool call and
+its result are still screened when it runs.
+
+What ships today, and what is next:
+
+| Piece | Status |
+|---|---|
+| A held tool call becomes a K9X HIL task (the tool gate's `ToolCallPendingReview`, a `RequiresHIL`), and after approval the orchestrator runs the stored call (`resume_tool_call()`) | Shipped, k9-aif 1.25.0 |
+| `RequiresHIL` raised inside an OpenAI tool keeps its type, so the orchestrator sees the review | Shipped, k9-aif 1.27.0 |
+| Kafka round trip: `hil.requests.*` → K9X HIL → `hil.replies.*` → Router resumes exactly once | Shipped (1.23 delivery fixes) |
+| The SDK's own `needs_approval` pause saved with the HIL task, and the OpenAI run resumed from its saved state after the decision | Planned, k9-aif 1.29.0 |
+
+Today an approved call runs, but the OpenAI agent's loop doesn't continue from where it stopped; that is the
+piece 1.29.0 adds, as drawn above.
 
 ## Observability and governance are different jobs
 
@@ -253,7 +360,8 @@ result = adapter.execute({"message": "What is the weather in zip code 30301?",
                           "principal_id": "u1", "roles": ["customer"], "action_type": "weather.lookup"})
 ```
 
-The adapter ships in k9-aif 1.27.0: `pip install "k9-aif[openai-agents]"`.
+The adapter ships in k9-aif 1.27.0, and `K9OpenAIAgent` (OpenAI agents as squad steps) in 1.28.0:
+`pip install "k9-aif[openai-agents]"`.
 
 Try it at [openai.k9x.ai](https://openai.k9x.ai) (demo login on the page). To run it yourself, you need
 Python 3.11 and an Ollama server with `qwen2.5:7b`:
@@ -268,7 +376,8 @@ cp env-example .env    # point OLLAMA_BASE_URL at your Ollama server
 
 - Hosted OpenAI tools can't be used through the adapter.
 - In `k9` mode, only OpenAI-compatible models with tool calling are eligible.
-- Resuming an OpenAI run after a person approves a held tool call isn't built yet.
+- Resuming an OpenAI run from its saved state after a person decides in K9X HIL is planned for k9-aif 1.29.0
+  (see [Human in the loop](#human-in-the-loop-the-sdks-interrupt-k9x-hils-desk)).
 
 ---
 
@@ -286,6 +395,8 @@ cp env-example .env    # point OLLAMA_BASE_URL at your Ollama server
 - Live demo: [openai.k9x.ai](https://openai.k9x.ai)
 - The example: [github.com/k9aif/examples, k9x_openai_bedrock/openai](https://github.com/k9aif/examples/tree/main/k9x_openai_bedrock/openai)
 - The adapter: [k9-aif-framework, k9_aif_abb/k9_adapters/openai_agents](https://github.com/k9aif/k9-aif-framework/tree/main/k9_aif_abb/k9_adapters/openai_agents)
+- `K9OpenAIAgent`: [k9_openai_agent.py](https://github.com/k9aif/k9-aif-framework/blob/main/k9_aif_abb/k9_adapters/openai_agents/k9_openai_agent.py), tests in [test_openai_agent_squad.py](https://github.com/k9aif/k9-aif-framework/blob/main/k9_aif_abb/tests/test_openai_agent_squad.py)
+- K9X HIL: [hil.k9x.ai](https://hil.k9x.ai)
 - [K9-AIF with CrewAI, LangGraph and the Claude Agent SDK](/k9-aif-with-crewai-langgraph-claude-agent-sdk/)
 - [Claude Agent SDK in K9-AIF: Govern What It Does, Not How It Thinks](/claude-agent-sdk-governance-boundary/)
 - [The Agent Hijacking That Passes Every Check](/the-agent-hijacking-that-passes-every-check/)

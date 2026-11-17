@@ -1,0 +1,36 @@
+@startuml openai_hil_k9x
+title OpenAI Agents SDK human-in-the-loop, connected to K9X HIL
+
+participant "K9EventRouter" as R
+participant "Orchestrator" as O
+participant "Squad" as S
+participant "K9OpenAIAgent\n(one squad step)" as A
+participant "OpenAI Runner\n(SDK)" as RUN
+queue "Kafka" as K
+participant "K9X HIL" as H
+actor "Reviewer" as P
+
+R -> O : event
+O -> S : run squad
+S -> A : step
+A -> RUN : Runner.run(agent, prompt)
+RUN --> A : paused: result.interruptions\n(tool marked needs_approval)
+A -> A : state = result.to_state()\nsaved with state.to_string()
+A --> S : raise RequiresHIL(run state, tool call)
+S --> O : RequiresHIL propagates
+O -> K : hil.requests.<queue>\n(via BaseHILOrchestrator; hil_pending row stored)
+O --> R : status pending_hil (never blocks)
+
+K -> H : task: queue, role, deadline
+P -> H : sign in, claim, decide
+H -> K : hil.replies.<queue>\n(approve or reject, actor, role)
+K -> R : reply (correlation_id)
+R -> O : route(resume payload + hil_decision)
+O -> S : run squad (resume)
+S -> A : the paused step
+A -> A : RunState.from_string(agent, saved)\nstate.approve(item) or state.reject(item)
+A -> RUN : Runner.run(agent, state)
+RUN --> A : continues where it stopped\n(tool call and result still screened)
+A --> S : output
+S --> O : result
+@enduml
