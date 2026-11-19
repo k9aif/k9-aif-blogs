@@ -6,3 +6,4 @@ permalink: /:title/
 
 exclude:
   - CLAUDE.md
+  - _archive   # posts taken off the site; kept for the record, never built
