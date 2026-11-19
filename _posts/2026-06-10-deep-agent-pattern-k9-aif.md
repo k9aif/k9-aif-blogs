@@ -52,7 +52,7 @@ Having said this, let's see how the four Deep Agent pillars map onto this model.
 |---|---|---|---|
 | 1 | Detailed system prompt | `role` / `goal` fields in agent YAML (Skill 1, every `BaseAgent`) — declarative, not hand-rolled per agent | **Already covered** |
 | 2 | Planning tool (todo list) | *(nothing — until today)* | **Real gap → closed by `K9PlanningLoopAgent`** |
-| 3 | Sub-agent context isolation | `K9AgentSpawner` / `ChildAgent` exists for parallel decomposition — but does **not** isolate context from the parent's reasoning chain | **Deliberately different** (see below) |
+| 3 | Sub-agent context isolation | Not provided: agents in a squad share one context, and K9-AIF has no sub-agent spawning | **Deliberately different** (see below) |
 | 4 | Virtual filesystem / memory | `notes: dict` scratchpad in `ValidationLoopContext`, persisted via `models/` to the routing state store / Neo4j | **Adopted, in lightweight form** |
 
 Three of four were either already covered or a conscious "different by design." Planning was the one real gap.
@@ -86,8 +86,6 @@ The Deep Agent pattern isolates sub-agents on purpose: clean context in, summary
 K9-AIF's `BaseSquad` does close to the opposite, on purpose: each agent in a flow enriches the *same* shared context. By the time `AuditAgent` runs, it can see the triage agent's reasoning, the fraud agent's findings, and the adjudication agent's conclusion — not a one-line summary of each.
 
 That full trail is the point. "We approved this claim because Triage flagged X, FraudDetection found Y, Adjudication weighed Z — and here's the reasoning behind each" is the answer an audit needs verbatim. A summarized sub-agent report can't reconstruct that; full shared context can.
-
-`K9AgentSpawner` / `ChildAgent` *is* isolated — for parallel work, no shared mutable state, no race conditions — but that's solving concurrency safety, not "keep context off the audit trail." Two different problems; K9-AIF already has an ABB for each, and isolating one didn't require isolating the other.
 
 ---
 
@@ -145,7 +143,7 @@ Both were deliberately written as **LLM-agnostic context files** — no Claude-s
 
 ## Takeaway
 
-Most of "Deep Agent" was already in K9-AIF, under different names — `role`/`goal` is the system prompt, the squad's shared context is the working memory, `K9AgentSpawner` is the sub-agent mechanism. One piece was a genuine gap, and it's closed now: `K9PlanningLoopAgent` gives agents a self-revising plan and scratchpad, the same way `K9ValidationLoopAgent` gives them confidence-driven convergence. Two OOB "brains," one ABB skeleton, and the SA picks per agent — that's the architecture, and it's additive all the way down.
+Most of "Deep Agent" was already in K9-AIF, under different names — `role`/`goal` is the system prompt, the squad's shared context is the working memory. One piece was a genuine gap, and it's closed now: `K9PlanningLoopAgent` gives agents a self-revising plan and scratchpad, the same way `K9ValidationLoopAgent` gives them confidence-driven convergence. Two OOB "brains," one ABB skeleton, and the SA picks per agent — that's the architecture, and it's additive all the way down.
 
 ---
 
