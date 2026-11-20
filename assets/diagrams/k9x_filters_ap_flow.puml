@@ -1,0 +1,56 @@
+@startuml k9x_filters_ap_flow
+title An AP payment on K9-AIF with OpenAI agents: built today, and the last check designed
+
+actor "AP clerk\n(page)" as Clerk
+participant "K9EventRouter" as Router
+queue "Kafka\n(Redpanda)" as Kafka
+participant "APOrchestrator" as Orch
+participant "Squad\nap_invoice" as Squad
+participant "InvoiceAgent\n(OpenAI agent)" as Inv
+participant "APRulesAgent\n(K9X Rules Engine)" as Rules
+participant "PaymentAgent\n(OpenAI agent)" as Pay
+participant "K9X HIL" as HIL
+actor "Approver" as Appr
+participant "k9x Origin\n(over MCP)" as Origin
+database "Systems of record" as SoR
+
+Clerk -> Router : invoice
+Router -> Kafka : openai.ap.in
+Kafka -> Orch : execute_flow (Zero Trust)
+Orch -> Squad : run ap_invoice
+Squad -> Inv : execute(payload)
+note right of Inv
+  k9x Shield, then Guardian, then the OpenAI run
+  (planned on this page: K9X Filters in first,
+  text_normalize; measured below)
+end note
+Inv --> Squad : vendor, invoice, amount
+Squad -> Rules : facts
+Rules --> Squad : needs_approval
+Squad -> Pay : execute
+Pay -> Pay : pay_invoice needs approval:\nthe OpenAI run pauses
+Pay --> Squad : RequiresHIL
+Squad --> Orch : RequiresHIL
+Orch -> Kafka : hil.requests.openai-ap-payments
+Kafka -> HIL : review task (invoice PDF)
+Appr -> HIL : Approve
+HIL -> Kafka : hil.replies.openai-ap-payments
+Kafka -> Router : reply (claimed once)
+Router -> Orch : resume
+Orch -> Squad : resume at PaymentAgent
+Squad -> Pay : continue the paused run
+
+== Designed for this demo (the framework part is built and shown in K9X Streams) ==
+
+Pay -> Origin : get_current(vendor), get_current(invoice)\n(verify against the system of record)
+Origin -> SoR : read-through / verify
+Origin --> Pay : facts with as_of, version, flags
+Pay -> SoR : pay_invoice MCP tool\n(..., vendor_version, invoice_version)
+alt versions unchanged, no hold
+  SoR --> Pay : paid
+else changed, or a hold placed
+  SoR --> Pay : refused: what changed
+  Pay --> Squad : not paid
+  Squad --> Orch : a new review
+end
+@enduml
