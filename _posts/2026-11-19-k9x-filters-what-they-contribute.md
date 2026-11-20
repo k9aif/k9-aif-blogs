@@ -23,21 +23,9 @@ It is the shape of the Chain of Responsibility pattern, applied to what an agent
 
 <!-- RAVI: one or two sentences on why the chain idea stuck with you (where you've used it before). -->
 
-K9-AIF already had a chain: [k9x Shield's chain of vulnerability
-tests](/k9x-shield-chain-of-vulnerability-tests/). The two are the same pattern, applied at different
-stages of an agent call: the filter chain runs first and shapes what passes, then Shield's chain screens
-the result. Each stage gives its links a different job:
-
-| | k9x Shield's chain | K9X Filters' chain |
-|---|---|---|
-| Stage | governance pre and post, after the filters | first in, and first on the way out |
-| Each link | checks, and may stop everything | changes what passes, then always hands it on |
-| Outcome | allow or block | a cleaner payload, and a record of what changed |
-| Changes the payload | never | that is its job |
-| A link that wants to block | that is its job | not allowed: it belongs in Shield |
-
-Governance asks "is this allowed?". A filter asks "is this in the right shape?". Shield, Granite Guardian
-and Zero Trust decide; filters transform.
+A filter changes what passes through an agent: it removes, normalizes, labels, ranks or attaches. It
+never blocks, and every change it makes is recorded. Each filter does one job, so the chain grows one
+filter at a time.
 
 ## The chain of filters
 
