@@ -190,7 +190,7 @@ the same chain can run inside their own loop: the OpenAI Agents SDK's `RunConfig
 ([openai-agents-python](https://github.com/openai/openai-agents-python), `agents/run_config.py`), before
 each model call, and the Claude Agent SDK's `PostToolUse` hook with `updatedToolOutput`
 ([claude-agent-sdk-python](https://github.com/anthropics/claude-agent-sdk-python), `types.py`), on each
-tool result. The framework's adapters will use them, so a solution gets the same filters, from the same
+tool result. Using them in the framework's adapters is planned for a later version, so a solution gets the same filters, from the same
 configuration, whichever SDK runs the agents.
 
 ## Limits
