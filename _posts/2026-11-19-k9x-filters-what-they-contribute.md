@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "K9X Filters: What They Contribute to Every Agent"
+title: "K9X Filters: A Chain of Filters and How It Contributes"
 date: 2026-11-19
 author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
@@ -19,11 +19,13 @@ approved on facts that had changed, text slipping past a check. Two or three sen
 This started with a pattern, not a feature. I kept thinking about a chain of filters: each one does one
 small job on what passes through, hands it to the next, and a new one can be added to the chain without
 touching the others. Attention first, then formatting, then whatever the next real problem turns out to be.
+It is the shape of the Chain of Responsibility pattern, applied to what an agent receives and returns.
 
 <!-- RAVI: one or two sentences on why the chain idea stuck with you (where you've used it before). -->
 
 K9-AIF already had a chain: [k9x Shield's chain of vulnerability
-tests](/k9x-shield-chain-of-vulnerability-tests/). The difference between the two chains is the whole design:
+tests](/k9x-shield-chain-of-vulnerability-tests/), the classic form: a handler that blocks ends the chain.
+The filter chain keeps the links and the open end but changes one rule, and that rule is the whole design:
 
 | | k9x Shield's chain | K9X Filters' chain |
 |---|---|---|
