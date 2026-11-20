@@ -183,24 +183,15 @@ So a stop is written to the system of record and published as an event. The syst
 withholding certain; the stream makes it visible early. For the openai.k9x.ai demo this last part is
 designed, not built; the framework pieces it uses are.
 
-## What the agent SDKs offer
+## Where filters go next
 
-Both SDKs have a hook in this area, and both keep blocking and changing apart, the same split as above.
-
-| | OpenAI Agents SDK 0.24 | Claude Agent SDK 0.2 | K9X Filters |
-|---|---|---|---|
-| Block | input, output and tool guardrails (a tripwire stops the run) | `PreToolUse` deny, `UserPromptSubmit` block | Shield, Guardian, Zero Trust |
-| Change what the model sees | `RunConfig.call_model_input_filter`, a function you write, before each model call | `PreToolUse` `updatedInput`, `PostToolUse` `updatedToolOutput` | the filter chain |
-| Where it lives | code, per run | code, per session | configuration, every agent |
-| Ships with implementations | handoff filters | none | four |
-
-Sources: [openai-agents-python](https://github.com/openai/openai-agents-python) (`agents/run_config.py`),
-[claude-agent-sdk-python](https://github.com/anthropics/claude-agent-sdk-python) (`types.py`).
-
-What K9-AIF adds is everything around the hook: a chain in configuration, applied to every agent, with
-filters that use what the framework already knows (Origin's facts, an agent's declared parts) and a record
-of every change. The two hooks are also where the filters go next: OpenAI's model-input filter and
-Claude's tool-output hook let the framework's adapters run the same chain inside each SDK's own loop.
+Today the chain runs at each agent's input and output. Both agent SDKs K9-AIF wraps have a point where
+the same chain can run inside their own loop: the OpenAI Agents SDK's `RunConfig.call_model_input_filter`
+([openai-agents-python](https://github.com/openai/openai-agents-python), `agents/run_config.py`), before
+each model call, and the Claude Agent SDK's `PostToolUse` hook with `updatedToolOutput`
+([claude-agent-sdk-python](https://github.com/anthropics/claude-agent-sdk-python), `types.py`), on each
+tool result. The framework's adapters will use them, so a solution gets the same filters, from the same
+configuration, whichever SDK runs the agents.
 
 ## Limits
 
