@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "K9X Filters: A Chain That Shapes What Every Agent Receives"
+title: "K9X Filters: What They Contribute to Every Agent"
 date: 2026-11-19
 author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
@@ -14,7 +14,7 @@ Origin answer is labelled, not removed) is released, or the attention paragraph 
 <!-- RAVI: the opening. A real moment you saw: an agent working from the wrong or stale context, a payment
 approved on facts that had changed, text slipping past a check. Two or three sentences in your words. -->
 
-## A chain you keep adding to
+## Filters
 
 This started with a pattern, not a feature. I kept thinking about a chain of filters: each one does one
 small job on what passes through, hands it to the next, and a new one can be added to the chain without
@@ -35,7 +35,9 @@ tests](/k9x-shield-chain-of-vulnerability-tests/). The difference between the tw
 Governance asks "is this allowed?". A filter asks "is this in the right shape?". Shield, Granite Guardian
 and Zero Trust decide; filters transform.
 
-## Where the chain runs
+## The chain of filters
+
+### Where it runs
 
 The idea became a change to the framework itself, in the same pattern the framework already uses for
 governance. K9-AIF wraps every agent's `execute()` when the class is defined, so governance runs without
@@ -55,7 +57,7 @@ Two choices in that line matter:
 
 It is off unless the application turns it on, and then every agent gets it, from configuration.
 
-## The classes
+### The classes
 
 ![K9X Filters classes](../assets/images/blogs/k9x_filters_class.png)
 
@@ -87,7 +89,7 @@ Two rules come with it. A filter never blocks: if one raises a permission error,
 filter error, because blocking is Shield's job. And a filter never fails quietly: if it can't do its job,
 the agent fails, like any other agent failure.
 
-## What ships
+### What ships
 
 | Filter | Direction | What it does |
 |---|---|---|
@@ -119,7 +121,9 @@ agent_filters:
     required: [decision, reason]
 ```
 
-## What the first filter found
+## How it contributes
+
+### What the first filter found
 
 Building `text_normalize` turned up a real gap. Shield's `PromptInjectionCheck` blocks "ignore all previous
 instructions". It did not block the same words with a zero-width space inside one of them, in fullwidth
@@ -147,7 +151,7 @@ first, in no time, the same way every run, and the record says exactly what was 
 Shield's own checks should not depend on a filter being switched on. Normalizing inside Shield's checks
 is planned for 1.33.0.
 
-## A critical task: an AP payment, end to end
+### A critical task: an AP payment, end to end
 
 Accounts payable is where this has to hold. Here is the payment flow with OpenAI agents, governance on,
 and a person approving through K9X HIL:
