@@ -90,9 +90,56 @@ the agent fails, like any other agent failure.
 | `json_output` | out | the JSON in the model's reply, validated, or a recorded failure |
 | `provenance` | in + out | `sources` on the result, from the k9x Origin facts the agent was given |
 
-`attention` replaces a line many agents carry, `context = source[:8000]`, which keeps whatever came first
-and records nothing about the rest. The labels come from the agent's YAML, never from the request, so a
-caller can't mark its own email as trusted.
+#### text_normalize: the same text for the check and the model
+
+A pattern check compares characters; a model reads meaning. "Ignore all previous instructions" with a
+zero-width space inside "ignore", or written in fullwidth letters, looks the same on screen and reads the
+same to a model, but it isn't the characters a pattern looks for. For every string in the payload,
+nested ones included, this filter:
+
+- applies Unicode NFKC, so fullwidth and other look-alike letters become plain ones;
+- removes invisible format characters: zero-width spaces and joiners, the word joiner, invisible
+  operators, the byte-order mark, and bidirectional overrides;
+- reveals Unicode tag characters (invisible copies of the alphabet that models can read) as the text they
+  hide, so it is screened and shows up in the log. `tag_chars: strip` removes them instead.
+
+It runs first, so every filter and check after it sees what the model will see. Persian, Indic scripts
+and emoji sequences use the zero-width joiners legitimately; `keep_joiners: true` keeps them.
+
+#### attention: what reaches the model, decided on purpose
+
+Many agents cut their context blind: `context = source[:8000]`. Whatever came first stays, the policy at
+the end may be gone, and nothing records it. The attention filter works from parts the agent declares in
+its YAML:
+
+- **pinned** parts (the policy, the task) are never cut. If they alone exceed the budget, the agent fails
+  instead of running on half a policy.
+- **retrieved** chunks are scored against the question (the share of its words they contain), near
+  copies are removed, and the best are kept until the token budget is full.
+- **untrusted** parts (a vendor's email, a web page) are labelled untrusted and count against the budget,
+  or a budget of their own. One that doesn't fit fails the agent, unless the YAML says to truncate it.
+
+Each part's role and trust go into `_attention` next to the payload; the values themselves aren't
+rewritten, so the agent's own parsing still works. The labels come from the agent's YAML; a
+`_attention` sent by the caller is replaced, so a caller can't mark its own email as trusted. The record
+says what was dropped and why, with token counts before and after.
+
+#### json_output: a validated answer, or a recorded failure
+
+Models wrap JSON in code fences, put prose around it, or return something close to JSON, and every
+application writes its own extractor. For an agent with a `json_output` section, this filter finds the
+JSON (the whole reply, then a fenced block, then the first object inside prose), checks the type and
+required keys, or a full JSON Schema, and hands the next step the parsed value. No JSON, or JSON that
+fails the check, fails the step with the reason. The raw text is never passed on as if it were the
+result.
+
+#### provenance: the answer carries its evidence
+
+When an agent is given facts from k9x Origin, each one has a source, an `as_of` time, a version and
+flags. On the way in, this filter notes them (after attention, so a dropped part isn't cited). On the
+way out, it adds `sources` next to the output: one entry per fact, with where it came from, how fresh it
+was, and any flag such as `in_review`. The output itself is unchanged, and `sources` is screened by
+governance like the output.
 
 Configuration, in the application and in one agent's YAML:
 
