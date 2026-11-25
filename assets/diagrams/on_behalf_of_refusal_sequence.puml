@@ -15,6 +15,7 @@ R -> R : admit(): verify, keep token,\nsign identity (hacker)
 R -> O : route(payload)
 O -> S : execute_squads()\n(caller = hacker)
 S -> A : execute()
+A -> A : llm_invoke(): the model picks\n"get_admin_access_code"
 A -> C : call_tool("get_admin_access_code")
 C -> KC : token exchange (RFC 8693)
 KC --> C : token: hacker, aud = MCP server

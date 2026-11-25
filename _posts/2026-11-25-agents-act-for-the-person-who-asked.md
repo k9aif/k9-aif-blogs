@@ -11,7 +11,7 @@ Before the go: (1) optional RAVI placeholders; (2) GitHub release published, add
 
 Security is the conversation in the AI world right now. One item on my security to-do list has been
 this: when an agent calls a tool for someone, the tool should know who that someone is. With K9-AIF
-1.36.0 that item is done and in the framework.
+1.36.0 that item is done for MCP calls and in the framework.
 
 ## From the sign-in to the tool
 
@@ -42,14 +42,14 @@ The principle behind it is simple: an agent should never be able to do more than
    token is short-lived, addressed to that one server, and names the person.
 4. **The MCP server decides.** It validates the token itself and applies the person's roles.
 
-The whole application is one client in Keycloak. The token says "this application, acting for John";
-K9-AIF records which agent made the call in an `OnBehalfOf` log line and trace event.
+The whole application is one client in Keycloak. The token says "this application (`azp`), acting for
+John (`sub`)"; K9-AIF records which agent made the call in an `OnBehalfOf` log line and trace event.
 
-Why not simply forward the person's login token? Its audience is the application, not the MCP server, so a
-correct server rejects it, and the [MCP authorization
-specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization) forbids
-passing tokens through. In the test below, a forwarded login token got exactly that answer: "Audience
-doesn't match."
+Why not simply forward the person's login token? Its audience is the application, not the MCP server. The
+[MCP authorization specification](https://modelcontextprotocol.io/specification/2025-06-18/basic/authorization)
+(version 2025-06-18) requires a server to accept only tokens issued for itself and forbids token
+passthrough. When I sent the demo's MCP server a forwarded login token by hand, it answered exactly that:
+"Audience doesn't match."
 
 ## Turning it on
 
@@ -97,10 +97,13 @@ on_behalf_of:
 | Router                           | Routes the stamped payload; never sees the token               | `K9_IDENTITY_SECRET`                                                    |
 | Orchestrator                     | Runs the agents; reads the token by reference and exchanges it | `K9_IDENTITY_SECRET`, Redis, `KEYCLOAK_URL`, `K9_OBO_CLIENT_SECRET` |
 
-Each token is stored with the stamp's lifetime (`SETEX`), so it expires on its own. Checked against a live
-Redis: a token stored by one client was read by a separate one, as two containers would, and was gone
-once the lifetime ended. If Redis can't be reached, the request fails; it never continues without the
-person's identity.
+Each token is stored with the stamp's lifetime (`SETEX`), so it expires on its own. I checked this by hand
+against a live Redis: a token stored by one client was read by a separate one, as two containers would,
+and was gone once the lifetime ended. If Redis can't be reached, the request fails rather than continuing
+without the person's identity.
+
+The person's own token also expires on Keycloak's schedule, usually well before the stamp. After that,
+Keycloak refuses the exchange and the person signs in again.
 
 ## The MCP server is the one that says no
 
@@ -149,9 +152,13 @@ call eight times. That is expected, and it is why the decision doesn't rest with
 
 ![A refused tool call travels as an exception](../assets/images/blogs/on_behalf_of_refusal_sequence.png)
 
-The refusal is raised, never returned as an ordinary result. The connector raises, the agent raises, the
-squad logs the failed step and stops the flow, and the orchestrator decides what it means and answers the
-caller with `denied`, who was denied and why. No later step can carry on as if the tool had worked.
+The refusal is raised as an exception, not returned as an ordinary result. The framework's part: the
+connector raises, the squad logs the failed step and stops the flow, and the exception reaches the
+orchestrator, so no later step can carry on as if the tool had worked. The application's part: in the demo,
+the agent wraps the refusal in its own `ToolRefused`, and the application's orchestrator turns it into a
+`denied` answer that says who was denied and why. If there is no verified person at all, the framework
+raises `CredentialUnavailableError` before any call leaves (test:
+`test_no_verified_caller_means_the_call_does_not_run`).
 
 ## Each layer has its own job
 
@@ -176,8 +183,8 @@ records the caller as an agent principal (`principal_type: agent`), and every ag
 it. Give each job its own service account with only the roles it needs, never one shared account with
 broad rights. When a decision needs a named person, K9X HIL brings one back in.
 
-The system user is always a deliberate choice, never a fallback. If a flow that should carry a person
-arrives without one, the call is refused; it doesn't quietly continue as the system user.
+The system user is a deliberate choice, not a fallback. If a flow that should carry a person arrives
+without one, the call is refused instead of quietly continuing as the system user.
 
 ## What's next (planned, not yet in a release)
 

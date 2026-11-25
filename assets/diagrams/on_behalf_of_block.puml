@@ -17,7 +17,7 @@ P --> KC : 1. sign in
 P --> R : 2. request + token
 R --> O : signed identity
 O --> A
-A --> C : tool call
+A --> C : Agent: tool call
 C --> KC : 3. exchange the token
 KC --> C : short-lived token\nperson + this server
 C --> M : 4. call with that token
