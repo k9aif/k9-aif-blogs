@@ -1,0 +1,30 @@
+@startuml on_behalf_of_block
+top to bottom direction
+
+actor "Person" as P
+rectangle "Keycloak\nsign-in and token exchange (RFC 8693)" as KC
+
+rectangle "Application built on K9-AIF  (one Keycloak client)" as App {
+  rectangle "Router\nadmit(): verify the sign-in, keep the token server side,\nsign the identity" as R
+  rectangle "Orchestrator\ncarries the verified person through every squad" as O
+  rectangle "Squad  ->  Agent" as A
+  rectangle "MCP connector\non_behalf_of: {audience: <MCP server>}" as C
+}
+
+rectangle "MCP server\nvalidates the token (addressed to itself)\ndecides from the person's roles" as M
+
+P --> KC : 1. sign in
+P --> R : 2. request + token
+R --> O : signed identity
+O --> A
+A --> C : tool call
+C --> KC : 3. exchange the token
+KC --> C : short-lived token\nperson + this server
+C --> M : 4. call with that token
+
+note right of M
+  No verified person, or the exchange
+  is refused: the call does not run.
+  Never a shared key.
+end note
+@enduml
