@@ -167,20 +167,17 @@ authorized officer opens a poisoned document that asks for the code, the token i
 says yes. That case belongs to the tool gate (1.25.0): a sensitive tool is held, the exact call is stored,
 and the orchestrator sends it to K9X HIL for a person to approve. The tool gate was off in this test.
 
-## Dev, UAT and production
+## No person behind the call: the system user
 
-The usual cloud practice applies: each environment runs in its own subnets, so dev can't reach a
-production endpoint. On top of that, each environment gets its own `.env`, and nothing in K9-AIF
-carries over from one to another:
+Many applications run work no person asked for: a nightly batch, a scheduled job, an event from another
+system. Then the flow acts as the application's system user. The job signs in to Keycloak with its own
+service account (client credentials) and enters through `admit()` the same way a person does; K9-AIF
+records the caller as an agent principal (`principal_type: agent`), and every agent in that flow acts for
+it. Give each job its own service account with only the roles it needs, never one shared account with
+broad rights. When a decision needs a named person, K9X HIL brings one back in.
 
-- **`K9_ENV` tells the framework where it runs.** Unset means production; only `development`, `dev` and
-  `test` relax anything. In UAT and production an ungoverned agent is refused, and a Shield check that
-  errors counts as a block.
-- **A separate Keycloak realm per environment.** Each MCP server checks the token's issuer, so a token
-  from dev is refused in production.
-- **A different `K9_IDENTITY_SECRET` per environment.** A stamp signed in dev fails verification in
-  production.
-- **Different client secrets** (`K9_OBO_CLIENT_SECRET`) and endpoints per environment, all from `.env`.
+The system user is always a deliberate choice, never a fallback. If a flow that should carry a person
+arrives without one, the call is refused; it doesn't quietly continue as the system user.
 
 ## What's next (planned, not yet in a release)
 
