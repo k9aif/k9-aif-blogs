@@ -199,3 +199,18 @@ pip install "k9-aif[oidc]==1.36.0"
 
 Framework: [github.com/k9aif/k9-aif-framework](https://github.com/k9aif/k9-aif-framework). Tests:
 `k9_aif_abb/tests/test_on_behalf_of_1_36.py`. Design notes: `docs/roadmap/on-behalf-of-design.md`.
+
+## Related reading
+
+- [The Agent Hijacking That Passes Every Check](/the-agent-hijacking-that-passes-every-check/): the tool gate
+  (1.25.0), which holds a sensitive call for a person when the right person is being misled.
+- [K9X Shield, Part 1: Zero Trust for Agentic Systems](/zero-trust-execution-layer-agentic-systems/): the
+  Zero Trust layer and the signed identity this release builds on.
+- [K9X Shield, Part 2: Security as an Architectural Capability](/k9x-shield-chain-of-vulnerability-tests/):
+  the chain of checks that screens what comes in.
+- [K9X SATAN: Proving Shield Actually Holds](/k9x-satan-proving-shield-holds/): attacking the framework on
+  purpose, the same way this post tested identity.
+- [How K9-AIF Enforces Governance in Agentic Systems](/how-k9-aif-enforces-governance/): governance by
+  construction, on every agent.
+- [The Secure AI Lifecycle, the K9X Way](/secure-ai-lifecycle-the-k9x-way/): where each control sits, from
+  design to operation.
