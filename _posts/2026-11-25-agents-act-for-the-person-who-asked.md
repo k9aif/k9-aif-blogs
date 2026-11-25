@@ -7,27 +7,24 @@ categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, MCP, Keycloak, OAuth, token exchange, RFC 8693, identity, k9x Shield, tool gate, K9X HIL]
 ---
 <!-- DRAFT: depends on k9-aif 1.36.0 (PyPI 2026-11-25, tag v1.36.0; GitHub release / Zenodo DOI pending).
-Before the go: (1) fill the RAVI placeholders; (2) GitHub release published, add the DOI if wanted; (3) set the date. -->
+Before the go: (1) optional RAVI placeholders; (2) GitHub release published, add the DOI if wanted; (3) set the date. -->
 
-<!-- RAVI: the opening. The moment on 11-23 you noticed that an analyst and a project owner sending the same
-prompt reached the MCP server with the same key: what you were looking at, what you thought. Two or three
-sentences in your words. -->
+Security is the conversation in the AI world right now. One item on my security to-do list has been
+this: when an agent calls a tool for someone, the tool should know who that someone is. With K9-AIF
+1.36.0 that item is done and in the framework.
 
-## The gap
+## From the sign-in to the tool
 
-An analyst and a project owner type the same question into an agent. The agent calls an MCP server.
-Before 1.36.0, both requests reached that server with the same credential: the connector's one
-configured `api_key`.
+An analyst and a project owner can type the same question into an agent, and the agent calls an MCP
+server for each of them. The router has always verified who signed in (`BaseRouter.admit()`), and the
+orchestrator can check that person's roles. 1.36.0 carries the same verified person further: through
+every squad and agent, out through the MCP connector, and into the token the MCP server receives. Each
+person now reaches the server as themselves, with their own rights.
 
-The framework knew who was asking. The router verified the sign-in (`BaseRouter.admit()`), and the
-orchestrator could check the person's roles with Zero Trust. Then the identity stopped. Agents, the tool
-gate and the connectors never saw it, so every MCP server answered the application, never the person.
+The principle behind it is simple: an agent should never be able to do more than the person it works for.
 
-Security is the conversation in the AI world right now, and this is one of its most practical forms: an
-agent should never be able to do more than the person it works for.
-
-<!-- RAVI: your view in one or two sentences. Why this matters to you, from the field if you have an
-example (shared service accounts, an auditor's question), no client names. -->
+<!-- RAVI (optional): your view in a sentence or two, from the field if you have an example
+(shared service accounts, an auditor's question), no client names. -->
 
 ## How 1.36.0 carries the person to the tool
 
@@ -77,6 +74,33 @@ kwargs:
 In Keycloak (26.2 or later has standard token exchange built in), that means a sign-in client whose tokens
 are addressed to the application, an application client with token exchange switched on, and one client
 per MCP server that owns the roles for its tools.
+
+## Separate containers: share the token store in Redis
+
+Production applications built on K9-AIF often run the API backend, the router and the orchestrator in
+separate containers, connected by Kafka. That fits this design: only the signed stamp, with its random
+reference, travels between them. The token itself stays in one place every container can reach, Redis:
+
+```yaml
+on_behalf_of:
+  # ... as above
+  token_store:
+    provider: redis                    # any BaseCache from CacheFactory; in_memory for one process
+    redis_host: "${REDIS_HOST:-localhost}"
+    redis_port: "${REDIS_PORT:-6379}"
+    key_prefix: "myapp:"               # REDIS_PASSWORD comes from .env only
+```
+
+| Container | What it does here | What it needs |
+|---|---|---|
+| API backend | Receives the request and its bearer token; calls `admit()` | the `security:` config, `K9_IDENTITY_SECRET`, Redis |
+| Router | Routes the stamped payload; never sees the token | `K9_IDENTITY_SECRET` |
+| Orchestrator | Runs the agents; reads the token by reference and exchanges it | `K9_IDENTITY_SECRET`, Redis, `KEYCLOAK_URL`, `K9_OBO_CLIENT_SECRET` |
+
+Each token is stored with the stamp's lifetime (`SETEX`), so it expires on its own. Checked against a live
+Redis: a token stored by one client was read by a separate one, as two containers would, and was gone
+once the lifetime ended. If Redis can't be reached, the request fails; it never continues without the
+person's identity.
 
 ## The MCP server is the one that says no
 
