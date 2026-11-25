@@ -34,7 +34,7 @@ If that agent holds a tool like `issue_refund`, all three conditions are met. Th
 
 - **Deterministic flows** are most business flows: look up, match, apply the rules, post. Our code decides every step, and the Orchestrator calls the enterprise systems through integration adapters, with no model involved. Condition 1 never holds, so **a deterministic flow can't be hijacked.** Its only risk is what it trusts: if a record it relies on was wrong, it acts on that record faithfully, and the usual business controls deal with that, as they always have.
 - **Non-deterministic flows** are where a model decides: it reads free text and chooses what to do. Only these can be hijacked, and a solution built on K9-AIF covers each of the three ways:
-  1. **Acting:** agents get request tools into the existing workflows, and the 1.25.0 tool gate sends any irreversible call that the business rules don't allow to a person.
+  1. **Acting:** the agents' tools only submit requests into the existing workflows; they don't change records themselves, so the usual business rules still apply. As a backstop, the tool gate (1.25.0) sends any irreversible call the rules don't allow to a person, even when the agent's own code never asks for review.
   2. **Revealing:** every caller is authenticated and role-checked, agents use only the tools a trusted MCP server exposes to them, those tools return only what the person may see, and Shield checks what goes out for personal and confidential data.
   3. **Misrepresenting:** k9x Shield, and Guardian where it's enabled, check everything an agent sends out, and the solution answers from its own approved policy text.
 
