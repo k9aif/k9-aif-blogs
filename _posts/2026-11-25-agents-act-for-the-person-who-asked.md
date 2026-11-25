@@ -169,7 +169,9 @@ and the orchestrator sends it to K9X HIL for a person to approve. The tool gate 
 
 ## Dev, UAT and production
 
-Each environment gets its own `.env`, and nothing carries over from one to another:
+The usual cloud practice applies: each environment runs in its own subnets, so dev can't reach a
+production endpoint. On top of that, each environment gets its own `.env`, and nothing in K9-AIF
+carries over from one to another:
 
 - **`K9_ENV` tells the framework where it runs.** Unset means production; only `development`, `dev` and
   `test` relax anything. In UAT and production an ungoverned agent is refused, and a Shield check that
@@ -179,7 +181,6 @@ Each environment gets its own `.env`, and nothing carries over from one to anoth
 - **A different `K9_IDENTITY_SECRET` per environment.** A stamp signed in dev fails verification in
   production.
 - **Different client secrets** (`K9_OBO_CLIENT_SECRET`) and endpoints per environment, all from `.env`.
-- **Separate subnets.** An agent in dev can't reach a production endpoint at all.
 
 ## What's next (planned, not yet in a release)
 
