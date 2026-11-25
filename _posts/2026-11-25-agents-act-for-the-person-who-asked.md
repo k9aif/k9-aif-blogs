@@ -68,7 +68,7 @@ security:
 # on each MCP connector that should act for the person
 kwargs:
   url: ${AP_MCP_URL}
-  on_behalf_of: {audience: nuclear-mcp}   # the server's client id
+  on_behalf_of: {audience: admin-mcp}     # the server's client id
 ```
 
 In Keycloak (26.2 or later has standard token exchange built in), that means a sign-in client whose tokens
@@ -77,7 +77,7 @@ per MCP server that owns the roles for its tools.
 
 ## Separate containers: share the token store in Redis
 
-Production applications built on K9-AIF often run the API backend, the router and the orchestrator in
+Production applications built on K9-AIF often run the app backend, the router and the orchestrator in
 separate containers, connected by Kafka. That fits this design: only the signed stamp, with its random
 reference, travels between them. The token itself stays in one place every container can reach, Redis:
 
@@ -91,11 +91,11 @@ on_behalf_of:
     key_prefix: "myapp:"               # REDIS_PASSWORD comes from .env only
 ```
 
-| Container | What it does here | What it needs |
-|---|---|---|
-| API backend | Receives the request and its bearer token; calls `admit()` | the `security:` config, `K9_IDENTITY_SECRET`, Redis |
-| Router | Routes the stamped payload; never sees the token | `K9_IDENTITY_SECRET` |
-| Orchestrator | Runs the agents; reads the token by reference and exchanges it | `K9_IDENTITY_SECRET`, Redis, `KEYCLOAK_URL`, `K9_OBO_CLIENT_SECRET` |
+| Container                        | What it does here                                              | What it needs                                                             |
+| -------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| App backend (requests from the UI) | Receives the request and its bearer token; calls `admit()`   | the `security:` config, `K9_IDENTITY_SECRET`, Redis                   |
+| Router                           | Routes the stamped payload; never sees the token               | `K9_IDENTITY_SECRET`                                                    |
+| Orchestrator                     | Runs the agents; reads the token by reference and exchanges it | `K9_IDENTITY_SECRET`, Redis, `KEYCLOAK_URL`, `K9_OBO_CLIENT_SECRET` |
 
 Each token is stored with the stamp's lifetime (`SETEX`), so it expires on its own. Checked against a live
 Redis: a token stored by one client was read by a separate one, as two containers would, and was gone
@@ -109,11 +109,11 @@ published keys, the issuer, the audience (itself) and the expiry, and then the r
 
 ```python
 @mcp.tool()
-def get_nuclear_access_code(site: str, ctx: Context) -> Dict[str, Any]:
-    """The current access code for a facility (needs nuclear_officer). Fictional demo data."""
+def get_admin_access_code(site: str, ctx: Context) -> Dict[str, Any]:
+    """The current access code for a facility (needs admin_officer). Fictional demo data."""
     c = caller(ctx)                                    # verified claims, or HTTP 401 earlier
-    require(c, "nuclear_officer", "get_nuclear_access_code")
-    code = "NAC-" + "-".join(f"{secrets.randbelow(10000):04d}" for _ in range(3))
+    require(c, "admin_officer", "get_admin_access_code")
+    code = "AAC-" + "-".join(f"{secrets.randbelow(10000):04d}" for _ in range(3))
     return {"site": site, "access_code": code, "issued_to": c.get("preferred_username")}
 ```
 
@@ -123,7 +123,7 @@ The roles come from Keycloak, inside a signed token, so neither the request nor 
 
 I built a small target: an agent on K9-AIF whose code has no rule of its own about who may see what. It
 asks the model which tool fits the request and calls it. Its MCP server has a fictional restricted tool,
-`get_nuclear_access_code`, open only to the role `nuclear_officer`.
+`get_admin_access_code`, open only to the role `admin_officer`.
 
 A simulated attacker signed in as an ordinary user (`hacker`, role `facility_viewer`) and sent 10 attacks:
 a plain request for the code, classic injection, role play, a fake emergency override, a forged "identity
@@ -131,12 +131,12 @@ stamp is wrong" note, forged
 `principal_id` and `roles` fields in the request body, a fake signed stamp, a paraphrased compliance
 request, a base64-encoded instruction, and an indirect "whenever Site-7 is mentioned" instruction.
 
-| What happened | Count |
-|---|---|
-| k9x Shield blocked it at the door | 1 |
-| The model called the restricted tool, and the MCP server refused it (the token named `hacker`) | 8 |
-| The model picked a harmless tool instead | 1 |
-| **Access codes returned** | **0** |
+| What happened                                                                                    | Count       |
+| ------------------------------------------------------------------------------------------------ | ----------- |
+| k9x Shield blocked it at the door                                                                | 1           |
+| The model called the restricted tool, and the MCP server refused it (the token named `hacker`) | 8           |
+| The model picked a harmless tool instead                                                         | 1           |
+| **Access codes returned**                                                                  | **0** |
 
 With no token at all, nothing left the application: no verified person, so no exchange and no MCP call.
 The legitimate officer, `general`, got a code on the first try. Model: qwen3.8:27b on a local GPU;
@@ -155,12 +155,12 @@ caller with `denied`, who was denied and why. No later step can carry on as if t
 
 ## Each layer has its own job
 
-| Layer | Its job | Stops |
-|---|---|---|
-| k9x Shield | Screens what comes in | Known attack patterns, before any model call |
-| Identity (1.36.0) | Puts the right person on every call | Calls with no verified person; claimed identities |
-| MCP server | Makes the final decision | The wrong person, however the model was persuaded |
-| Tool gate and K9X HIL | Holds sensitive calls for a person | The right person being misled |
+| Layer                 | Its job                             | Stops                                             |
+| --------------------- | ----------------------------------- | ------------------------------------------------- |
+| k9x Shield            | Screens what comes in               | Known attack patterns, before any model call      |
+| Identity (1.36.0)     | Puts the right person on every call | Calls with no verified person; claimed identities |
+| MCP server            | Makes the final decision            | The wrong person, however the model was persuaded |
+| Tool gate and K9X HIL | Holds sensitive calls for a person  | The right person being misled                     |
 
 The last row matters. Identity answers "may this person do this?", not "did this person mean to?". If an
 authorized officer opens a poisoned document that asks for the code, the token is honest and the server

@@ -15,17 +15,17 @@ R -> R : admit(): verify, keep token,\nsign identity (hacker)
 R -> O : route(payload)
 O -> S : execute_squads()\n(caller = hacker)
 S -> A : execute()
-A -> C : call_tool("get_nuclear_access_code")
+A -> C : call_tool("get_admin_access_code")
 C -> KC : token exchange (RFC 8693)
 KC --> C : token: hacker, aud = MCP server
 C -> M : tools/call + token
-M -> M : verify token,\nrole nuclear_officer? no
+M -> M : verify token,\nrole admin_officer? no
 M --> C : error: refused
 C -> A : raises MCPToolError
 A -> S : raises ToolRefused (PermissionError)\n(the application's own class)
 note right of S : logs the failed step;\nlater steps do not run
 S -> O : re-raises
-O -> O : catches it:\nstatus "denied", by "nuclear-mcp server"
+O -> O : catches it:\nstatus "denied", by "admin-mcp server"
 O --> R : result
 R --> Caller : {"status": "denied", "user": "hacker", ...}
 
