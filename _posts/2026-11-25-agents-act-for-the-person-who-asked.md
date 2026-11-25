@@ -167,6 +167,20 @@ authorized officer opens a poisoned document that asks for the code, the token i
 says yes. That case belongs to the tool gate (1.25.0): a sensitive tool is held, the exact call is stored,
 and the orchestrator sends it to K9X HIL for a person to approve. The tool gate was off in this test.
 
+## Dev, UAT and production
+
+Each environment gets its own `.env`, and nothing carries over from one to another:
+
+- **`K9_ENV` tells the framework where it runs.** Unset means production; only `development`, `dev` and
+  `test` relax anything. In UAT and production an ungoverned agent is refused, and a Shield check that
+  errors counts as a block.
+- **A separate Keycloak realm per environment.** Each MCP server checks the token's issuer, so a token
+  from dev is refused in production.
+- **A different `K9_IDENTITY_SECRET` per environment.** A stamp signed in dev fails verification in
+  production.
+- **Different client secrets** (`K9_OBO_CLIENT_SECRET`) and endpoints per environment, all from `.env`.
+- **Separate subnets.** An agent in dev can't reach a production endpoint at all.
+
 ## What's next (planned, not yet in a release)
 
 - The same identity for `HttpApiAdapter` and `SqlDataAdapter`, with role-mapped credentials for backends
