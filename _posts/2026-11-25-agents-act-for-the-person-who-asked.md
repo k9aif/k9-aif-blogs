@@ -180,15 +180,25 @@ broad rights. When a decision needs a named person, K9X HIL brings one back in.
 The system user is a deliberate choice, not a fallback. If a flow that should carry a person arrives
 without one, the call is refused instead of quietly continuing as the system user.
 
-## What's next (planned, not yet in a release)
+## What's already there, and what's next
 
-- The same identity for `HttpApiAdapter` and `SqlDataAdapter`, with role-mapped credentials for backends
-  without OAuth.
-- A call approved in K9X HIL and resumed later acts for the approver or a service identity, never the
-  original person's expired token. Today such a call is refused.
-- A standard `ToolRefused` event from the connectors, and a review case when one person collects refusals.
-- Offer the model only the tools the person may use.
-- The agent's own identity in the token, once agents run in separate containers.
+Some of the next steps build on pieces the framework already has:
+
+- **Resuming after review.** The tool gate (1.25.0) already resumes a call approved in K9X HIL: the
+  stored call, at most once. Planned: the identity that resumed call acts with, the approver or a service
+  identity, never the original person's expired token. Today a resumed call on a connector that acts for
+  the person is refused.
+- **Recording refusals.** The tool gate already records every call it denies (`ToolCallDenied`) in its
+  audit log. Planned: the same standard event when the MCP server itself refuses, and a review case when
+  one person collects refusals.
+- **Which tools the model sees.** An approved-tool list per application already exists
+  (`ToolAuthorizationCheck`). Planned: narrowing it per person, so the model is offered only the tools
+  that person may use.
+- **Agent identity.** A job or agent can already sign in as its own service account
+  (`principal_type: agent`). Planned: each agent's own identity inside the exchanged token, once agents
+  run in separate containers.
+- **Planned from scratch:** the same identity for `HttpApiAdapter` and `SqlDataAdapter`, with role-mapped
+  credentials for backends without OAuth.
 
 Each release adds a layer that doesn't depend on the model behaving.
 
