@@ -4,6 +4,7 @@ title: "K9X Filters: A Chain of Filters and How It Contributes"
 date: 2026-11-19
 author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
+published: false   # draft: not on the site until Ravi says go
 tags: [K9-AIF, K9X Filters, k9x Shield, Granite Guardian, k9x Origin, OpenAI Agents SDK, K9X HIL, accounts payable]
 ---
 <!-- DRAFT: depends on k9-aif 1.32.0 (released 2026-11-19, PyPI + DOI 10.5281/zenodo.24383309).

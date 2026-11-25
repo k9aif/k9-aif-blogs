@@ -6,9 +6,6 @@ author: Ravi Natarajan
 categories: [architecture, ai, agent-systems, security]
 tags: [K9-AIF, MCP, Keycloak, OAuth, token exchange, RFC 8693, identity, k9x Shield, tool gate, K9X HIL]
 ---
-<!-- DRAFT: depends on k9-aif 1.36.0 (PyPI 2026-11-25, tag v1.36.0; GitHub release / Zenodo DOI pending).
-Before the go: (1) optional RAVI placeholders; (2) GitHub release published, add the DOI if wanted; (3) set the date. -->
-
 Security is the conversation in the AI world right now. One item on my security to-do list has been
 this: when an agent calls a tool for someone, the tool should know who that someone is. With K9-AIF
 1.36.0 that item is done for MCP calls and in the framework.
@@ -22,9 +19,6 @@ every squad and agent, out through the MCP connector, and into the token the MCP
 person now reaches the server as themselves, with their own rights.
 
 The principle behind it is simple: an agent should never be able to do more than the person it works for.
-
-<!-- RAVI (optional): your view in a sentence or two, from the field if you have an example
-(shared service accounts, an auditor's question), no client names. -->
 
 ## How 1.36.0 carries the person to the tool
 
@@ -197,8 +191,6 @@ without one, the call is refused instead of quietly continuing as the system use
 - The agent's own identity in the token, once agents run in separate containers.
 
 Each release adds a layer that doesn't depend on the model behaving.
-
-<!-- RAVI: closing line in your words, if you want one. -->
 
 ```
 pip install "k9-aif[oidc]==1.36.0"
